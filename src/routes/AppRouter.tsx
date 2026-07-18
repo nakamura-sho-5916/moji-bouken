@@ -12,6 +12,7 @@ import { ResultPage } from '../pages/ResultPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { TitlePage } from '../pages/TitlePage';
 import { WorldPage } from '../pages/WorldPage';
+import { DebugDataPage } from '../pages/DebugDataPage';
 
 export function AppRouter() {
   const location = useLocation();
@@ -37,6 +38,9 @@ export function AppRouter() {
             <Route element={<CollectionPage />} path="/collection" />
             <Route element={<ParentPage />} path="/parent" />
             <Route element={<SettingsPage />} path="/settings" />
+            {import.meta.env.DEV ? (
+              <Route element={<DebugDataPage />} path="/debug/data" />
+            ) : null}
             <Route element={<Navigate replace to="/" />} path="/index.html" />
             <Route element={<NotFoundPage />} path="*" />
           </Routes>

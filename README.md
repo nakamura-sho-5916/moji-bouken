@@ -111,6 +111,68 @@
 5. ページを再読み込みし、基本画面が開けることを確認する
 6. アプリ上に「オフラインでも あそべるよ」が表示されることを確認する
 
+## データ保存基盤
+
+学習進捗、復習予定、世界の復興状況、所持品などの継続データは IndexedDB に保存します。IndexedDBを使う理由は、ログイン不要・サーバー不要・単一端末利用の方針に合い、学習履歴のような構造化データをオフラインで保持しやすいためです。
+
+- DB名: `moji-bouken-db`
+- DBバージョン: `1`
+- データ保存場所: 利用端末のブラウザ内 IndexedDB
+- DB操作: Reactコンポーネントへ直接書かず、`src/db/repositories` に集約
+
+### Object Store
+
+- `players`: keyPath `id`
+- `learningLogs`: keyPath `id`
+- `letterProgress`: keyPath `id`
+- `reviewSchedules`: keyPath `id`
+- `worldProgress`: keyPath `id`
+- `inventories`: keyPath `playerId`
+- `settings`: keyPath `playerId`
+
+### Index
+
+- `learningLogs`: `by-player`, `by-letter`, `by-mission`, `by-answered-at`
+- `letterProgress`: `by-player`, `by-letter`, `by-weak-flag`, `by-mastered-flag`
+- `reviewSchedules`: `by-player`, `by-letter`, `by-scheduled-date`, `by-completed`
+- `worldProgress`: `by-player`, `by-area`
+
+### 初期データ
+
+- Player: `default-player`, 名前 `ぼうけんしゃ`, level `1`, experience `0`, gold `0`
+- WorldProgress: `starting-village`, unlocked `true`, recoveryStage `0`, unlockedEvents `[]`
+- Inventory: playerId `default-player`, gold `0`, items `[]`, equipment `[]`, companions `[]`
+- AppSettings: bgmEnabled `true`, soundEffectsEnabled `true`, reducedMotion `false`, parentPinConfigured `false`
+
+### 開発用確認画面
+
+開発環境では `/debug/data` で DB名、DBバージョン、Object Store一覧、初期データを確認できます。通常の子ども向けナビゲーションには表示しません。本番ビルドではルートを有効化しません。
+
+### Chrome DevToolsでの確認方法
+
+1. `npm run dev` を実行する
+2. ブラウザでアプリを開く
+3. Chrome DevToolsを開く
+4. Application タブを開く
+5. Storage の IndexedDB から `moji-bouken-db` を確認する
+
+### DB migration追加手順
+
+1. `src/db/constants.ts` の `DB_VERSION` を上げる
+2. `src/db/migrations/versionX.ts` を追加する
+3. `src/db/migrations/index.ts` の `runMigrations` に `oldVersion < X` の条件で追加する
+4. 既存Object Storeや既存データは削除しない
+5. migrationのテストを追加する
+
+### データ削除時の注意
+
+IndexedDBには学習履歴と進行データが保存されます。削除すると復習予定や進捗が失われるため、保護者向けの明示操作なしに削除しない方針です。
+
+### 採用ライブラリ
+
+- `idb`: IndexedDBの非同期処理と型付けを軽く扱うために採用
+- `fake-indexeddb`: Node.js上の単体テストでIndexedDBを再現するために採用
+
 ## テスト方法
 
 1. `npm run format:check`

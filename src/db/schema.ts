@@ -1,0 +1,63 @@
+import type { DBSchema } from 'idb';
+import type {
+  AppSettings,
+  Inventory,
+  LearningLog,
+  LetterProgress,
+  Player,
+  ReviewSchedule,
+  WorldProgress,
+} from '../types';
+
+export type MojiBoukenDbSchema = DBSchema & {
+  players: {
+    key: string;
+    value: Player;
+  };
+  learningLogs: {
+    key: string;
+    value: LearningLog;
+    indexes: {
+      'by-player': string;
+      'by-letter': string;
+      'by-mission': string;
+      'by-answered-at': string;
+    };
+  };
+  letterProgress: {
+    key: string;
+    value: LetterProgress;
+    indexes: {
+      'by-player': string;
+      'by-letter': string;
+      'by-weak-flag': number;
+      'by-mastered-flag': number;
+    };
+  };
+  reviewSchedules: {
+    key: string;
+    value: ReviewSchedule;
+    indexes: {
+      'by-player': string;
+      'by-letter': string;
+      'by-scheduled-date': string;
+      'by-completed': boolean;
+    };
+  };
+  worldProgress: {
+    key: string;
+    value: WorldProgress;
+    indexes: {
+      'by-player': string;
+      'by-area': string;
+    };
+  };
+  inventories: {
+    key: string;
+    value: Inventory;
+  };
+  settings: {
+    key: string;
+    value: AppSettings;
+  };
+};

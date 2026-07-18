@@ -15,4 +15,50 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
     page.getByRole('navigation', { name: '主な画面' }),
   ).toBeVisible();
   await expect(page.locator('link[rel="manifest"]')).toHaveCount(1);
+
+  const firstSnapshot = await page.evaluate(async () => {
+    const request = indexedDB.open('moji-bouken-db');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const readAll = <T>(storeName: string) =>
+      new Promise<T[]>((resolve, reject) => {
+        const transaction = db.transaction(storeName, 'readonly');
+        const store = transaction.objectStore(storeName);
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => resolve(getAllRequest.result as T[]);
+        getAllRequest.onerror = () => reject(getAllRequest.error);
+      });
+
+    const players = await readAll<{ id: string }>('players');
+    const worldProgress = await readAll<{ areaId: string }>('worldProgress');
+    db.close();
+    return { players, worldProgress };
+  });
+
+  expect(firstSnapshot.players).toHaveLength(1);
+  expect(firstSnapshot.players[0]?.id).toBe('default-player');
+  expect(firstSnapshot.worldProgress).toHaveLength(1);
+  expect(firstSnapshot.worldProgress[0]?.areaId).toBe('starting-village');
+
+  await page.reload();
+
+  const playerCountAfterReload = await page.evaluate(async () => {
+    const request = indexedDB.open('moji-bouken-db');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const count = await new Promise<number>((resolve, reject) => {
+      const transaction = db.transaction('players', 'readonly');
+      const countRequest = transaction.objectStore('players').count();
+      countRequest.onsuccess = () => resolve(countRequest.result);
+      countRequest.onerror = () => reject(countRequest.error);
+    });
+    db.close();
+    return count;
+  });
+
+  expect(playerCountAfterReload).toBe(1);
 });
