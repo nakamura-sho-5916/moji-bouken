@@ -17,3 +17,16 @@ export type {
   InventoryItem,
 } from './inventory';
 export type { AppSettings } from './settings';
+export type {
+  ContentLetter,
+  ContentMission,
+  ContentValidationIssue,
+  ContentWord,
+  IllustrationReference,
+  LoadedContent,
+  MissionOrientation,
+  MissionReward,
+  MissionType,
+  ScriptType,
+  SimilarLetterGroup,
+} from './content';

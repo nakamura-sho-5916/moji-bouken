@@ -1,0 +1,462 @@
+[
+  {
+    "id": "hiragana-a",
+    "character": "あ",
+    "scriptType": "hiragana",
+    "row": "a",
+    "order": 1,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-a"
+  },
+  {
+    "id": "hiragana-i",
+    "character": "い",
+    "scriptType": "hiragana",
+    "row": "a",
+    "order": 2,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-i"
+  },
+  {
+    "id": "hiragana-u",
+    "character": "う",
+    "scriptType": "hiragana",
+    "row": "a",
+    "order": 3,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-u"
+  },
+  {
+    "id": "hiragana-e",
+    "character": "え",
+    "scriptType": "hiragana",
+    "row": "a",
+    "order": 4,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-e"
+  },
+  {
+    "id": "hiragana-o",
+    "character": "お",
+    "scriptType": "hiragana",
+    "row": "a",
+    "order": 5,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-o"
+  },
+  {
+    "id": "hiragana-ka",
+    "character": "か",
+    "scriptType": "hiragana",
+    "row": "ka",
+    "order": 6,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ka"
+  },
+  {
+    "id": "hiragana-ki",
+    "character": "き",
+    "scriptType": "hiragana",
+    "row": "ka",
+    "order": 7,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ki"
+  },
+  {
+    "id": "hiragana-ku",
+    "character": "く",
+    "scriptType": "hiragana",
+    "row": "ka",
+    "order": 8,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ku"
+  },
+  {
+    "id": "hiragana-ke",
+    "character": "け",
+    "scriptType": "hiragana",
+    "row": "ka",
+    "order": 9,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ke"
+  },
+  {
+    "id": "hiragana-ko",
+    "character": "こ",
+    "scriptType": "hiragana",
+    "row": "ka",
+    "order": 10,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ko"
+  },
+  {
+    "id": "hiragana-sa",
+    "character": "さ",
+    "scriptType": "hiragana",
+    "row": "sa",
+    "order": 11,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-sa"
+  },
+  {
+    "id": "hiragana-shi",
+    "character": "し",
+    "scriptType": "hiragana",
+    "row": "sa",
+    "order": 12,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-shi"
+  },
+  {
+    "id": "hiragana-su",
+    "character": "す",
+    "scriptType": "hiragana",
+    "row": "sa",
+    "order": 13,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-su"
+  },
+  {
+    "id": "hiragana-se",
+    "character": "せ",
+    "scriptType": "hiragana",
+    "row": "sa",
+    "order": 14,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-se"
+  },
+  {
+    "id": "hiragana-so",
+    "character": "そ",
+    "scriptType": "hiragana",
+    "row": "sa",
+    "order": 15,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-so"
+  },
+  {
+    "id": "hiragana-ta",
+    "character": "た",
+    "scriptType": "hiragana",
+    "row": "ta",
+    "order": 16,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ta"
+  },
+  {
+    "id": "hiragana-chi",
+    "character": "ち",
+    "scriptType": "hiragana",
+    "row": "ta",
+    "order": 17,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-chi"
+  },
+  {
+    "id": "hiragana-tsu",
+    "character": "つ",
+    "scriptType": "hiragana",
+    "row": "ta",
+    "order": 18,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-tsu"
+  },
+  {
+    "id": "hiragana-te",
+    "character": "て",
+    "scriptType": "hiragana",
+    "row": "ta",
+    "order": 19,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-te"
+  },
+  {
+    "id": "hiragana-to",
+    "character": "と",
+    "scriptType": "hiragana",
+    "row": "ta",
+    "order": 20,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-to"
+  },
+  {
+    "id": "hiragana-na",
+    "character": "な",
+    "scriptType": "hiragana",
+    "row": "na",
+    "order": 21,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-na"
+  },
+  {
+    "id": "hiragana-ni",
+    "character": "に",
+    "scriptType": "hiragana",
+    "row": "na",
+    "order": 22,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ni"
+  },
+  {
+    "id": "hiragana-nu",
+    "character": "ぬ",
+    "scriptType": "hiragana",
+    "row": "na",
+    "order": 23,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-nu"
+  },
+  {
+    "id": "hiragana-ne",
+    "character": "ね",
+    "scriptType": "hiragana",
+    "row": "na",
+    "order": 24,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ne"
+  },
+  {
+    "id": "hiragana-no",
+    "character": "の",
+    "scriptType": "hiragana",
+    "row": "na",
+    "order": 25,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-no"
+  },
+  {
+    "id": "hiragana-ha",
+    "character": "は",
+    "scriptType": "hiragana",
+    "row": "ha",
+    "order": 26,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ha"
+  },
+  {
+    "id": "hiragana-hi",
+    "character": "ひ",
+    "scriptType": "hiragana",
+    "row": "ha",
+    "order": 27,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-hi"
+  },
+  {
+    "id": "hiragana-fu",
+    "character": "ふ",
+    "scriptType": "hiragana",
+    "row": "ha",
+    "order": 28,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-fu"
+  },
+  {
+    "id": "hiragana-he",
+    "character": "へ",
+    "scriptType": "hiragana",
+    "row": "ha",
+    "order": 29,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-he"
+  },
+  {
+    "id": "hiragana-ho",
+    "character": "ほ",
+    "scriptType": "hiragana",
+    "row": "ha",
+    "order": 30,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ho"
+  },
+  {
+    "id": "hiragana-ma",
+    "character": "ま",
+    "scriptType": "hiragana",
+    "row": "ma",
+    "order": 31,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ma"
+  },
+  {
+    "id": "hiragana-mi",
+    "character": "み",
+    "scriptType": "hiragana",
+    "row": "ma",
+    "order": 32,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-mi"
+  },
+  {
+    "id": "hiragana-mu",
+    "character": "む",
+    "scriptType": "hiragana",
+    "row": "ma",
+    "order": 33,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-mu"
+  },
+  {
+    "id": "hiragana-me",
+    "character": "め",
+    "scriptType": "hiragana",
+    "row": "ma",
+    "order": 34,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-me"
+  },
+  {
+    "id": "hiragana-mo",
+    "character": "も",
+    "scriptType": "hiragana",
+    "row": "ma",
+    "order": 35,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-mo"
+  },
+  {
+    "id": "hiragana-ya",
+    "character": "や",
+    "scriptType": "hiragana",
+    "row": "ya",
+    "order": 36,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ya"
+  },
+  {
+    "id": "hiragana-yu",
+    "character": "ゆ",
+    "scriptType": "hiragana",
+    "row": "ya",
+    "order": 37,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-yu"
+  },
+  {
+    "id": "hiragana-yo",
+    "character": "よ",
+    "scriptType": "hiragana",
+    "row": "ya",
+    "order": 38,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-yo"
+  },
+  {
+    "id": "hiragana-ra",
+    "character": "ら",
+    "scriptType": "hiragana",
+    "row": "ra",
+    "order": 39,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ra"
+  },
+  {
+    "id": "hiragana-ri",
+    "character": "り",
+    "scriptType": "hiragana",
+    "row": "ra",
+    "order": 40,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ri"
+  },
+  {
+    "id": "hiragana-ru",
+    "character": "る",
+    "scriptType": "hiragana",
+    "row": "ra",
+    "order": 41,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ru"
+  },
+  {
+    "id": "hiragana-re",
+    "character": "れ",
+    "scriptType": "hiragana",
+    "row": "ra",
+    "order": 42,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-re"
+  },
+  {
+    "id": "hiragana-ro",
+    "character": "ろ",
+    "scriptType": "hiragana",
+    "row": "ra",
+    "order": 43,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-ro"
+  },
+  {
+    "id": "hiragana-wa",
+    "character": "わ",
+    "scriptType": "hiragana",
+    "row": "wa",
+    "order": 44,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-wa"
+  },
+  {
+    "id": "hiragana-wo",
+    "character": "を",
+    "scriptType": "hiragana",
+    "row": "wa",
+    "order": 45,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-wo"
+  },
+  {
+    "id": "hiragana-n",
+    "character": "ん",
+    "scriptType": "hiragana",
+    "row": "wa",
+    "order": 46,
+    "active": true,
+    "variants": [],
+    "relatedLetterId": "katakana-n"
+  }
+]

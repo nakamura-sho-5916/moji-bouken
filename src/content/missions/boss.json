@@ -1,0 +1,34 @@
+[
+  {
+    "missionId": "mission-boss-mixed-001",
+    "missionType": "boss-mixed",
+    "targetIds": ["hiragana-a", "word-cat"],
+    "prompt": "まとめて ちょうせん 1",
+    "choices": ["あ", "ねこ", "つき"],
+    "correctAnswer": "あ",
+    "difficulty": 3,
+    "orientation": "adaptive",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  },
+  {
+    "missionId": "mission-boss-mixed-002",
+    "missionType": "boss-mixed",
+    "targetIds": ["katakana-ba", "word-bus"],
+    "prompt": "まとめて ちょうせん 2",
+    "choices": ["バ", "バス", "パン"],
+    "correctAnswer": "バス",
+    "difficulty": 3,
+    "orientation": "adaptive",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  }
+]

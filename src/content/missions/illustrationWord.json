@@ -1,0 +1,34 @@
+[
+  {
+    "missionId": "mission-illustration-word-choice-001",
+    "missionType": "illustration-word-choice",
+    "targetIds": ["word-cat"],
+    "prompt": "ねこの ことばを えらぼう",
+    "choices": ["ねこ", "いぬ", "とり", "くま"],
+    "correctAnswer": "ねこ",
+    "difficulty": 1,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  },
+  {
+    "missionId": "mission-illustration-word-choice-002",
+    "missionType": "illustration-word-choice",
+    "targetIds": ["word-bus"],
+    "prompt": "バスの ことばを えらぼう",
+    "choices": ["バス", "パン", "テレビ", "カメラ"],
+    "correctAnswer": "バス",
+    "difficulty": 2,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  }
+]

@@ -1,0 +1,562 @@
+[
+  {
+    "id": "illustration-cat",
+    "assetPath": "/assets/illustrations/placeholders/cat.svg",
+    "altText": "ねこ",
+    "category": "animals",
+    "fallbackText": "🐱"
+  },
+  {
+    "id": "illustration-dog",
+    "assetPath": "/assets/illustrations/placeholders/dog.svg",
+    "altText": "いぬ",
+    "category": "animals",
+    "fallbackText": "🐶"
+  },
+  {
+    "id": "illustration-bird",
+    "assetPath": "/assets/illustrations/placeholders/bird.svg",
+    "altText": "とり",
+    "category": "animals",
+    "fallbackText": "🐦"
+  },
+  {
+    "id": "illustration-fish",
+    "assetPath": "/assets/illustrations/placeholders/fish.svg",
+    "altText": "さかな",
+    "category": "animals",
+    "fallbackText": "🐟"
+  },
+  {
+    "id": "illustration-bear",
+    "assetPath": "/assets/illustrations/placeholders/bear.svg",
+    "altText": "くま",
+    "category": "animals",
+    "fallbackText": "🐻"
+  },
+  {
+    "id": "illustration-rabbit",
+    "assetPath": "/assets/illustrations/placeholders/rabbit.svg",
+    "altText": "うさぎ",
+    "category": "animals",
+    "fallbackText": "🐰"
+  },
+  {
+    "id": "illustration-horse",
+    "assetPath": "/assets/illustrations/placeholders/horse.svg",
+    "altText": "うま",
+    "category": "animals",
+    "fallbackText": "🐴"
+  },
+  {
+    "id": "illustration-cow",
+    "assetPath": "/assets/illustrations/placeholders/cow.svg",
+    "altText": "うし",
+    "category": "animals",
+    "fallbackText": "🐮"
+  },
+  {
+    "id": "illustration-pig",
+    "assetPath": "/assets/illustrations/placeholders/pig.svg",
+    "altText": "ぶた",
+    "category": "animals",
+    "fallbackText": "🐷"
+  },
+  {
+    "id": "illustration-turtle",
+    "assetPath": "/assets/illustrations/placeholders/turtle.svg",
+    "altText": "かめ",
+    "category": "animals",
+    "fallbackText": "🐢"
+  },
+  {
+    "id": "illustration-rice",
+    "assetPath": "/assets/illustrations/placeholders/rice.svg",
+    "altText": "ごはん",
+    "category": "foods",
+    "fallbackText": "🍚"
+  },
+  {
+    "id": "illustration-bread",
+    "assetPath": "/assets/illustrations/placeholders/bread.svg",
+    "altText": "パン",
+    "category": "foods",
+    "fallbackText": "🍞"
+  },
+  {
+    "id": "illustration-tomato",
+    "assetPath": "/assets/illustrations/placeholders/tomato.svg",
+    "altText": "トマト",
+    "category": "foods",
+    "fallbackText": "🍅"
+  },
+  {
+    "id": "illustration-apple",
+    "assetPath": "/assets/illustrations/placeholders/apple.svg",
+    "altText": "りんご",
+    "category": "foods",
+    "fallbackText": "🍎"
+  },
+  {
+    "id": "illustration-banana",
+    "assetPath": "/assets/illustrations/placeholders/banana.svg",
+    "altText": "バナナ",
+    "category": "foods",
+    "fallbackText": "🍌"
+  },
+  {
+    "id": "illustration-milk",
+    "assetPath": "/assets/illustrations/placeholders/milk.svg",
+    "altText": "ミルク",
+    "category": "foods",
+    "fallbackText": "🥛"
+  },
+  {
+    "id": "illustration-water",
+    "assetPath": "/assets/illustrations/placeholders/water.svg",
+    "altText": "みず",
+    "category": "foods",
+    "fallbackText": "💧"
+  },
+  {
+    "id": "illustration-egg",
+    "assetPath": "/assets/illustrations/placeholders/egg.svg",
+    "altText": "たまご",
+    "category": "foods",
+    "fallbackText": "🥚"
+  },
+  {
+    "id": "illustration-cake",
+    "assetPath": "/assets/illustrations/placeholders/cake.svg",
+    "altText": "ケーキ",
+    "category": "foods",
+    "fallbackText": "🍰"
+  },
+  {
+    "id": "illustration-cup",
+    "assetPath": "/assets/illustrations/placeholders/cup.svg",
+    "altText": "コップ",
+    "category": "foods",
+    "fallbackText": "🥤"
+  },
+  {
+    "id": "illustration-school",
+    "assetPath": "/assets/illustrations/placeholders/school.svg",
+    "altText": "がっこう",
+    "category": "school",
+    "fallbackText": "🏫"
+  },
+  {
+    "id": "illustration-desk",
+    "assetPath": "/assets/illustrations/placeholders/desk.svg",
+    "altText": "つくえ",
+    "category": "school",
+    "fallbackText": "▣"
+  },
+  {
+    "id": "illustration-chair",
+    "assetPath": "/assets/illustrations/placeholders/chair.svg",
+    "altText": "いす",
+    "category": "school",
+    "fallbackText": "🪑"
+  },
+  {
+    "id": "illustration-pencil",
+    "assetPath": "/assets/illustrations/placeholders/pencil.svg",
+    "altText": "えんぴつ",
+    "category": "school",
+    "fallbackText": "✏️"
+  },
+  {
+    "id": "illustration-book",
+    "assetPath": "/assets/illustrations/placeholders/book.svg",
+    "altText": "ほん",
+    "category": "school",
+    "fallbackText": "📖"
+  },
+  {
+    "id": "illustration-bag",
+    "assetPath": "/assets/illustrations/placeholders/bag.svg",
+    "altText": "かばん",
+    "category": "school",
+    "fallbackText": "🎒"
+  },
+  {
+    "id": "illustration-clock",
+    "assetPath": "/assets/illustrations/placeholders/clock.svg",
+    "altText": "とけい",
+    "category": "school",
+    "fallbackText": "🕒"
+  },
+  {
+    "id": "illustration-paper",
+    "assetPath": "/assets/illustrations/placeholders/paper.svg",
+    "altText": "かみ",
+    "category": "school",
+    "fallbackText": "📄"
+  },
+  {
+    "id": "illustration-map",
+    "assetPath": "/assets/illustrations/placeholders/map.svg",
+    "altText": "ちず",
+    "category": "school",
+    "fallbackText": "🗺️"
+  },
+  {
+    "id": "illustration-crayon",
+    "assetPath": "/assets/illustrations/placeholders/crayon.svg",
+    "altText": "クレヨン",
+    "category": "school",
+    "fallbackText": "🖍️"
+  },
+  {
+    "id": "illustration-house",
+    "assetPath": "/assets/illustrations/placeholders/house.svg",
+    "altText": "いえ",
+    "category": "home",
+    "fallbackText": "🏠"
+  },
+  {
+    "id": "illustration-door",
+    "assetPath": "/assets/illustrations/placeholders/door.svg",
+    "altText": "ドア",
+    "category": "home",
+    "fallbackText": "🚪"
+  },
+  {
+    "id": "illustration-window",
+    "assetPath": "/assets/illustrations/placeholders/window.svg",
+    "altText": "まど",
+    "category": "home",
+    "fallbackText": "□"
+  },
+  {
+    "id": "illustration-bath",
+    "assetPath": "/assets/illustrations/placeholders/bath.svg",
+    "altText": "おふろ",
+    "category": "home",
+    "fallbackText": "🛁"
+  },
+  {
+    "id": "illustration-bed",
+    "assetPath": "/assets/illustrations/placeholders/bed.svg",
+    "altText": "ベッド",
+    "category": "home",
+    "fallbackText": "🛏️"
+  },
+  {
+    "id": "illustration-tv",
+    "assetPath": "/assets/illustrations/placeholders/tv.svg",
+    "altText": "テレビ",
+    "category": "home",
+    "fallbackText": "📺"
+  },
+  {
+    "id": "illustration-camera",
+    "assetPath": "/assets/illustrations/placeholders/camera.svg",
+    "altText": "カメラ",
+    "category": "home",
+    "fallbackText": "📷"
+  },
+  {
+    "id": "illustration-phone",
+    "assetPath": "/assets/illustrations/placeholders/phone.svg",
+    "altText": "でんわ",
+    "category": "home",
+    "fallbackText": "☎️"
+  },
+  {
+    "id": "illustration-key",
+    "assetPath": "/assets/illustrations/placeholders/key.svg",
+    "altText": "かぎ",
+    "category": "home",
+    "fallbackText": "🔑"
+  },
+  {
+    "id": "illustration-box",
+    "assetPath": "/assets/illustrations/placeholders/box.svg",
+    "altText": "はこ",
+    "category": "home",
+    "fallbackText": "📦"
+  },
+  {
+    "id": "illustration-mountain",
+    "assetPath": "/assets/illustrations/placeholders/mountain.svg",
+    "altText": "やま",
+    "category": "nature",
+    "fallbackText": "⛰️"
+  },
+  {
+    "id": "illustration-river",
+    "assetPath": "/assets/illustrations/placeholders/river.svg",
+    "altText": "かわ",
+    "category": "nature",
+    "fallbackText": "〰"
+  },
+  {
+    "id": "illustration-sea",
+    "assetPath": "/assets/illustrations/placeholders/sea.svg",
+    "altText": "うみ",
+    "category": "nature",
+    "fallbackText": "🌊"
+  },
+  {
+    "id": "illustration-sky",
+    "assetPath": "/assets/illustrations/placeholders/sky.svg",
+    "altText": "そら",
+    "category": "nature",
+    "fallbackText": "☁️"
+  },
+  {
+    "id": "illustration-star",
+    "assetPath": "/assets/illustrations/placeholders/star.svg",
+    "altText": "ほし",
+    "category": "nature",
+    "fallbackText": "⭐"
+  },
+  {
+    "id": "illustration-flower",
+    "assetPath": "/assets/illustrations/placeholders/flower.svg",
+    "altText": "はな",
+    "category": "nature",
+    "fallbackText": "🌸"
+  },
+  {
+    "id": "illustration-tree",
+    "assetPath": "/assets/illustrations/placeholders/tree.svg",
+    "altText": "き",
+    "category": "nature",
+    "fallbackText": "🌳"
+  },
+  {
+    "id": "illustration-rain",
+    "assetPath": "/assets/illustrations/placeholders/rain.svg",
+    "altText": "あめ",
+    "category": "nature",
+    "fallbackText": "☔"
+  },
+  {
+    "id": "illustration-snow",
+    "assetPath": "/assets/illustrations/placeholders/snow.svg",
+    "altText": "ゆき",
+    "category": "nature",
+    "fallbackText": "❄️"
+  },
+  {
+    "id": "illustration-moon",
+    "assetPath": "/assets/illustrations/placeholders/moon.svg",
+    "altText": "つき",
+    "category": "nature",
+    "fallbackText": "🌙"
+  },
+  {
+    "id": "illustration-car",
+    "assetPath": "/assets/illustrations/placeholders/car.svg",
+    "altText": "くるま",
+    "category": "vehicles",
+    "fallbackText": "🚗"
+  },
+  {
+    "id": "illustration-bus",
+    "assetPath": "/assets/illustrations/placeholders/bus.svg",
+    "altText": "バス",
+    "category": "vehicles",
+    "fallbackText": "🚌"
+  },
+  {
+    "id": "illustration-train",
+    "assetPath": "/assets/illustrations/placeholders/train.svg",
+    "altText": "でんしゃ",
+    "category": "vehicles",
+    "fallbackText": "🚃"
+  },
+  {
+    "id": "illustration-ship",
+    "assetPath": "/assets/illustrations/placeholders/ship.svg",
+    "altText": "ふね",
+    "category": "vehicles",
+    "fallbackText": "⛵"
+  },
+  {
+    "id": "illustration-plane",
+    "assetPath": "/assets/illustrations/placeholders/plane.svg",
+    "altText": "ひこうき",
+    "category": "vehicles",
+    "fallbackText": "✈️"
+  },
+  {
+    "id": "illustration-bike",
+    "assetPath": "/assets/illustrations/placeholders/bike.svg",
+    "altText": "じてんしゃ",
+    "category": "vehicles",
+    "fallbackText": "🚲"
+  },
+  {
+    "id": "illustration-taxi",
+    "assetPath": "/assets/illustrations/placeholders/taxi.svg",
+    "altText": "タクシー",
+    "category": "vehicles",
+    "fallbackText": "🚕"
+  },
+  {
+    "id": "illustration-rocket",
+    "assetPath": "/assets/illustrations/placeholders/rocket.svg",
+    "altText": "ロケット",
+    "category": "vehicles",
+    "fallbackText": "🚀"
+  },
+  {
+    "id": "illustration-road",
+    "assetPath": "/assets/illustrations/placeholders/road.svg",
+    "altText": "みち",
+    "category": "vehicles",
+    "fallbackText": "🛣️"
+  },
+  {
+    "id": "illustration-station",
+    "assetPath": "/assets/illustrations/placeholders/station.svg",
+    "altText": "えき",
+    "category": "vehicles",
+    "fallbackText": "🚉"
+  },
+  {
+    "id": "illustration-hand",
+    "assetPath": "/assets/illustrations/placeholders/hand.svg",
+    "altText": "て",
+    "category": "body",
+    "fallbackText": "✋"
+  },
+  {
+    "id": "illustration-foot",
+    "assetPath": "/assets/illustrations/placeholders/foot.svg",
+    "altText": "あし",
+    "category": "body",
+    "fallbackText": "🦶"
+  },
+  {
+    "id": "illustration-eye",
+    "assetPath": "/assets/illustrations/placeholders/eye.svg",
+    "altText": "め",
+    "category": "body",
+    "fallbackText": "👁️"
+  },
+  {
+    "id": "illustration-ear",
+    "assetPath": "/assets/illustrations/placeholders/ear.svg",
+    "altText": "みみ",
+    "category": "body",
+    "fallbackText": "👂"
+  },
+  {
+    "id": "illustration-mouth",
+    "assetPath": "/assets/illustrations/placeholders/mouth.svg",
+    "altText": "くち",
+    "category": "body",
+    "fallbackText": "👄"
+  },
+  {
+    "id": "illustration-head",
+    "assetPath": "/assets/illustrations/placeholders/head.svg",
+    "altText": "あたま",
+    "category": "body",
+    "fallbackText": "🙂"
+  },
+  {
+    "id": "illustration-red",
+    "assetPath": "/assets/illustrations/placeholders/red.svg",
+    "altText": "あか",
+    "category": "colors",
+    "fallbackText": "🔴"
+  },
+  {
+    "id": "illustration-blue",
+    "assetPath": "/assets/illustrations/placeholders/blue.svg",
+    "altText": "あお",
+    "category": "colors",
+    "fallbackText": "🔵"
+  },
+  {
+    "id": "illustration-white",
+    "assetPath": "/assets/illustrations/placeholders/white.svg",
+    "altText": "しろ",
+    "category": "colors",
+    "fallbackText": "⚪"
+  },
+  {
+    "id": "illustration-black",
+    "assetPath": "/assets/illustrations/placeholders/black.svg",
+    "altText": "くろ",
+    "category": "colors",
+    "fallbackText": "⚫"
+  },
+  {
+    "id": "illustration-park",
+    "assetPath": "/assets/illustrations/placeholders/park.svg",
+    "altText": "こうえん",
+    "category": "places",
+    "fallbackText": "🏞️"
+  },
+  {
+    "id": "illustration-room",
+    "assetPath": "/assets/illustrations/placeholders/room.svg",
+    "altText": "へや",
+    "category": "places",
+    "fallbackText": "▢"
+  },
+  {
+    "id": "illustration-shop",
+    "assetPath": "/assets/illustrations/placeholders/shop.svg",
+    "altText": "みせ",
+    "category": "places",
+    "fallbackText": "🏪"
+  },
+  {
+    "id": "illustration-bridge",
+    "assetPath": "/assets/illustrations/placeholders/bridge.svg",
+    "altText": "はし",
+    "category": "places",
+    "fallbackText": "🌉"
+  },
+  {
+    "id": "illustration-gate",
+    "assetPath": "/assets/illustrations/placeholders/gate.svg",
+    "altText": "もん",
+    "category": "places",
+    "fallbackText": "⛩️"
+  },
+  {
+    "id": "illustration-lion",
+    "assetPath": "/assets/illustrations/placeholders/lion.svg",
+    "altText": "ライオン",
+    "category": "animals",
+    "fallbackText": "🦁"
+  },
+  {
+    "id": "illustration-robot",
+    "assetPath": "/assets/illustrations/placeholders/robot.svg",
+    "altText": "ロボット",
+    "category": "home",
+    "fallbackText": "🤖"
+  },
+  {
+    "id": "illustration-koala",
+    "assetPath": "/assets/illustrations/placeholders/koala.svg",
+    "altText": "コアラ",
+    "category": "animals",
+    "fallbackText": "🐨"
+  },
+  {
+    "id": "illustration-panda",
+    "assetPath": "/assets/illustrations/placeholders/panda.svg",
+    "altText": "パンダ",
+    "category": "animals",
+    "fallbackText": "🐼"
+  },
+  {
+    "id": "illustration-sofa",
+    "assetPath": "/assets/illustrations/placeholders/sofa.svg",
+    "altText": "ソファ",
+    "category": "home",
+    "fallbackText": "🛋️"
+  }
+]

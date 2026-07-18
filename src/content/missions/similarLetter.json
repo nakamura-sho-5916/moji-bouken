@@ -1,0 +1,34 @@
+[
+  {
+    "missionId": "mission-similar-letter-choice-001",
+    "missionType": "similar-letter-choice",
+    "targetIds": ["hiragana-a"],
+    "prompt": "「し」は どれかな",
+    "choices": ["し", "つ", "く", "へ"],
+    "correctAnswer": "し",
+    "difficulty": 1,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  },
+  {
+    "missionId": "mission-similar-letter-choice-002",
+    "missionType": "similar-letter-choice",
+    "targetIds": ["katakana-shi"],
+    "prompt": "「シ」は どれかな",
+    "choices": ["シ", "ツ", "ソ", "ン"],
+    "correctAnswer": "シ",
+    "difficulty": 2,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  }
+]

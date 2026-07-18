@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MojiBoukenMission",
+  "type": "object",
+  "required": [
+    "missionId",
+    "missionType",
+    "targetIds",
+    "prompt",
+    "choices",
+    "correctAnswer",
+    "difficulty",
+    "orientation",
+    "reward",
+    "unlockCondition",
+    "active"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "missionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "missionType": {
+      "type": "string",
+      "enum": [
+        "letter-introduction",
+        "letter-search",
+        "similar-letter-choice",
+        "illustration-letter-choice",
+        "illustration-word-choice",
+        "word-completion",
+        "word-ordering",
+        "vertical-reading",
+        "horizontal-reading",
+        "text-search",
+        "boss-mixed"
+      ]
+    },
+    "targetIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "choices": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "correctAnswer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "orientation": {
+      "type": "string",
+      "enum": ["horizontal", "vertical", "adaptive"]
+    },
+    "reward": {
+      "type": "object",
+      "required": ["experience", "gold"],
+      "additionalProperties": false,
+      "properties": {
+        "experience": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "gold": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "unlockCondition": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "active": {
+      "type": "boolean"
+    }
+  }
+}

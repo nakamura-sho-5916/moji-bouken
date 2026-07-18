@@ -1,0 +1,34 @@
+[
+  {
+    "missionId": "mission-illustration-letter-choice-001",
+    "missionType": "illustration-letter-choice",
+    "targetIds": ["hiragana-ne"],
+    "prompt": "ねこ の はじめの もじ",
+    "choices": ["ね", "め", "ぬ", "れ"],
+    "correctAnswer": "ね",
+    "difficulty": 1,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  },
+  {
+    "missionId": "mission-illustration-letter-choice-002",
+    "missionType": "illustration-letter-choice",
+    "targetIds": ["katakana-pa"],
+    "prompt": "パン の はじめの もじ",
+    "choices": ["パ", "バ", "ハ", "カ"],
+    "correctAnswer": "パ",
+    "difficulty": 2,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  }
+]

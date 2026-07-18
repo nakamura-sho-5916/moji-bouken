@@ -12,6 +12,7 @@ import { ResultPage } from '../pages/ResultPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { TitlePage } from '../pages/TitlePage';
 import { WorldPage } from '../pages/WorldPage';
+import { DebugContentPage } from '../pages/DebugContentPage';
 import { DebugDataPage } from '../pages/DebugDataPage';
 
 export function AppRouter() {
@@ -39,7 +40,10 @@ export function AppRouter() {
             <Route element={<ParentPage />} path="/parent" />
             <Route element={<SettingsPage />} path="/settings" />
             {import.meta.env.DEV ? (
-              <Route element={<DebugDataPage />} path="/debug/data" />
+              <>
+                <Route element={<DebugDataPage />} path="/debug/data" />
+                <Route element={<DebugContentPage />} path="/debug/content" />
+              </>
             ) : null}
             <Route element={<Navigate replace to="/" />} path="/index.html" />
             <Route element={<NotFoundPage />} path="*" />

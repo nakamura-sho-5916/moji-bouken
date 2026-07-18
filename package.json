@@ -16,6 +16,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "ajv": "^8.20.0",
     "framer-motion": "^12.42.2",
     "idb": "^8.0.3",
     "react": "^19.2.7",

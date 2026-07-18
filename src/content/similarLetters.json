@@ -1,0 +1,86 @@
+[
+  {
+    "id": "similar-h-a-o",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-a", "hiragana-o"],
+    "difficulty": 1,
+    "note": "丸みと内側の形を見比べる"
+  },
+  {
+    "id": "similar-h-i-ri",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-i", "hiragana-ri"],
+    "difficulty": 1,
+    "note": "縦線の向きを見比べる"
+  },
+  {
+    "id": "similar-h-ki-sa",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-ki", "hiragana-sa"],
+    "difficulty": 2,
+    "note": "線の数と曲がりを見比べる"
+  },
+  {
+    "id": "similar-h-shi-tsu",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-shi", "hiragana-tsu"],
+    "difficulty": 2,
+    "note": "書き出しの向きを見比べる"
+  },
+  {
+    "id": "similar-h-nu-me",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-nu", "hiragana-me"],
+    "difficulty": 2,
+    "note": "結びの有無を見比べる"
+  },
+  {
+    "id": "similar-h-ne-re-wa",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-ne", "hiragana-re", "hiragana-wa"],
+    "difficulty": 3,
+    "note": "右側の形を見比べる"
+  },
+  {
+    "id": "similar-h-ru-ro",
+    "scriptType": "hiragana",
+    "letterIds": ["hiragana-ru", "hiragana-ro"],
+    "difficulty": 1,
+    "note": "下の丸みを見比べる"
+  },
+  {
+    "id": "similar-k-shi-tsu",
+    "scriptType": "katakana",
+    "letterIds": ["katakana-shi", "katakana-tsu"],
+    "difficulty": 2,
+    "note": "点と線の向きを見比べる"
+  },
+  {
+    "id": "similar-k-so-n",
+    "scriptType": "katakana",
+    "letterIds": ["katakana-so", "katakana-n"],
+    "difficulty": 2,
+    "note": "払いの向きを見比べる"
+  },
+  {
+    "id": "similar-k-ku-ke",
+    "scriptType": "katakana",
+    "letterIds": ["katakana-ku", "katakana-ke"],
+    "difficulty": 1,
+    "note": "線の本数を見比べる"
+  },
+  {
+    "id": "similar-k-na-me",
+    "scriptType": "katakana",
+    "letterIds": ["katakana-na", "katakana-me"],
+    "difficulty": 2,
+    "note": "斜め線の形を見比べる"
+  },
+  {
+    "id": "similar-k-chi-te",
+    "scriptType": "katakana",
+    "letterIds": ["katakana-chi", "katakana-te"],
+    "difficulty": 2,
+    "note": "横線と下の形を見比べる"
+  }
+]

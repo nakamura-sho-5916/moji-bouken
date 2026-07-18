@@ -1,0 +1,34 @@
+[
+  {
+    "missionId": "mission-text-search-001",
+    "missionType": "text-search",
+    "targetIds": ["word-cat"],
+    "prompt": "ねこが いすの したに いる。 「ねこ」は どれ",
+    "choices": ["ねこ", "いす", "した"],
+    "correctAnswer": "ねこ",
+    "difficulty": 1,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  },
+  {
+    "missionId": "mission-text-search-002",
+    "missionType": "text-search",
+    "targetIds": ["word-flower"],
+    "prompt": "こうえんで はなを みた。 「はな」は どれ",
+    "choices": ["こうえん", "はな", "みた"],
+    "correctAnswer": "はな",
+    "difficulty": 2,
+    "orientation": "horizontal",
+    "reward": {
+      "experience": 10,
+      "gold": 5
+    },
+    "unlockCondition": null,
+    "active": true
+  }
+]

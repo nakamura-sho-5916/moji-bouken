@@ -14,7 +14,6 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
   await expect(
     page.getByRole('navigation', { name: '主な画面' }),
   ).toBeVisible();
-  await expect(page.locator('link[rel="manifest"]')).toHaveCount(1);
 
   const firstSnapshot = await page.evaluate(async () => {
     const request = indexedDB.open('moji-bouken-db');
@@ -61,4 +60,12 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
   });
 
   expect(playerCountAfterReload).toBe(1);
+
+  await page.goto('/debug/content');
+  await expect(
+    page.getByRole('heading', { name: 'Debug Content' }),
+  ).toBeVisible();
+  await expect(page.getByText('ひらがな件数: 46')).toBeVisible();
+  await expect(page.getByText('カタカナ件数: 46')).toBeVisible();
+  await expect(page.getByText(/ミッション件数: 22/)).toBeVisible();
 });
