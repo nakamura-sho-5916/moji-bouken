@@ -100,10 +100,10 @@ export function ShopPage() {
                         setBusy(true);
                         void purchaseEquipment(equipment.id).then(
                           async (result) => {
-                            setMessage(result.message);
                             setConfirmingId(null);
                             setBusy(false);
                             await reload();
+                            setMessage(result.message);
                           },
                         );
                       }}

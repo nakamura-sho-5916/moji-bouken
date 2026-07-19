@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { loadLearningContent } from '../../../content/loaders/contentLoader';
+import { DEFAULT_PLAYER_ID } from '../../../db/constants';
+import { getAppSettings } from '../../../db/repositories/settingsRepository';
 import { createMissionSession, saveMissionSession } from '../MissionSession';
 import { missionSessionReducer } from '../missionSessionReducer';
 import type { MissionSessionState } from '../types';
@@ -26,7 +28,11 @@ export function useMissionSession() {
   }, [session]);
 
   const start = useCallback(async (seed?: number) => {
-    const nextSession = await createMissionSession({ seed, count: 10 });
+    const settings = await getAppSettings(DEFAULT_PLAYER_ID);
+    const nextSession = await createMissionSession({
+      seed,
+      count: settings?.standardQuestionCount ?? 10,
+    });
     dispatch({ type: 'start', session: nextSession });
     saveMissionSession(nextSession);
   }, []);

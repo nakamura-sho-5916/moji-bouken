@@ -9,9 +9,23 @@ export function createInitialAppSettings(
     playerId: DEFAULT_PLAYER_ID,
     bgmEnabled: true,
     soundEffectsEnabled: true,
+    volume: 70,
     reducedMotion: false,
+    fontSize: 'standard',
+    standardQuestionCount: 10,
     parentPinConfigured: false,
+    parentPinHash: null,
+    parentPinSalt: null,
+    parentPinFailedAttempts: 0,
+    parentPinLockUntil: null,
     updatedAt: now,
+  };
+}
+
+function normalizeSettings(settings: AppSettings): AppSettings {
+  return {
+    ...createInitialAppSettings(settings.updatedAt),
+    ...settings,
   };
 }
 
@@ -23,7 +37,8 @@ export async function saveAppSettings(settings: AppSettings) {
 
 export async function getAppSettings(playerId: string) {
   const db = await openMojiBoukenDb();
-  return db.get('settings', playerId);
+  const settings = await db.get('settings', playerId);
+  return settings ? normalizeSettings(settings) : undefined;
 }
 
 export async function updateAppSettings(

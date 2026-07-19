@@ -117,7 +117,7 @@ export function MissionRunner() {
             ミッション
           </h1>
           <p className="mt-3 text-lg font-black text-[var(--color-text-muted)]">
-            10この もんだいに ちょうせんしよう
+            もじの もんだいに ちょうせんしよう
           </p>
         </div>
         <button

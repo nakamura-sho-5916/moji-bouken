@@ -7,7 +7,7 @@ let dbPromise: Promise<IDBPDatabase<MojiBoukenDbSchema>> | null = null;
 
 export class DatabaseInitializationError extends Error {
   constructor(cause: unknown) {
-    super('IndexedDBの初期化に失敗しました。', { cause });
+    super('IndexedDBの初期化を確認できませんでした。', { cause });
     this.name = 'DatabaseInitializationError';
   }
 }

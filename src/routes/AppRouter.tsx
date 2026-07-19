@@ -8,9 +8,7 @@ import { BattlePage } from '../pages/BattlePage';
 import { HomePage } from '../pages/HomePage';
 import { MissionPage } from '../pages/MissionPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
-import { ParentPage } from '../pages/ParentPage';
 import { ResultPage } from '../pages/ResultPage';
-import { SettingsPage } from '../pages/SettingsPage';
 import { TitlePage } from '../pages/TitlePage';
 
 const WorldPage = lazy(() =>
@@ -36,6 +34,16 @@ const EquipmentPage = lazy(() =>
 const ShopPage = lazy(() =>
   import('../pages/ShopPage').then((module) => ({
     default: module.ShopPage,
+  })),
+);
+const ParentPage = lazy(() =>
+  import('../pages/ParentPage').then((module) => ({
+    default: module.ParentPage,
+  })),
+);
+const SettingsPage = lazy(() =>
+  import('../pages/SettingsPage').then((module) => ({
+    default: module.SettingsPage,
   })),
 );
 const DebugContentPage = lazy(() =>
@@ -71,6 +79,11 @@ const DebugWorldPage = lazy(() =>
 const DebugCollectionPage = lazy(() =>
   import('../pages/DebugCollectionPage').then((module) => ({
     default: module.DebugCollectionPage,
+  })),
+);
+const DebugReleasePage = lazy(() =>
+  import('../pages/DebugReleasePage').then((module) => ({
+    default: module.DebugReleasePage,
   })),
 );
 
@@ -117,6 +130,30 @@ export function AppRouter() {
               <Route element={<EquipmentPage />} path="/equipment" />
               <Route element={<ShopPage />} path="/shop" />
               <Route element={<ParentPage />} path="/parent" />
+              <Route
+                element={<ParentPage initialTab="overview" />}
+                path="/parent/overview"
+              />
+              <Route
+                element={<ParentPage initialTab="weak" />}
+                path="/parent/weak-letters"
+              />
+              <Route
+                element={<ParentPage initialTab="speed" />}
+                path="/parent/speed"
+              />
+              <Route
+                element={<ParentPage initialTab="history" />}
+                path="/parent/history"
+              />
+              <Route
+                element={<ParentPage initialTab="settings" />}
+                path="/parent/settings"
+              />
+              <Route
+                element={<ParentPage initialTab="backup" />}
+                path="/parent/backup"
+              />
               <Route element={<SettingsPage />} path="/settings" />
               {import.meta.env.DEV ? (
                 <>
@@ -136,6 +173,7 @@ export function AppRouter() {
                     element={<DebugCollectionPage />}
                     path="/debug/collection"
                   />
+                  <Route element={<DebugReleasePage />} path="/debug/release" />
                 </>
               ) : null}
               <Route element={<Navigate replace to="/" />} path="/index.html" />

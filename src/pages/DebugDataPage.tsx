@@ -38,7 +38,9 @@ export function DebugDataPage() {
       setData({ ...initialData, objectStores });
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : 'データ確認に失敗しました。',
+        error instanceof Error
+          ? error.message
+          : 'データを確認できませんでした。',
       );
     }
   };

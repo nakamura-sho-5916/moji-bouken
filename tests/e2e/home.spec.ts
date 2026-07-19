@@ -368,3 +368,33 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
   await page.goto('/collection/album');
   await expect(page.getByText('はしが なおった！')).toBeVisible();
 });
+
+test('保護者PIN・概要・バックアップ画面を確認できる', async ({ page }) => {
+  await page.goto('/parent');
+  await expect(page.getByRole('heading', { name: '保護者' })).toBeVisible();
+  await page.getByPlaceholder('4けた').fill('1234');
+  await page.getByPlaceholder('もういちど').fill('1234');
+  await page.getByRole('button', { name: 'せっていする' }).click();
+  await expect(page.getByText('保護者ダッシュボード')).toBeVisible();
+  await expect(page.getByText('総回答数')).toBeVisible();
+
+  await page.getByRole('button', { name: '設定' }).click();
+  await page.getByLabel('標準問題数').selectOption('5');
+  await expect(page.getByText('バージョン 0.1.0')).toBeVisible();
+
+  await page.getByRole('button', { name: 'バックアップ' }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'バックアップ出力' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/moji-bouken-backup/);
+
+  await page.getByRole('button', { name: 'ロック' }).click();
+  await expect(page.getByRole('button', { name: 'ひらく' })).toBeVisible();
+  await page.getByPlaceholder('4けた').fill('1234');
+  await page.getByRole('button', { name: 'ひらく' }).click();
+  await expect(page.getByText('保護者ダッシュボード')).toBeVisible();
+
+  await page.goto('/mission');
+  await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
+  await expect(page.getByText('1 / 5')).toBeVisible();
+});
