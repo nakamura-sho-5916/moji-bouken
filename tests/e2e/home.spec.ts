@@ -68,4 +68,31 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
   await expect(page.getByText('ひらがな件数: 46')).toBeVisible();
   await expect(page.getByText('カタカナ件数: 46')).toBeVisible();
   await expect(page.getByText(/ミッション件数: 22/)).toBeVisible();
+
+  await page.goto('/debug/learning');
+  await expect(
+    page.getByRole('heading', { name: 'Debug Learning' }),
+  ).toBeVisible();
+  page.once('dialog', async (dialog) => {
+    await dialog.accept();
+  });
+  await page.getByRole('button', { name: 'テストデータをリセット' }).click();
+  await expect(page.getByText('attempts: 0')).toBeVisible();
+
+  for (let index = 0; index < 3; index += 1) {
+    await page.getByRole('button', { name: '回答記録を保存' }).click();
+  }
+
+  await expect(page.getByText('weakFlag: true')).toBeVisible();
+  await expect(page.getByText('未完了: 3')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('weakFlag: true')).toBeVisible();
+  await expect(page.getByText('未完了: 3')).toBeVisible();
+  await page.getByRole('button', { name: '出題候補10件を生成' }).click();
+  await expect(page.getByText('候補数: 10')).toBeVisible();
+
+  page.once('dialog', async (dialog) => {
+    await dialog.accept();
+  });
+  await page.getByRole('button', { name: 'テストデータをリセット' }).click();
 });
