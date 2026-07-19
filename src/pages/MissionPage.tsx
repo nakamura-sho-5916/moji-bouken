@@ -1,10 +1,5 @@
-import { PageFrame } from './PageFrame';
+import { MissionRunner } from '../features/missions/MissionRunner';
 
 export function MissionPage() {
-  return (
-    <PageFrame
-      description="ちいさな れんしゅうに ちょうせん"
-      title="ミッション"
-    />
-  );
+  return <MissionRunner />;
 }

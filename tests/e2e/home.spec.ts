@@ -96,3 +96,65 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
   });
   await page.getByRole('button', { name: 'テストデータをリセット' }).click();
 });
+
+test('ミッションを10問進めて結果画面へ移動できる', async ({ page }) => {
+  await page.goto('/mission');
+  await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
+
+  for (let index = 0; index < 10; index += 1) {
+    const session = await page.evaluate(() => {
+      const raw = localStorage.getItem('moji-bouken:mission-session');
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw) as {
+        currentIndex: number;
+        missions: { missionType: string; correctAnswer: string }[];
+      };
+    });
+    expect(session).not.toBeNull();
+    const mission = session?.missions[session.currentIndex];
+    expect(mission).toBeDefined();
+
+    if (
+      mission?.missionType === 'letter-introduction' ||
+      mission?.missionType === 'boss-mixed'
+    ) {
+      const completeButton =
+        mission.missionType === 'letter-introduction' ? 'おぼえた' : 'つぎへ';
+      await page.getByRole('button', { name: completeButton }).click();
+      continue;
+    }
+
+    await page
+      .getByRole('button', { name: mission?.correctAnswer ?? '' })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'こたえる' }).click();
+    await expect(page.getByText('やったね')).toBeVisible();
+    await page.getByRole('button', { name: 'つぎへ' }).click();
+  }
+
+  await expect(page).toHaveURL(/\/result$/);
+  await expect(
+    page.getByRole('heading', { name: 'つづけて できたね' }),
+  ).toBeVisible();
+
+  await page.reload();
+  const missionLogCount = await page.evaluate(async () => {
+    const request = indexedDB.open('moji-bouken-db');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const count = await new Promise<number>((resolve, reject) => {
+      const transaction = db.transaction('learningLogs', 'readonly');
+      const countRequest = transaction.objectStore('learningLogs').count();
+      countRequest.onsuccess = () => resolve(countRequest.result);
+      countRequest.onerror = () => reject(countRequest.error);
+    });
+    db.close();
+    return count;
+  });
+  expect(missionLogCount).toBeGreaterThan(0);
+});
