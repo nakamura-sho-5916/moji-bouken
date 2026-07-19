@@ -103,7 +103,7 @@ export function WorldPage() {
               return;
             }
             navigate(
-              `/battle?areaId=${selectedArea.area.id}&enemyId=${selectedEnemy.id}`,
+              `/mission?areaId=${selectedArea.area.id}&enemyId=${selectedEnemy.id}`,
             );
           }}
         />

@@ -1,4 +1,52 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function answerCurrentMissionCorrectly(page: Page) {
+  const session = await page.evaluate(() => {
+    const raw = localStorage.getItem('moji-bouken:mission-session');
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as {
+      currentIndex: number;
+      missions: { missionType: string; correctAnswer: string }[];
+    };
+  });
+  expect(session).not.toBeNull();
+  const mission = session?.missions[session.currentIndex];
+  expect(mission).toBeDefined();
+
+  if (
+    mission?.missionType === 'letter-introduction' ||
+    mission?.missionType === 'boss-mixed'
+  ) {
+    const completeButton =
+      mission.missionType === 'letter-introduction' ? 'おぼえた' : 'つぎへ';
+    await page.getByRole('button', { name: completeButton }).click();
+    return { answeredChoice: false, hpDecreased: false };
+  }
+
+  const beforeBattle = await page.evaluate(() => {
+    const raw = localStorage.getItem('moji-bouken:active-battle-session');
+    return raw ? (JSON.parse(raw) as { enemyCurrentHp: number }) : null;
+  });
+  await page
+    .getByRole('button', { name: mission?.correctAnswer ?? '' })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'こたえる' }).click();
+  await expect(page.getByText('やったね').first()).toBeVisible();
+  const afterBattle = await page.evaluate(() => {
+    const raw = localStorage.getItem('moji-bouken:active-battle-session');
+    return raw ? (JSON.parse(raw) as { enemyCurrentHp: number }) : null;
+  });
+  expect(beforeBattle).not.toBeNull();
+  expect(afterBattle).not.toBeNull();
+  const hpDecreased =
+    (beforeBattle?.enemyCurrentHp ?? 0) > 0 &&
+    (afterBattle?.enemyCurrentHp ?? 0) < (beforeBattle?.enemyCurrentHp ?? 0);
+  await page.getByRole('button', { name: 'つぎへ' }).click();
+  return { answeredChoice: true, hpDecreased };
+}
 
 test('トップ画面に仮タイトルが表示される', async ({ page }) => {
   await page.goto('/');
@@ -103,40 +151,17 @@ test('ミッションを10問進めて結果画面へ移動できる', async ({ 
   await page.waitForFunction(() =>
     Boolean(localStorage.getItem('moji-bouken:mission-session')),
   );
+  await expect(page.getByText('てきが あらわれた')).toBeVisible();
 
+  let confirmedBattleAnswer = false;
   for (let index = 0; index < 10; index += 1) {
-    const session = await page.evaluate(() => {
-      const raw = localStorage.getItem('moji-bouken:mission-session');
-      if (!raw) {
-        return null;
-      }
-      return JSON.parse(raw) as {
-        currentIndex: number;
-        missions: { missionType: string; correctAnswer: string }[];
-      };
-    });
-    expect(session).not.toBeNull();
-    const mission = session?.missions[session.currentIndex];
-    expect(mission).toBeDefined();
-
-    if (
-      mission?.missionType === 'letter-introduction' ||
-      mission?.missionType === 'boss-mixed'
-    ) {
-      const completeButton =
-        mission.missionType === 'letter-introduction' ? 'おぼえた' : 'つぎへ';
-      await page.getByRole('button', { name: completeButton }).click();
-      continue;
+    const result = await answerCurrentMissionCorrectly(page);
+    confirmedBattleAnswer ||= result.answeredChoice && result.hpDecreased;
+    if (index === 0 && result.answeredChoice) {
+      await expect(page.getByText('2 / 10')).toBeVisible();
     }
-
-    await page
-      .getByRole('button', { name: mission?.correctAnswer ?? '' })
-      .first()
-      .click();
-    await page.getByRole('button', { name: 'こたえる' }).click();
-    await expect(page.getByText('やったね')).toBeVisible();
-    await page.getByRole('button', { name: 'つぎへ' }).click();
   }
+  expect(confirmedBattleAnswer).toBe(true);
 
   await expect(page).toHaveURL(/\/result$/);
   await expect(
@@ -162,66 +187,13 @@ test('ミッションを10問進めて結果画面へ移動できる', async ({ 
   expect(missionLogCount).toBeGreaterThan(0);
 });
 
-test('バトルで敵を倒して報酬を確認できる', async ({ page }) => {
+test('本番バトル画面にデバッグ回答ボタンが表示されない', async ({ page }) => {
   await page.goto('/battle');
-  await expect(page.getByText('ことばの ちからで すすもう')).toBeVisible();
-  await page.getByRole('button', { name: 'バトルを はじめる' }).click();
-  await expect(page.getByText('てきが あらわれた')).toBeVisible();
-
-  for (let index = 0; index < 5; index += 1) {
-    await page.getByRole('button', { name: 'せいかい' }).click();
-  }
-
   await expect(
-    page.getByRole('button', { name: 'ひっさつわざ' }),
-  ).toBeEnabled();
-  await page.getByRole('button', { name: 'ひっさつわざ' }).click();
-
-  for (let index = 0; index < 5; index += 1) {
-    if (await page.getByRole('button', { name: 'けっかへ' }).isVisible()) {
-      break;
-    }
-    const correctButton = page.getByRole('button', { name: 'せいかい' });
-    if (!(await correctButton.isEnabled())) {
-      break;
-    }
-    await correctButton.click();
-  }
-
-  await expect(page.getByRole('button', { name: 'けっかへ' })).toBeVisible();
-  await page.getByRole('button', { name: 'けっかへ' }).click();
-  await expect(page).toHaveURL(/\/result$/);
-  await expect(page.getByText('たからばこ')).toBeVisible();
-  await expect(page.getByText('ゴールド')).toBeVisible();
-
-  await page.reload();
-  const saved = await page.evaluate(async () => {
-    const request = indexedDB.open('moji-bouken-db');
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    const readOne = <T>(storeName: string, key: string) =>
-      new Promise<T>((resolve, reject) => {
-        const transaction = db.transaction(storeName, 'readonly');
-        const getRequest = transaction.objectStore(storeName).get(key);
-        getRequest.onsuccess = () => resolve(getRequest.result as T);
-        getRequest.onerror = () => reject(getRequest.error);
-      });
-    const player = await readOne<{ experience: number }>(
-      'players',
-      'default-player',
-    );
-    const inventory = await readOne<{ gold: number }>(
-      'inventories',
-      'default-player',
-    );
-    db.close();
-    return { player, inventory };
-  });
-
-  expect(saved.player.experience).toBeGreaterThan(0);
-  expect(saved.inventory.gold).toBeGreaterThan(0);
+    page.getByText('バトルは ミッションと いっしょに すすむよ'),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'せいかい' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'ちがう' })).toHaveCount(0);
 });
 
 test('世界マップで復興とエリア解放を確認できる', async ({ page }) => {
@@ -238,7 +210,7 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
   ).toBeVisible();
 
   await page.getByRole('button', { name: 'ここへ いく' }).click();
-  await expect(page).toHaveURL(/\/battle\?areaId=starting-village/);
+  await expect(page).toHaveURL(/\/mission\?areaId=starting-village/);
 
   await page.goto('/debug/world');
   await expect(
@@ -325,8 +297,10 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
   }
 
   await page.goto('/debug/world');
-  for (let index = 0; index < 2; index += 1) {
+  for (let index = 0; index < 3; index += 1) {
     await page.getByRole('button', { name: '大きく復興' }).click();
+    await expect(page.getByText(/せかいが げんきになりました/)).toBeVisible();
+    await page.waitForTimeout(20);
   }
 
   await page.goto('/debug/collection');
@@ -339,6 +313,7 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
   await page.getByRole('button', { name: '文字・単語発見' }).click();
   await page.getByRole('button', { name: '敵遭遇記録' }).click();
   await page.getByRole('button', { name: 'アルバム追加' }).click();
+  await expect(page.getByText('アルバムを追加しました')).toBeVisible();
 
   await page.goto('/companions');
   await page.getByRole('button', { name: /うさぎ/ }).click();

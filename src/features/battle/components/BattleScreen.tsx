@@ -1,95 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { DEFAULT_PLAYER_ID } from '../../../db/constants';
-import { initializeAppData } from '../../../db/initializeAppData';
-import { getPlayerById } from '../../../db/repositories/playerRepository';
-import { RewardEngine } from '../../rewards';
-import { recordEnemyEncounter } from '../../collection';
-import { BattleEngine } from '../BattleEngine';
-import { createBattleSession } from '../createBattleSession';
-import { getDefaultEnemy, getEnemy } from '../enemies';
-import type { BattleSession } from '../types';
-import { ComboDisplay } from './ComboDisplay';
-import { DamageEffect } from './DamageEffect';
-import { EnemyDisplay } from './EnemyDisplay';
-import { SpecialAttackButton } from './SpecialAttackButton';
-import { SpecialGauge } from './SpecialGauge';
-import { VictoryEffect } from './VictoryEffect';
+import { Link } from 'react-router-dom';
+import { loadActiveBattleSession } from '../BattleSessionStore';
+import { BattleStatusPanel } from './BattleStatusPanel';
 
 export function BattleScreen() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const queryEnemyId = searchParams.get('enemyId');
-  const [battle, setBattle] = useState<BattleSession | null>(null);
-  const [lastDamage, setLastDamage] = useState(0);
-  const [message, setMessage] = useState('バトルを はじめよう');
-  const enemy = battle
-    ? (getEnemy(battle.enemyId) ?? getDefaultEnemy(false))
-    : getDefaultEnemy(false);
-
-  const startBattle = async (boss = false) => {
-    const data = await initializeAppData();
-    const player = (await getPlayerById(DEFAULT_PLAYER_ID)) ?? data.player;
-    const selectedEnemy = queryEnemyId ? getEnemy(queryEnemyId) : null;
-    const nextBattle = createBattleSession({
-      sessionId: `battle-${boss ? 'boss' : 'normal'}-${Date.now()}`,
-      playerLevel: player.level,
-      enemyId: boss ? undefined : selectedEnemy?.id,
-      boss,
-    });
-    setBattle(nextBattle);
-    setLastDamage(0);
-    setMessage(nextBattle.lastMessage);
-  };
-
-  const finishIfVictory = async (nextBattle: BattleSession) => {
-    if (nextBattle.status !== 'victory') {
-      return;
-    }
-    await RewardEngine.grantBattleRewards({
-      battle: nextBattle,
-      missionResults: [],
-    });
-    await recordEnemyEncounter({
-      enemyId: nextBattle.enemyId,
-      source: enemy.type === 'boss' ? 'boss' : 'normal-victory',
-    });
-    setBattle({ ...nextBattle, status: 'completed' });
-  };
-
-  const answer = async (correct: boolean) => {
-    if (!battle) {
-      return;
-    }
-    const result = BattleEngine.applyAnswer({ battle, correct });
-    setBattle(
-      result.battle.status === 'feedback'
-        ? { ...result.battle, status: 'active' }
-        : result.battle,
-    );
-    setLastDamage(result.damage);
-    setMessage(result.battle.lastMessage);
-    await finishIfVictory(result.battle);
-  };
-
-  const handleSpecialAttack = async () => {
-    if (!battle) {
-      return;
-    }
-    const result = BattleEngine.applySpecialAttack(battle);
-    setBattle(
-      result.battle.status === 'feedback'
-        ? { ...result.battle, status: 'active' }
-        : result.battle,
-    );
-    setLastDamage(result.damage);
-    setMessage(result.battle.lastMessage);
-    await finishIfVictory(result.battle);
-  };
-
-  const goResult = () => {
-    navigate('/result');
-  };
+  const [battle] = useState(() => loadActiveBattleSession());
 
   return (
     <section className="grid gap-4">
@@ -100,87 +15,26 @@ export function BattleScreen() {
         >
           もどる
         </Link>
-        <button
+        <Link
           className="rounded-[var(--radius-medium)] bg-[var(--color-secondary)] px-4 py-3 font-black text-white"
-          onClick={() => {
-            void startBattle(false);
-          }}
-          type="button"
+          to="/mission"
         >
-          バトルを はじめる
-        </button>
+          ミッションへ
+        </Link>
       </div>
       {battle ? (
-        <>
-          <EnemyDisplay enemy={enemy} currentHp={battle.enemyCurrentHp} />
-          <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-4">
-            <p className="text-lg font-black">{message}</p>
-            <p className="mt-2 text-sm font-bold text-[var(--color-text-muted)]">
-              もじを えらんで てきを てらそう
-            </p>
-          </div>
-          <DamageEffect damage={lastDamage} />
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              className="min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-4 text-xl font-black text-white"
-              disabled={battle.status === 'completed'}
-              onClick={() => {
-                void answer(true);
-              }}
-              type="button"
-            >
-              せいかい
-            </button>
-            <button
-              className="min-h-14 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-4 text-xl font-black"
-              disabled={battle.status === 'completed'}
-              onClick={() => {
-                void answer(false);
-              }}
-              type="button"
-            >
-              ちがう
-            </button>
-          </div>
-          <ComboDisplay comboCount={battle.comboCount} />
-          <SpecialGauge
-            max={battle.specialGaugeMax}
-            value={battle.specialGauge}
-          />
-          <SpecialAttackButton
-            onUse={() => {
-              void handleSpecialAttack();
-            }}
-            ready={
-              battle.specialGauge >= battle.specialGaugeMax &&
-              battle.status !== 'completed'
-            }
-          />
-          <VictoryEffect visible={battle.status === 'completed'} />
-          {battle.status === 'completed' ? (
-            <button
-              className="min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-success)] px-5 text-xl font-black text-white"
-              onClick={goResult}
-              type="button"
-            >
-              けっかへ
-            </button>
-          ) : null}
-        </>
+        <BattleStatusPanel battle={battle} />
       ) : (
         <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5 text-center">
           <p className="text-2xl font-black text-[var(--color-primary-strong)]">
-            ことばの ちからで すすもう
+            バトルは ミッションと いっしょに すすむよ
           </p>
-          <button
-            className="mt-4 min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-5 text-xl font-black text-white"
-            onClick={() => {
-              void startBattle(true);
-            }}
-            type="button"
+          <Link
+            className="mt-4 flex min-h-14 items-center justify-center rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-5 text-xl font-black text-white"
+            to="/mission"
           >
-            ボスに ちょうせん
-          </button>
+            ミッションを はじめる
+          </Link>
         </div>
       )}
     </section>

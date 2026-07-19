@@ -35,6 +35,7 @@ export function useMissionSession() {
     });
     dispatch({ type: 'start', session: nextSession });
     saveMissionSession(nextSession);
+    return nextSession;
   }, []);
 
   return {

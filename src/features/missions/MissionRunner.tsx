@@ -1,5 +1,16 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getPlayerById } from '../../db/repositories/playerRepository';
+import {
+  BattleEngine,
+  createBattleSession,
+  saveActiveBattleSession,
+  type BattleSession,
+} from '../battle';
+import { BattleStatusPanel } from '../battle/components/BattleStatusPanel';
+import { recordEnemyEncounter } from '../collection';
+import { RewardEngine } from '../rewards';
 import { MissionFeedback } from './components/MissionFeedback';
 import { MissionHeader } from './components/MissionHeader';
 import { MissionProgress } from './components/MissionProgress';
@@ -29,13 +40,32 @@ function advanceSession(
 
 export function MissionRunner() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { content, session, dispatch, start } = useMissionSession();
   const { restart, getElapsedMs } = useMissionTimer();
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [pendingResult, setPendingResult] = useState<MissionResult | null>(
     null,
   );
+  const [pendingBattle, setPendingBattle] = useState<BattleSession | null>(
+    null,
+  );
+  const [battle, setBattle] = useState<BattleSession | null>(null);
+  const [lastDamage, setLastDamage] = useState(0);
   const [practiceCorrect, setPracticeCorrect] = useState(false);
+
+  const createMissionBattle = async (sessionId: string) => {
+    const player = await getPlayerById(DEFAULT_PLAYER_ID);
+    const nextBattle = createBattleSession({
+      sessionId,
+      playerLevel: player?.level ?? 1,
+      enemyId: searchParams.get('enemyId') ?? undefined,
+    });
+    setBattle(nextBattle);
+    setLastDamage(0);
+    saveActiveBattleSession(nextBattle);
+    return nextBattle;
+  };
 
   const mission = session.missions[session.currentIndex];
   const viewModel = useMemo(() => {
@@ -53,6 +83,7 @@ export function MissionRunner() {
     content,
     session: session.status === 'active' ? session : null,
     onSaved: (result) => {
+      setPendingBattle(applyBattleAnswer(result.correct));
       setPendingResult(result);
       setPracticeCorrect(result.correct);
     },
@@ -61,7 +92,39 @@ export function MissionRunner() {
     },
   });
 
-  const finishCurrentMission = (result: MissionResult) => {
+  const applyBattleAnswer = (correct: boolean) => {
+    if (!battle) {
+      return null;
+    }
+    const answerResult = BattleEngine.applyAnswer({ battle, correct });
+    const nextBattle =
+      answerResult.battle.status === 'feedback'
+        ? { ...answerResult.battle, status: 'active' as const }
+        : answerResult.battle;
+    setBattle(nextBattle);
+    setLastDamage(answerResult.damage);
+    saveActiveBattleSession(nextBattle);
+    return nextBattle;
+  };
+
+  const handleSpecialAttack = () => {
+    if (!battle) {
+      return;
+    }
+    const specialResult = BattleEngine.applySpecialAttack(battle);
+    const nextBattle =
+      specialResult.battle.status === 'feedback'
+        ? { ...specialResult.battle, status: 'active' as const }
+        : specialResult.battle;
+    setBattle(nextBattle);
+    setLastDamage(specialResult.damage);
+    saveActiveBattleSession(nextBattle);
+  };
+
+  const finishCurrentMission = async (
+    result: MissionResult,
+    battleForReward: BattleSession | null,
+  ) => {
     const nextSession = advanceSession(session, result);
     dispatch({ type: 'start', session: nextSession });
     saveMissionSession(nextSession);
@@ -69,8 +132,24 @@ export function MissionRunner() {
     restart();
     setSelectedValue(null);
     setPendingResult(null);
+    setPendingBattle(null);
     setPracticeCorrect(false);
     if (nextSession.status === 'completed') {
+      const completedBattle = battleForReward ?? battle;
+      if (completedBattle) {
+        await RewardEngine.grantBattleRewards({
+          battle: completedBattle,
+          missionResults: nextSession.results,
+        });
+        await recordEnemyEncounter({
+          enemyId: completedBattle.enemyId,
+          source:
+            completedBattle.enemyCurrentHp <= 0
+              ? 'normal-victory'
+              : 'encounter',
+        });
+        saveActiveBattleSession({ ...completedBattle, status: 'completed' });
+      }
       navigate('/result');
     }
   };
@@ -91,7 +170,7 @@ export function MissionRunner() {
       firstAttemptRecorded: false,
       learningResult: null,
     };
-    finishCurrentMission(result);
+    void finishCurrentMission(result, battle);
   };
 
   const submitSelectedAnswer = async () => {
@@ -103,7 +182,7 @@ export function MissionRunner() {
 
   const continueAfterCorrect = () => {
     if (pendingResult) {
-      finishCurrentMission(pendingResult);
+      void finishCurrentMission(pendingResult, pendingBattle);
       return;
     }
     completePracticeMission();
@@ -124,7 +203,9 @@ export function MissionRunner() {
           className="min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-5 text-xl font-black text-white"
           onClick={() => {
             restart();
-            void start(5916);
+            void start(5916).then((nextSession) => {
+              void createMissionBattle(nextSession.sessionId);
+            });
           }}
           type="button"
         >
@@ -178,6 +259,13 @@ export function MissionRunner() {
         currentIndex={session.currentIndex}
         totalCount={session.missions.length}
       />
+      {battle ? (
+        <BattleStatusPanel
+          battle={battle}
+          lastDamage={lastDamage}
+          onUseSpecial={handleSpecialAttack}
+        />
+      ) : null}
       <MissionRegistry
         disabled={answerSubmission.saving || answeredCorrect}
         onComplete={completePracticeMission}
