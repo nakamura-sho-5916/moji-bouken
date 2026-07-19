@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import { loadLastMissionResult } from '../features/missions/MissionSession';
+import { RewardSummary } from '../features/rewards/components/RewardSummary';
+import { LevelUpEffect } from '../features/rewards/components/LevelUpEffect';
+import { RewardEngine } from '../features/rewards';
 
 export function ResultPage() {
   const result = loadLastMissionResult();
+  const rewardSummary = RewardEngine.loadLastRewardSummary();
   const completedCount = result?.results.length ?? 0;
 
   return (
@@ -35,6 +39,16 @@ export function ResultPage() {
             />
           ))}
         </div>
+      </div>
+      <LevelUpEffect visible={Boolean(rewardSummary?.levelUp)} />
+      <RewardSummary summary={rewardSummary} />
+      <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
+        <h2 className="text-xl font-black text-[var(--color-primary-strong)]">
+          あたらしい せかい
+        </h2>
+        <p className="mt-2 font-bold text-[var(--color-text-muted)]">
+          まちに あかりが ふえるよ
+        </p>
       </div>
       <div className="mt-auto grid gap-3">
         <Link

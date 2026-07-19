@@ -1,0 +1,131 @@
+import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { initializeAppData } from '../../db/initializeAppData';
+import {
+  changeGold,
+  getInventory,
+} from '../../db/repositories/inventoryRepository';
+import {
+  getPlayerById,
+  updatePlayer,
+} from '../../db/repositories/playerRepository';
+import {
+  BATTLE_RESULT_STORAGE_KEY,
+  REWARDED_BATTLE_IDS_STORAGE_KEY,
+} from '../battle/constants';
+import type { BattleSession } from '../battle/types';
+import type { MissionResult } from '../missions';
+import { calculateExperience } from './calculateExperience';
+import { calculateGold } from './calculateGold';
+import { calculateLevel } from './calculateLevel';
+import type { RewardReason, RewardSummary } from './types';
+
+function loadRewardedIds() {
+  const raw = localStorage.getItem(REWARDED_BATTLE_IDS_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+  try {
+    return JSON.parse(raw) as string[];
+  } catch {
+    localStorage.removeItem(REWARDED_BATTLE_IDS_STORAGE_KEY);
+    return [];
+  }
+}
+
+function saveRewardedId(battleId: string) {
+  const ids = loadRewardedIds();
+  if (!ids.includes(battleId)) {
+    localStorage.setItem(
+      REWARDED_BATTLE_IDS_STORAGE_KEY,
+      JSON.stringify([...ids, battleId]),
+    );
+  }
+}
+
+export function createRewardReasons(input: {
+  battle: BattleSession;
+  missionResults: MissionResult[];
+}): RewardReason[] {
+  const reasons: RewardReason[] = ['session-complete'];
+  for (const result of input.missionResults) {
+    if (result.correct) {
+      reasons.push('normal-correct');
+    }
+    for (const reason of result.learningResult?.rewardBonusReasons ?? []) {
+      reasons.push(reason);
+    }
+  }
+  if (input.battle.enemyCurrentHp <= 0) {
+    reasons.push('boss-defeated');
+  }
+  return [...new Set(reasons)];
+}
+
+export const RewardEngine = {
+  async grantBattleRewards(input: {
+    battle: BattleSession;
+    missionResults: MissionResult[];
+  }): Promise<RewardSummary> {
+    await initializeAppData();
+    const rewardedIds = loadRewardedIds();
+    const player = await getPlayerById(DEFAULT_PLAYER_ID);
+    const inventory = await getInventory(DEFAULT_PLAYER_ID);
+    const reasons = createRewardReasons(input);
+    const baseSummary = {
+      battleId: input.battle.battleId,
+      experienceGained: 0,
+      goldGained: 0,
+      levelBefore: player?.level ?? 1,
+      levelAfter: player?.level ?? 1,
+      levelUp: false,
+      reasons,
+      player: player ?? null,
+      inventory: inventory ?? null,
+    };
+
+    if (rewardedIds.includes(input.battle.battleId) || !player || !inventory) {
+      const summary: RewardSummary = { ...baseSummary, alreadyRewarded: true };
+      localStorage.setItem(BATTLE_RESULT_STORAGE_KEY, JSON.stringify(summary));
+      return summary;
+    }
+
+    const experienceGained =
+      calculateExperience(reasons) + (input.battle.enemyCurrentHp <= 0 ? 0 : 0);
+    const goldGained = Math.max(0, calculateGold(reasons));
+    const nextExperience = player.experience + experienceGained;
+    const nextLevel = calculateLevel(nextExperience);
+    const updatedPlayer = await updatePlayer(DEFAULT_PLAYER_ID, {
+      experience: nextExperience,
+      level: nextLevel,
+      gold: player.gold + goldGained,
+    });
+    const updatedInventory = await changeGold(DEFAULT_PLAYER_ID, goldGained);
+    saveRewardedId(input.battle.battleId);
+
+    const summary: RewardSummary = {
+      ...baseSummary,
+      experienceGained,
+      goldGained,
+      levelAfter: nextLevel,
+      levelUp: nextLevel > player.level,
+      alreadyRewarded: false,
+      player: updatedPlayer ?? player,
+      inventory: updatedInventory ?? inventory,
+    };
+    localStorage.setItem(BATTLE_RESULT_STORAGE_KEY, JSON.stringify(summary));
+    return summary;
+  },
+
+  loadLastRewardSummary() {
+    const raw = localStorage.getItem(BATTLE_RESULT_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw) as RewardSummary;
+    } catch {
+      localStorage.removeItem(BATTLE_RESULT_STORAGE_KEY);
+      return null;
+    }
+  },
+};

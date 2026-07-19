@@ -1,5 +1,5 @@
-import { PageFrame } from './PageFrame';
+import { BattleScreen } from '../features/battle/components/BattleScreen';
 
 export function BattlePage() {
-  return <PageFrame description="もじの ちからで すすもう" title="バトル" />;
+  return <BattleScreen />;
 }

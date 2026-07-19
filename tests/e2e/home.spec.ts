@@ -100,6 +100,9 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
 test('ミッションを10問進めて結果画面へ移動できる', async ({ page }) => {
   await page.goto('/mission');
   await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
+  await page.waitForFunction(() =>
+    Boolean(localStorage.getItem('moji-bouken:mission-session')),
+  );
 
   for (let index = 0; index < 10; index += 1) {
     const session = await page.evaluate(() => {
@@ -157,4 +160,66 @@ test('ミッションを10問進めて結果画面へ移動できる', async ({ 
     return count;
   });
   expect(missionLogCount).toBeGreaterThan(0);
+});
+
+test('バトルで敵を倒して報酬を確認できる', async ({ page }) => {
+  await page.goto('/battle');
+  await expect(page.getByText('ことばの ちからで すすもう')).toBeVisible();
+  await page.getByRole('button', { name: 'バトルを はじめる' }).click();
+  await expect(page.getByText('てきが あらわれた')).toBeVisible();
+
+  for (let index = 0; index < 5; index += 1) {
+    await page.getByRole('button', { name: 'せいかい' }).click();
+  }
+
+  await expect(
+    page.getByRole('button', { name: 'ひっさつわざ' }),
+  ).toBeEnabled();
+  await page.getByRole('button', { name: 'ひっさつわざ' }).click();
+
+  for (let index = 0; index < 5; index += 1) {
+    if (await page.getByRole('button', { name: 'けっかへ' }).isVisible()) {
+      break;
+    }
+    const correctButton = page.getByRole('button', { name: 'せいかい' });
+    if (!(await correctButton.isEnabled())) {
+      break;
+    }
+    await correctButton.click();
+  }
+
+  await expect(page.getByRole('button', { name: 'けっかへ' })).toBeVisible();
+  await page.getByRole('button', { name: 'けっかへ' }).click();
+  await expect(page).toHaveURL(/\/result$/);
+  await expect(page.getByText('たからばこ')).toBeVisible();
+  await expect(page.getByText('ゴールド')).toBeVisible();
+
+  await page.reload();
+  const saved = await page.evaluate(async () => {
+    const request = indexedDB.open('moji-bouken-db');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const readOne = <T>(storeName: string, key: string) =>
+      new Promise<T>((resolve, reject) => {
+        const transaction = db.transaction(storeName, 'readonly');
+        const getRequest = transaction.objectStore(storeName).get(key);
+        getRequest.onsuccess = () => resolve(getRequest.result as T);
+        getRequest.onerror = () => reject(getRequest.error);
+      });
+    const player = await readOne<{ experience: number }>(
+      'players',
+      'default-player',
+    );
+    const inventory = await readOne<{ gold: number }>(
+      'inventories',
+      'default-player',
+    );
+    db.close();
+    return { player, inventory };
+  });
+
+  expect(saved.player.experience).toBeGreaterThan(0);
+  expect(saved.inventory.gold).toBeGreaterThan(0);
 });

@@ -1,0 +1,13 @@
+export const EXP_NORMAL_CORRECT = 10;
+export const EXP_SESSION_COMPLETE = 20;
+export const EXP_SPEED_IMPROVEMENT = 5;
+export const EXP_WEAK_PROGRESS = 10;
+export const EXP_WEAK_MASTERED = 30;
+export const EXP_FINAL_REVIEW = 20;
+export const GOLD_NORMAL_CORRECT = 2;
+export const GOLD_SESSION_COMPLETE = 10;
+export const GOLD_SPEED_IMPROVEMENT = 2;
+export const GOLD_WEAK_PROGRESS = 5;
+export const GOLD_WEAK_MASTERED = 20;
+export const MAX_LEVEL = 100;
+export const LEVEL_ATTACK_STEP = 2;

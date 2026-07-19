@@ -16,6 +16,7 @@ import { DebugContentPage } from '../pages/DebugContentPage';
 import { DebugDataPage } from '../pages/DebugDataPage';
 import { DebugLearningPage } from '../pages/DebugLearningPage';
 import { DebugMissionsPage } from '../pages/DebugMissionsPage';
+import { DebugBattlePage } from '../pages/DebugBattlePage';
 
 export function AppRouter() {
   const location = useLocation();
@@ -47,6 +48,7 @@ export function AppRouter() {
                 <Route element={<DebugContentPage />} path="/debug/content" />
                 <Route element={<DebugLearningPage />} path="/debug/learning" />
                 <Route element={<DebugMissionsPage />} path="/debug/missions" />
+                <Route element={<DebugBattlePage />} path="/debug/battle" />
               </>
             ) : null}
             <Route element={<Navigate replace to="/" />} path="/index.html" />
