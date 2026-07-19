@@ -11,6 +11,11 @@ export type RewardReason =
 
 export type RewardSummary = {
   battleId: string;
+  areaId: string;
+  bossDefeated: boolean;
+  bonusReasons: RewardReason[];
+  experienceEarned: number;
+  goldEarned: number;
   experienceGained: number;
   goldGained: number;
   levelBefore: number;

@@ -12,6 +12,7 @@ import {
   BATTLE_RESULT_STORAGE_KEY,
   REWARDED_BATTLE_IDS_STORAGE_KEY,
 } from '../battle/constants';
+import { getEnemy } from '../battle/enemies';
 import type { BattleSession } from '../battle/types';
 import type { MissionResult } from '../missions';
 import { calculateExperience } from './calculateExperience';
@@ -47,6 +48,7 @@ export function createRewardReasons(input: {
   missionResults: MissionResult[];
 }): RewardReason[] {
   const reasons: RewardReason[] = ['session-complete'];
+  const enemy = getEnemy(input.battle.enemyId);
   for (const result of input.missionResults) {
     if (result.correct) {
       reasons.push('normal-correct');
@@ -55,7 +57,7 @@ export function createRewardReasons(input: {
       reasons.push(reason);
     }
   }
-  if (input.battle.enemyCurrentHp <= 0) {
+  if (input.battle.enemyCurrentHp <= 0 && enemy?.type === 'boss') {
     reasons.push('boss-defeated');
   }
   return [...new Set(reasons)];
@@ -71,8 +73,16 @@ export const RewardEngine = {
     const player = await getPlayerById(DEFAULT_PLAYER_ID);
     const inventory = await getInventory(DEFAULT_PLAYER_ID);
     const reasons = createRewardReasons(input);
+    const enemy = getEnemy(input.battle.enemyId);
+    const bossDefeated =
+      input.battle.enemyCurrentHp <= 0 && enemy?.type === 'boss';
     const baseSummary = {
       battleId: input.battle.battleId,
+      areaId: enemy?.areaId ?? 'starting-village',
+      bossDefeated,
+      bonusReasons: reasons,
+      experienceEarned: 0,
+      goldEarned: 0,
       experienceGained: 0,
       goldGained: 0,
       levelBefore: player?.level ?? 1,
@@ -105,7 +115,9 @@ export const RewardEngine = {
     const summary: RewardSummary = {
       ...baseSummary,
       experienceGained,
+      experienceEarned: experienceGained,
       goldGained,
+      goldEarned: goldGained,
       levelAfter: nextLevel,
       levelUp: nextLevel > player.level,
       alreadyRewarded: false,

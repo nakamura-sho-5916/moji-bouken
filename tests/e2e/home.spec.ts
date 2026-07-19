@@ -223,3 +223,66 @@ test('バトルで敵を倒して報酬を確認できる', async ({ page }) => 
   expect(saved.player.experience).toBeGreaterThan(0);
   expect(saved.inventory.gold).toBeGreaterThan(0);
 });
+
+test('世界マップで復興とエリア解放を確認できる', async ({ page }) => {
+  await page.goto('/world');
+  await expect(
+    page.getByRole('heading', { name: 'もじの せかい' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /はじまりの まち/ }),
+  ).toBeVisible();
+  await expect(page.getByText('ことばの もり')).toBeVisible();
+  await expect(
+    page.getByText('まえの ばしょを げんきにしよう').first(),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'ここへ いく' }).click();
+  await expect(page).toHaveURL(/\/battle\?areaId=starting-village/);
+
+  await page.goto('/debug/world');
+  await expect(
+    page.getByRole('heading', { name: '世界復興デバッグ' }),
+  ).toBeVisible();
+
+  for (let index = 0; index < 2; index += 1) {
+    await page.getByRole('button', { name: '大きく復興' }).click();
+    await expect(page.getByText(/せかいが げんきになりました/)).toBeVisible();
+  }
+
+  await page.goto('/world');
+  await expect(page.getByText('はしが なおったよ')).toBeVisible();
+  await expect(page.getByText('みどりが ふえたよ')).toBeVisible();
+  await expect(page.getByText('おみせが あいたよ')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /ことばの もり/ }),
+  ).toBeVisible();
+
+  const worldState = await page.evaluate(async () => {
+    const request = indexedDB.open('moji-bouken-db');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const readAll = <T>(storeName: string) =>
+      new Promise<T[]>((resolve, reject) => {
+        const transaction = db.transaction(storeName, 'readonly');
+        const getAllRequest = transaction.objectStore(storeName).getAll();
+        getAllRequest.onsuccess = () => resolve(getAllRequest.result as T[]);
+        getAllRequest.onerror = () => reject(getAllRequest.error);
+      });
+
+    const progress = await readAll<{
+      areaId: string;
+      recoveryStage: number;
+      unlocked: boolean;
+    }>('worldProgress');
+    db.close();
+    return progress;
+  });
+  const village = worldState.find((area) => area.areaId === 'starting-village');
+  const forest = worldState.find((area) => area.areaId === 'word-forest');
+
+  expect(village?.recoveryStage).toBeGreaterThanOrEqual(3);
+  expect(forest?.unlocked).toBe(true);
+});

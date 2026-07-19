@@ -1,16 +1,54 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { loadLastMissionResult } from '../features/missions/MissionSession';
 import { RewardSummary } from '../features/rewards/components/RewardSummary';
 import { LevelUpEffect } from '../features/rewards/components/LevelUpEffect';
 import { RewardEngine } from '../features/rewards';
+import { RecoveryEventModal } from '../features/world/components/RecoveryEventModal';
+import { WorldRecoveryEngine } from '../features/world';
+import type { RecoveryEvent } from '../features/world';
 
 export function ResultPage() {
+  const navigate = useNavigate();
   const result = loadLastMissionResult();
-  const rewardSummary = RewardEngine.loadLastRewardSummary();
+  const [rewardSummary] = useState(() => RewardEngine.loadLastRewardSummary());
   const completedCount = result?.results.length ?? 0;
+  const [recoveryEvents, setRecoveryEvents] = useState<RecoveryEvent[]>([]);
+
+  useEffect(() => {
+    if (!rewardSummary) {
+      return;
+    }
+
+    let active = true;
+    void WorldRecoveryEngine.applyRecovery({
+      battleId: rewardSummary.battleId,
+      areaId: rewardSummary.areaId,
+      bossDefeated: rewardSummary.bossDefeated,
+      bonusReasons: rewardSummary.bonusReasons,
+      experienceEarned: rewardSummary.experienceEarned,
+      goldEarned: rewardSummary.goldEarned,
+    }).then((recoveryResult) => {
+      if (!active || !recoveryResult) {
+        return;
+      }
+      setRecoveryEvents(recoveryResult.triggeredEvents);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [rewardSummary]);
 
   return (
     <section className="grid min-h-full gap-5">
+      <RecoveryEventModal
+        events={recoveryEvents}
+        onClose={() => {
+          setRecoveryEvents([]);
+          navigate('/world');
+        }}
+      />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-6 text-center shadow-sm">
         <p className="text-6xl" aria-hidden="true">
           ✨
@@ -59,9 +97,9 @@ export function ResultPage() {
         </Link>
         <Link
           className="flex min-h-14 items-center justify-center rounded-[var(--radius-medium)] bg-[var(--color-secondary)] px-5 text-xl font-black text-white"
-          to="/home"
+          to="/world"
         >
-          ホームへ
+          せかいへ
         </Link>
       </div>
     </section>

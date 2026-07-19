@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DEFAULT_PLAYER_ID } from '../../../db/constants';
 import { initializeAppData } from '../../../db/initializeAppData';
 import { getPlayerById } from '../../../db/repositories/playerRepository';
@@ -17,6 +17,8 @@ import { VictoryEffect } from './VictoryEffect';
 
 export function BattleScreen() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryEnemyId = searchParams.get('enemyId');
   const [battle, setBattle] = useState<BattleSession | null>(null);
   const [lastDamage, setLastDamage] = useState(0);
   const [message, setMessage] = useState('バトルを はじめよう');
@@ -27,9 +29,11 @@ export function BattleScreen() {
   const startBattle = async (boss = false) => {
     const data = await initializeAppData();
     const player = (await getPlayerById(DEFAULT_PLAYER_ID)) ?? data.player;
+    const selectedEnemy = queryEnemyId ? getEnemy(queryEnemyId) : null;
     const nextBattle = createBattleSession({
       sessionId: `battle-${boss ? 'boss' : 'normal'}-${Date.now()}`,
       playerLevel: player.level,
+      enemyId: boss ? undefined : selectedEnemy?.id,
       boss,
     });
     setBattle(nextBattle);

@@ -31,6 +31,11 @@ export async function getWorldProgress(playerId: string, areaId: string) {
   return db.get('worldProgress', createWorldProgressId(playerId, areaId));
 }
 
+export async function getWorldProgressList(playerId: string) {
+  const db = await openMojiBoukenDb();
+  return db.getAllFromIndex('worldProgress', 'by-player', playerId);
+}
+
 export async function updateRecoveryStage(
   playerId: string,
   areaId: string,
