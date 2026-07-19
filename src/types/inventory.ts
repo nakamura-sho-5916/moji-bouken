@@ -7,7 +7,7 @@ export type InventoryItem = {
 
 export type Equipment = {
   id: EntityId;
-  slot: 'tool' | 'badge' | 'companion-item';
+  slot: 'weapon' | 'armor' | 'accessory' | 'tool' | 'badge' | 'companion-item';
 };
 
 export type Companion = {

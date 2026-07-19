@@ -1,4 +1,5 @@
 export type { EntityId, IsoDateString, KanaKind } from './common';
+export type { AlbumEntry, CollectionProgress } from './collection';
 export type { Player } from './player';
 export type {
   Letter,

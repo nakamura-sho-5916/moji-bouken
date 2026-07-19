@@ -1,6 +1,8 @@
 import type { DBSchema } from 'idb';
 import type {
   AppSettings,
+  AlbumEntry,
+  CollectionProgress,
   Inventory,
   LearningLog,
   LetterProgress,
@@ -59,5 +61,23 @@ export type MojiBoukenDbSchema = DBSchema & {
   settings: {
     key: string;
     value: AppSettings;
+  };
+  collectionProgress: {
+    key: string;
+    value: CollectionProgress;
+    indexes: {
+      'by-player': string;
+      'by-category': string;
+      'by-target': string;
+    };
+  };
+  albumEntries: {
+    key: string;
+    value: AlbumEntry;
+    indexes: {
+      'by-player': string;
+      'by-area': string;
+      'by-unlocked-at': string;
+    };
   };
 };

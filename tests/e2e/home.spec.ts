@@ -286,3 +286,85 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
   expect(village?.recoveryStage).toBeGreaterThanOrEqual(3);
   expect(forest?.unlocked).toBe(true);
 });
+
+test('仲間・装備・図鑑・復興アルバムを確認できる', async ({ page }) => {
+  await page.goto('/collection');
+  await expect(page.getByRole('heading', { name: 'ずかん' })).toBeVisible();
+  await expect(page.getByText('まだ であっていないよ').first()).toBeVisible();
+
+  await page.goto('/mission');
+  await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
+  await page.waitForFunction(() =>
+    Boolean(localStorage.getItem('moji-bouken:mission-session')),
+  );
+  const session = await page.evaluate(() => {
+    const raw = localStorage.getItem('moji-bouken:mission-session');
+    return raw
+      ? (JSON.parse(raw) as {
+          missions: { missionType: string; correctAnswer: string }[];
+        })
+      : null;
+  });
+  const mission = session?.missions[0];
+  if (
+    mission?.missionType === 'letter-introduction' ||
+    mission?.missionType === 'boss-mixed'
+  ) {
+    await page
+      .getByRole('button', {
+        name:
+          mission.missionType === 'letter-introduction' ? 'おぼえた' : 'つぎへ',
+      })
+      .click();
+  } else {
+    await page
+      .getByRole('button', { name: mission?.correctAnswer ?? '' })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'こたえる' }).click();
+  }
+
+  await page.goto('/debug/world');
+  for (let index = 0; index < 2; index += 1) {
+    await page.getByRole('button', { name: '大きく復興' }).click();
+  }
+
+  await page.goto('/debug/collection');
+  await expect(
+    page.getByRole('heading', { name: 'Debug Collection' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'ゴールド追加' }).click();
+  await page.getByRole('button', { name: '仲間を加入' }).click();
+  await page.getByRole('button', { name: '同行仲間変更' }).click();
+  await page.getByRole('button', { name: '文字・単語発見' }).click();
+  await page.getByRole('button', { name: '敵遭遇記録' }).click();
+  await page.getByRole('button', { name: 'アルバム追加' }).click();
+
+  await page.goto('/companions');
+  await page.getByRole('button', { name: /うさぎ/ }).click();
+  await expect(page.getByText('いっしょに いこうね')).toBeVisible();
+
+  await page.goto('/shop');
+  await expect(page.getByRole('heading', { name: 'おみせ' })).toBeVisible();
+  await page
+    .getByRole('button', { name: 'これを てにいれる？' })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'てにいれる', exact: true }).click();
+  await expect(page.getByText(/てにいれたよ|もう もっているよ/)).toBeVisible();
+
+  await page.goto('/equipment');
+  await page.getByRole('button', { name: /もじのつえ/ }).click();
+  await expect(page.getByText('にあってるね！')).toBeVisible();
+
+  await page.goto('/collection');
+  await page.getByRole('button', { name: 'なかま' }).click();
+  await expect(page.getByText('うさぎ')).toBeVisible();
+  await page.getByRole('button', { name: 'てき' }).click();
+  await expect(page.getByText('もじスライム')).toBeVisible();
+  await page.getByRole('button', { name: 'アルバム' }).click();
+  await expect(page.getByText('はしが なおった！')).toBeVisible();
+
+  await page.goto('/collection/album');
+  await expect(page.getByText('はしが なおった！')).toBeVisible();
+});

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Enemy } from '../../battle/types';
 import type { AreaViewModel } from '../types';
 
@@ -29,6 +30,14 @@ export function AreaDetailPanel({
       >
         ここへ いく
       </button>
+      {area.area.id === 'starting-village' && area.recoveryStage >= 3 ? (
+        <Link
+          className="mt-3 flex min-h-14 items-center justify-center rounded-[var(--radius-medium)] bg-[var(--color-secondary)] px-5 text-xl font-black text-white"
+          to="/shop"
+        >
+          おみせへ
+        </Link>
+      ) : null}
     </aside>
   );
 }

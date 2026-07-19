@@ -7,6 +7,10 @@ import { RewardEngine } from '../features/rewards';
 import { RecoveryEventModal } from '../features/world/components/RecoveryEventModal';
 import { WorldRecoveryEngine } from '../features/world';
 import type { RecoveryEvent } from '../features/world';
+import {
+  joinEligibleCompanions,
+  recordAlbumEvent,
+} from '../features/collection';
 
 export function ResultPage() {
   const navigate = useNavigate();
@@ -32,6 +36,19 @@ export function ResultPage() {
       if (!active || !recoveryResult) {
         return;
       }
+      void Promise.all(
+        recoveryResult.triggeredEvents.map((event, index) =>
+          recordAlbumEvent({
+            eventId: `${event.areaId}-${event.id}`,
+            areaId: event.areaId,
+            title: event.title,
+            description: event.message,
+            beforeVisual: 'くもり',
+            afterVisual: '✨',
+            order: index,
+          }),
+        ),
+      ).then(() => joinEligibleCompanions());
       setRecoveryEvents(recoveryResult.triggeredEvents);
     });
 

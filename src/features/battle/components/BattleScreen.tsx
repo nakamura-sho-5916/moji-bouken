@@ -4,6 +4,7 @@ import { DEFAULT_PLAYER_ID } from '../../../db/constants';
 import { initializeAppData } from '../../../db/initializeAppData';
 import { getPlayerById } from '../../../db/repositories/playerRepository';
 import { RewardEngine } from '../../rewards';
+import { recordEnemyEncounter } from '../../collection';
 import { BattleEngine } from '../BattleEngine';
 import { createBattleSession } from '../createBattleSession';
 import { getDefaultEnemy, getEnemy } from '../enemies';
@@ -48,6 +49,10 @@ export function BattleScreen() {
     await RewardEngine.grantBattleRewards({
       battle: nextBattle,
       missionResults: [],
+    });
+    await recordEnemyEncounter({
+      enemyId: nextBattle.enemyId,
+      source: enemy.type === 'boss' ? 'boss' : 'normal-victory',
     });
     setBattle({ ...nextBattle, status: 'completed' });
   };

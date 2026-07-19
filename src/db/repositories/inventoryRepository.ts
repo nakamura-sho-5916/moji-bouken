@@ -91,6 +91,26 @@ export async function updateEquipment(
   });
 }
 
+export async function addEquipment(playerId: string, equipment: Equipment) {
+  const inventory = await getInventory(playerId);
+
+  if (!inventory) {
+    return undefined;
+  }
+
+  const nextEquipment = inventory.equipment.some(
+    (current) => current.id === equipment.id,
+  )
+    ? inventory.equipment
+    : [...inventory.equipment, equipment];
+
+  return saveInventory({
+    ...inventory,
+    equipment: nextEquipment,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
 export async function addCompanion(playerId: string, companion: Companion) {
   const inventory = await getInventory(playerId);
 

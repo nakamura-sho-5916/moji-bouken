@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { LoadedContent } from '../../../types';
+import { discoverLetterOrWord } from '../../collection';
 import { saveMissionSession, submitMissionAnswer } from '../MissionSession';
 import type {
   MissionAnswerState,
@@ -44,6 +45,30 @@ export function useAnswerSubmission(input: {
         });
 
         if (result.status === 'saved') {
+          const mission = input.session.missions[input.session.currentIndex];
+          const wordIds = new Set(input.content.words.map((word) => word.id));
+          const katakanaIds = new Set(
+            input.content.katakana.map((letter) => letter.id),
+          );
+          const discoveries = result.result.targetLetterIds.map((letterId) =>
+            discoverLetterOrWord({
+              category: katakanaIds.has(letterId) ? 'katakana' : 'hiragana',
+              targetId: letterId,
+              source: result.result.missionId,
+            }),
+          );
+          for (const targetId of mission?.targetIds ?? []) {
+            if (wordIds.has(targetId)) {
+              discoveries.push(
+                discoverLetterOrWord({
+                  category: 'word',
+                  targetId,
+                  source: result.result.missionId,
+                }),
+              );
+            }
+          }
+          await Promise.all(discoveries);
           setFirstAttemptRecorded(true);
           setAnswerState(result.result.correct ? 'correct' : 'incorrect');
           input.onSaved(result.result);
