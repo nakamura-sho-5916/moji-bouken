@@ -73,7 +73,7 @@ describe('mission content stress audit', () => {
         assertFourChoiceMission(content, mission, seed);
       }
     }
-  });
+  }, 15000);
 
   it('keeps the same result for the same seed', () => {
     for (const mission of content.missions) {

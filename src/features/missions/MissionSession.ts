@@ -48,6 +48,23 @@ function fallbackMissionForCandidate(
   );
 }
 
+function isAnswerableMission(
+  mission: ContentMission,
+  content: LoadedContent,
+  seed: number,
+  index: number,
+) {
+  try {
+    buildMissionViewModel({ content, mission, seed: seed + index });
+    return true;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(error);
+    }
+    return false;
+  }
+}
+
 export async function createMissionSession(input?: {
   seed?: number;
   count?: number;
@@ -65,6 +82,9 @@ export async function createMissionSession(input?: {
   );
   const missions = [...selected, ...activeMissions]
     .filter((mission): mission is ContentMission => Boolean(mission))
+    .filter((mission, index) =>
+      isAnswerableMission(mission, content, seed, index),
+    )
     .filter((mission, index, all) => {
       const firstIndex = all.findIndex(
         (item) => item.missionId === mission.missionId,

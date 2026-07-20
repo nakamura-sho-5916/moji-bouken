@@ -1,3 +1,3 @@
 export function normalizeAnswer(answer: string) {
-  return answer.trim();
+  return answer.normalize('NFC').trim();
 }

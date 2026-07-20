@@ -21,6 +21,16 @@ const fourChoiceMissionTypes = new Set([
   'horizontal-reading',
 ]);
 
+function getCorrectPosition(input: {
+  choices: { value: string }[];
+  correctAnswer: string;
+}) {
+  return input.choices.findIndex(
+    (choice) =>
+      choice.value.normalize('NFC') === input.correctAnswer.normalize('NFC'),
+  );
+}
+
 describe('mission engine', () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -147,6 +157,11 @@ describe('mission engine', () => {
 
   it('choice generation keeps the correct answer invariant for 1000 seeds', () => {
     const content = loadLearningContent();
+    const positionCounts = [0, 0, 0, 0];
+    let unavailableCount = 0;
+    let zeroCorrectCount = 0;
+    let multipleCorrectCount = 0;
+    let duplicateChoiceCount = 0;
 
     for (let seed = 1; seed <= 1000; seed += 1) {
       for (const mission of content.missions.filter((item) =>
@@ -154,15 +169,103 @@ describe('mission engine', () => {
       )) {
         const viewModel = buildMissionViewModel({ content, mission, seed });
         const values = viewModel.choices.map((choice) => choice.value);
+        const correctValueCount = values.filter(
+          (value) =>
+            value.normalize('NFC') === mission.correctAnswer.normalize('NFC'),
+        ).length;
+        const position = getCorrectPosition({
+          choices: viewModel.choices,
+          correctAnswer: mission.correctAnswer,
+        });
 
-        expect(viewModel.choices).toHaveLength(4);
-        expect(new Set(values).size).toBe(4);
-        expect(values).toContain(mission.correctAnswer);
-        expect(
-          viewModel.choices.filter((choice) => choice.correct),
-        ).toHaveLength(1);
+        unavailableCount += position < 0 ? 1 : 0;
+        zeroCorrectCount += correctValueCount === 0 ? 1 : 0;
+        multipleCorrectCount += correctValueCount > 1 ? 1 : 0;
+        duplicateChoiceCount += new Set(values).size !== values.length ? 1 : 0;
+        if (position >= 0) {
+          positionCounts[position] += 1;
+        }
       }
     }
+
+    const total = positionCounts.reduce((sum, count) => sum + count, 0);
+    expect(unavailableCount).toBe(0);
+    expect(zeroCorrectCount).toBe(0);
+    expect(multipleCorrectCount).toBe(0);
+    expect(duplicateChoiceCount).toBe(0);
+    expect(positionCounts.every((count) => count > 0)).toBe(true);
+    for (const count of positionCounts) {
+      const ratio = count / total;
+      expect(ratio).toBeGreaterThanOrEqual(0.2);
+      expect(ratio).toBeLessThanOrEqual(0.3);
+    }
+  });
+
+  it('creates the same order for the same seed and multiple orders for different seeds', () => {
+    const content = loadLearningContent();
+    const mission = content.missions.find((item) =>
+      fourChoiceMissionTypes.has(item.missionType),
+    );
+
+    expect(mission).toBeDefined();
+    if (!mission) {
+      return;
+    }
+
+    const first = buildMissionViewModel({ content, mission, seed: 123 });
+    const second = buildMissionViewModel({ content, mission, seed: 123 });
+    const orders = new Set(
+      Array.from({ length: 30 }, (_, index) =>
+        buildMissionViewModel({ content, mission, seed: index + 1 })
+          .choices.map((choice) => choice.value)
+          .join('|'),
+      ),
+    );
+
+    expect(second.choices.map((choice) => choice.value)).toEqual(
+      first.choices.map((choice) => choice.value),
+    );
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
+  it('detects mismatched letter target IDs before rendering', () => {
+    const content = loadLearningContent();
+    const mission = content.missions.find(
+      (item) => item.missionType === 'similar-letter-choice',
+    );
+
+    expect(mission).toBeDefined();
+    if (!mission) {
+      return;
+    }
+
+    expect(() =>
+      buildMissionViewModel({
+        content,
+        mission: {
+          ...mission,
+          missionId: 'invalid-target-id',
+          targetIds: ['hiragana-a'],
+        },
+        seed: 1,
+      }),
+    ).toThrow(/targetText does not match correctAnswer/);
+  });
+
+  it('normalizes unicode before validating answers', () => {
+    const content = loadLearningContent();
+    const mission = content.missions.find(
+      (item) => item.missionType === 'letter-search',
+    );
+
+    expect(mission).toBeDefined();
+    if (!mission) {
+      return;
+    }
+
+    expect(
+      validateMissionAnswer(mission, mission.correctAnswer.normalize('NFD')),
+    ).toBe(true);
   });
 
   it('word-completion rebuilds the target word around the blank', () => {

@@ -2,7 +2,7 @@
   {
     "missionId": "mission-similar-letter-choice-001",
     "missionType": "similar-letter-choice",
-    "targetIds": ["hiragana-a"],
+    "targetIds": ["hiragana-shi"],
     "prompt": "「し」は どれかな",
     "choices": ["し", "つ", "く", "へ"],
     "correctAnswer": "し",

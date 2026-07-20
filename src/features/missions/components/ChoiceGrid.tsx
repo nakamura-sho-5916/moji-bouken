@@ -14,7 +14,7 @@ export function ChoiceGrid({
   onSelect,
 }: ChoiceGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div aria-label="選択肢" className="grid grid-cols-2 gap-3" role="group">
       {choices.map((choice) => (
         <button
           className={[

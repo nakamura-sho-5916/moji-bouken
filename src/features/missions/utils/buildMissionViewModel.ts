@@ -10,7 +10,18 @@ import type {
   MissionViewModel,
   TextSearchUnit,
 } from '../types';
+import { normalizeAnswer } from './normalizeAnswer';
 import { shuffleChoices } from './shuffleChoices';
+
+const fourChoiceMissionTypes = new Set<ContentMission['missionType']>([
+  'letter-search',
+  'similar-letter-choice',
+  'illustration-letter-choice',
+  'illustration-word-choice',
+  'word-completion',
+  'vertical-reading',
+  'horizontal-reading',
+]);
 
 function findLetter(content: LoadedContent, id: string) {
   return [...content.hiragana, ...content.katakana].find(
@@ -69,13 +80,35 @@ function getChoicePool(content: LoadedContent, mission: ContentMission) {
   ]);
 }
 
-function assertGeneratedChoices(choices: MissionChoice[]) {
-  const values = choices.map((choice) => choice.value);
+function assertGeneratedChoices(
+  mission: ContentMission,
+  choices: MissionChoice[],
+) {
+  const values = choices.map((choice) => normalizeAnswer(choice.value));
+  const labels = choices.map((choice) => normalizeAnswer(choice.label));
+  const correctAnswer = normalizeAnswer(mission.correctAnswer);
   const uniqueCount = new Set(values).size;
-  const correctCount = choices.filter((choice) => choice.correct).length;
-  if (choices.length !== 4 || uniqueCount !== 4 || correctCount !== 1) {
+  const correctValueCount = values.filter(
+    (value) => value === correctAnswer,
+  ).length;
+  const correctFlagCount = choices.filter((choice) => choice.correct).length;
+  const emptyLabelCount = labels.filter((label) => label.length === 0).length;
+  const mismatchedChoices = choices.filter(
+    (choice) =>
+      normalizeAnswer(choice.label) !== normalizeAnswer(choice.value) ||
+      choice.correct !== (normalizeAnswer(choice.value) === correctAnswer),
+  );
+
+  if (
+    choices.length !== 4 ||
+    uniqueCount !== 4 ||
+    correctValueCount !== 1 ||
+    correctFlagCount !== 1 ||
+    emptyLabelCount > 0 ||
+    mismatchedChoices.length > 0
+  ) {
     throw new Error(
-      `Invalid mission choices: length=${choices.length}, unique=${uniqueCount}, correct=${correctCount}`,
+      `Invalid mission choices for ${mission.missionId}: length=${choices.length}, unique=${uniqueCount}, correctValue=${correctValueCount}, correctFlag=${correctFlagCount}, emptyLabel=${emptyLabelCount}, mismatched=${mismatchedChoices.length}`,
     );
   }
 }
@@ -120,7 +153,9 @@ function toChoices(
     correct: choice === mission.correctAnswer,
   }));
 
-  assertGeneratedChoices(choices);
+  if (fourChoiceMissionTypes.has(mission.missionType)) {
+    assertGeneratedChoices(mission, choices);
+  }
   return choices;
 }
 
@@ -192,6 +227,34 @@ function titleForMission(mission: ContentMission) {
   return titles[mission.missionType];
 }
 
+function assertFinalViewModel(viewModel: MissionViewModel) {
+  if (!viewModel.prompt.trim()) {
+    throw new Error(`Mission ${viewModel.mission.missionId} has empty prompt.`);
+  }
+
+  const correctAnswer = normalizeAnswer(viewModel.mission.correctAnswer);
+  if (!correctAnswer) {
+    throw new Error(
+      `Mission ${viewModel.mission.missionId} has empty correctAnswer.`,
+    );
+  }
+
+  if (fourChoiceMissionTypes.has(viewModel.mission.missionType)) {
+    assertGeneratedChoices(viewModel.mission, viewModel.choices);
+  }
+
+  if (
+    ['letter-introduction', 'letter-search', 'similar-letter-choice'].includes(
+      viewModel.mission.missionType,
+    ) &&
+    normalizeAnswer(viewModel.targetText) !== correctAnswer
+  ) {
+    throw new Error(
+      `Mission ${viewModel.mission.missionId} targetText does not match correctAnswer: targetText=${viewModel.targetText}, correctAnswer=${viewModel.mission.correctAnswer}`,
+    );
+  }
+}
+
 export function getTargetLetterIds(
   content: LoadedContent,
   mission: ContentMission,
@@ -222,7 +285,7 @@ export function buildMissionViewModel(input: {
     .find((item): item is ContentWord => Boolean(item));
   const unsupported = mission.missionType === 'boss-mixed';
 
-  return {
+  const viewModel: MissionViewModel = {
     mission,
     title: titleForMission(mission),
     prompt: unsupported
@@ -247,4 +310,6 @@ export function buildMissionViewModel(input: {
         : undefined,
     unsupported,
   };
+  assertFinalViewModel(viewModel);
+  return viewModel;
 }

@@ -1,11 +1,11 @@
 export function createSeededRandom(seed = 1) {
-  let value = seed % 2147483647;
-  if (value <= 0) {
-    value += 2147483646;
-  }
+  let value = seed >>> 0;
   return () => {
-    value = (value * 16807) % 2147483647;
-    return (value - 1) / 2147483646;
+    value = (value + 0x6d2b79f5) >>> 0;
+    let mixed = value;
+    mixed = Math.imul(mixed ^ (mixed >>> 15), mixed | 1);
+    mixed ^= mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61);
+    return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
   };
 }
 

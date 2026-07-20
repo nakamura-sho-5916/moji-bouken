@@ -188,6 +188,13 @@ export function MissionRunner() {
     completePracticeMission();
   };
 
+  const startNewSession = () => {
+    restart();
+    void start().then((nextSession) => {
+      void createMissionBattle(nextSession.sessionId);
+    });
+  };
+
   if (session.status === 'ready' || session.missions.length === 0) {
     return (
       <section className="grid gap-5">
@@ -201,12 +208,7 @@ export function MissionRunner() {
         </div>
         <button
           className="min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-5 text-xl font-black text-white"
-          onClick={() => {
-            restart();
-            void start(5916).then((nextSession) => {
-              void createMissionBattle(nextSession.sessionId);
-            });
-          }}
+          onClick={startNewSession}
           type="button"
         >
           ミッションを はじめる
@@ -223,10 +225,7 @@ export function MissionRunner() {
         </p>
         <button
           className="min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-secondary)] px-5 font-black text-white"
-          onClick={() => {
-            restart();
-            void start(5916);
-          }}
+          onClick={startNewSession}
           type="button"
         >
           もういちど

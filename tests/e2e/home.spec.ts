@@ -83,6 +83,40 @@ async function expectCurrentChoiceMissionHasCorrectAnswer(page: Page) {
   return true;
 }
 
+async function getCurrentCorrectChoicePosition(page: Page) {
+  const session = await page.evaluate(() => {
+    const raw = localStorage.getItem('moji-bouken:mission-session');
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as {
+      currentIndex: number;
+      missions: { missionType: string; correctAnswer: string }[];
+    };
+  });
+  const mission = session?.missions[session.currentIndex];
+  if (
+    !mission ||
+    mission.missionType === 'letter-introduction' ||
+    mission.missionType === 'boss-mixed' ||
+    mission.missionType === 'word-ordering'
+  ) {
+    return -1;
+  }
+
+  const labels = await page
+    .getByRole('group', { name: '選択肢' })
+    .getByRole('button')
+    .evaluateAll((buttons) =>
+      buttons.map(
+        (button) => button.textContent?.normalize('NFC').trim() ?? '',
+      ),
+    );
+  return labels.findIndex(
+    (label) => label === mission.correctAnswer.normalize('NFC'),
+  );
+}
+
 test('トップ画面に仮タイトルが表示される', async ({ page }) => {
   await page.goto('/');
 
@@ -225,6 +259,7 @@ test('ミッションを10問進めて結果画面へ移動できる', async ({ 
 test('generated missions expose a visible correct answer choice 20 times', async ({
   browser,
 }) => {
+  const correctPositions = new Set<number>();
   for (let index = 0; index < 20; index += 1) {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -243,8 +278,12 @@ test('generated missions expose a visible correct answer choice 20 times', async
     }
 
     expect(foundChoiceMission).toBe(true);
+    const position = await getCurrentCorrectChoicePosition(page);
+    expect(position).toBeGreaterThanOrEqual(0);
+    correctPositions.add(position);
     await context.close();
   }
+  expect(correctPositions).toEqual(new Set([0, 1, 2, 3]));
 });
 
 test('本番バトル画面にデバッグ回答ボタンが表示されない', async ({ page }) => {
@@ -420,7 +459,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.1.2')).toBeVisible();
+  await expect(page.getByText('バージョン 0.1.3')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');
