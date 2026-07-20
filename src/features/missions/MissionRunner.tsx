@@ -8,6 +8,7 @@ import {
   saveActiveBattleSession,
   type BattleSession,
 } from '../battle';
+import { useAudio } from '../audio';
 import { BattleStatusPanel } from '../battle/components/BattleStatusPanel';
 import { recordEnemyEncounter } from '../collection';
 import { RewardEngine } from '../rewards';
@@ -53,6 +54,7 @@ export function MissionRunner() {
   const [battle, setBattle] = useState<BattleSession | null>(null);
   const [lastDamage, setLastDamage] = useState(0);
   const [practiceCorrect, setPracticeCorrect] = useState(false);
+  const audio = useAudio();
 
   const createMissionBattle = async (sessionId: string) => {
     const player = await getPlayerById(DEFAULT_PLAYER_ID);
@@ -83,11 +85,13 @@ export function MissionRunner() {
     content,
     session: session.status === 'active' ? session : null,
     onSaved: (result) => {
+      audio.playSoundEffect(result.correct ? 'correct' : 'retry');
       setPendingBattle(applyBattleAnswer(result.correct));
       setPendingResult(result);
       setPracticeCorrect(result.correct);
     },
     onPractice: (correct) => {
+      audio.playSoundEffect(correct ? 'correct' : 'retry');
       setPracticeCorrect(correct);
     },
   });
@@ -97,6 +101,9 @@ export function MissionRunner() {
       return null;
     }
     const answerResult = BattleEngine.applyAnswer({ battle, correct });
+    if (correct) {
+      audio.playSoundEffect('attack');
+    }
     const nextBattle =
       answerResult.battle.status === 'feedback'
         ? { ...answerResult.battle, status: 'active' as const }
@@ -104,6 +111,9 @@ export function MissionRunner() {
     setBattle(nextBattle);
     setLastDamage(answerResult.damage);
     saveActiveBattleSession(nextBattle);
+    if (nextBattle.enemyCurrentHp <= 0) {
+      audio.playSoundEffect('enemy-defeated');
+    }
     return nextBattle;
   };
 
@@ -112,6 +122,7 @@ export function MissionRunner() {
       return;
     }
     const specialResult = BattleEngine.applySpecialAttack(battle);
+    audio.playSoundEffect('special-attack');
     const nextBattle =
       specialResult.battle.status === 'feedback'
         ? { ...specialResult.battle, status: 'active' as const }
@@ -119,6 +130,9 @@ export function MissionRunner() {
     setBattle(nextBattle);
     setLastDamage(specialResult.damage);
     saveActiveBattleSession(nextBattle);
+    if (nextBattle.enemyCurrentHp <= 0) {
+      audio.playSoundEffect('enemy-defeated');
+    }
   };
 
   const finishCurrentMission = async (
@@ -273,7 +287,10 @@ export function MissionRunner() {
       <MissionRegistry
         disabled={answerSubmission.saving || answeredCorrect}
         onComplete={completePracticeMission}
-        onSelect={setSelectedValue}
+        onSelect={(value) => {
+          audio.playSoundEffect('choice-select');
+          setSelectedValue(value);
+        }}
         selectedValue={selectedValue}
         viewModel={viewModel}
       />

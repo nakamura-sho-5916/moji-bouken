@@ -253,7 +253,7 @@ describe('collection phase', () => {
   it('DB migration v2で新ストアが追加される', async () => {
     const stores = await getObjectStoreNames();
 
-    expect(DB_VERSION).toBe(2);
+    expect(DB_VERSION).toBe(4);
     expect(stores.sort()).toEqual([...OBJECT_STORES].sort());
     expect(stores).toContain('collectionProgress');
     expect(stores).toContain('albumEntries');

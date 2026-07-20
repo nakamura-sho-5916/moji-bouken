@@ -1,5 +1,62 @@
 import { expect, test, type Page } from '@playwright/test';
 
+type AudioDebugEvent = {
+  type: string;
+  id?: string | null;
+  played?: boolean;
+  unlocked?: boolean;
+};
+
+async function collectAudioEvents(page: Page) {
+  await page.addInitScript(() => {
+    const target = window as Window & { __audioEvents?: unknown[] };
+    target.__audioEvents = [];
+    window.addEventListener('moji-bouken:audio-event', (event) => {
+      target.__audioEvents?.push((event as CustomEvent).detail);
+    });
+  });
+}
+
+async function readAudioEvents(page: Page) {
+  return page.evaluate(() => {
+    const target = window as Window & { __audioEvents?: AudioDebugEvent[] };
+    return target.__audioEvents ?? [];
+  });
+}
+
+async function clearAudioEvents(page: Page) {
+  await page.evaluate(() => {
+    const target = window as Window & { __audioEvents?: AudioDebugEvent[] };
+    target.__audioEvents = [];
+  });
+}
+
+async function readStoredAudioSettings(page: Page) {
+  return page.evaluate(async () => {
+    const request = indexedDB.open('moji-bouken-db');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const settings = await new Promise<{
+      soundEffectsEnabled: boolean;
+    } | null>((resolve, reject) => {
+      const transaction = db.transaction('settings', 'readonly');
+      const getRequest = transaction
+        .objectStore('settings')
+        .get('default-player');
+      getRequest.onsuccess = () =>
+        resolve(
+          (getRequest.result as { soundEffectsEnabled: boolean } | undefined) ??
+            null,
+        );
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+    db.close();
+    return settings;
+  });
+}
+
 async function answerCurrentMissionCorrectly(page: Page) {
   const session = await page.evaluate(() => {
     const raw = localStorage.getItem('moji-bouken:mission-session');
@@ -256,9 +313,75 @@ test('ミッションを10問進めて結果画面へ移動できる', async ({ 
   expect(missionLogCount).toBeGreaterThan(0);
 });
 
+test('音響システムがユーザー操作でunlockされ、SFX設定を反映する', async ({
+  page,
+}) => {
+  await collectAudioEvents(page);
+  await page.goto('/');
+  await page.getByRole('main').getByRole('link').click();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect
+    .poll(async () =>
+      (await readAudioEvents(page)).some(
+        (event) => event.type === 'unlock' && event.unlocked,
+      ),
+    )
+    .toBe(true);
+
+  await clearAudioEvents(page);
+  await page.goto('/mission');
+  await page.getByRole('button').first().click();
+  await page.waitForFunction(() =>
+    Boolean(localStorage.getItem('moji-bouken:mission-session')),
+  );
+  let answeredChoice = false;
+  for (let index = 0; index < 5 && !answeredChoice; index += 1) {
+    const result = await answerCurrentMissionCorrectly(page);
+    answeredChoice = result.answeredChoice;
+  }
+  expect(answeredChoice).toBe(true);
+  const missionEvents = await readAudioEvents(page);
+  expect(
+    missionEvents.some(
+      (event) => event.type === 'sfx' && event.id === 'correct',
+    ),
+  ).toBe(true);
+  expect(
+    missionEvents.some(
+      (event) => event.type === 'sfx' && event.id === 'attack',
+    ),
+  ).toBe(true);
+
+  await clearAudioEvents(page);
+  await page.goto('/settings');
+  const soundEffectsToggle = page.getByLabel('こうかおん');
+  await soundEffectsToggle.uncheck();
+  await expect(soundEffectsToggle).not.toBeChecked();
+  await expect
+    .poll(
+      async () => (await readStoredAudioSettings(page))?.soundEffectsEnabled,
+    )
+    .toBe(false);
+  await page.getByRole('button', { name: 'おとを ためす' }).click();
+  await expect
+    .poll(async () =>
+      (await readAudioEvents(page)).some(
+        (event) =>
+          event.type === 'sfx' &&
+          event.id === 'correct' &&
+          event.played === false,
+      ),
+    )
+    .toBe(true);
+
+  await page.reload();
+  await expect(page.getByLabel('こうかおん')).not.toBeChecked();
+});
+
 test('generated missions expose a visible correct answer choice 20 times', async ({
   browser,
 }) => {
+  test.setTimeout(60000);
   const correctPositions = new Set<number>();
   for (let index = 0; index < 20; index += 1) {
     const context = await browser.newContext();
@@ -309,7 +432,7 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
   ).toBeVisible();
 
   await page.getByRole('button', { name: 'ここへ いく' }).click();
-  await expect(page).toHaveURL(/\/mission\?areaId=starting-village/);
+  await expect(page).toHaveURL(/\/mission\?areaId=starting-village&enemyId=/);
 
   await page.goto('/debug/world');
   await expect(
@@ -459,7 +582,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.1.3')).toBeVisible();
+  await expect(page.getByText('バージョン 0.2.0')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');

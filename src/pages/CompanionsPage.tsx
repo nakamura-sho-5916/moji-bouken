@@ -6,6 +6,7 @@ import {
   joinEligibleCompanions,
   selectCompanion,
 } from '../features/collection';
+import { useAudio } from '../features/audio';
 import type { CompanionData } from '../features/collection';
 import type { Inventory } from '../types';
 
@@ -14,6 +15,7 @@ export function CompanionsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [message, setMessage] = useState('いっしょに いく なかまを えらぼう');
   const [loading, setLoading] = useState(true);
+  const audio = useAudio();
 
   const reload = async () => {
     await joinEligibleCompanions();
@@ -46,6 +48,9 @@ export function CompanionsPage() {
 
   const choose = async (companion: CompanionData) => {
     const selected = await selectCompanion(companion.id);
+    if (selected) {
+      audio.playSoundEffect('companion-joined');
+    }
     setMessage(selected ? 'いっしょに いこうね' : 'まだ であっていないよ');
     await reload();
   };

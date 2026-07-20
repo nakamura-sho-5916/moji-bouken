@@ -14,8 +14,8 @@ export class DatabaseInitializationError extends Error {
 
 export function openMojiBoukenDb() {
   dbPromise ??= openDB<MojiBoukenDbSchema>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
-      runMigrations(db, oldVersion);
+    upgrade(db, oldVersion, _newVersion, transaction) {
+      runMigrations(db, oldVersion, transaction);
     },
   }).catch((error: unknown) => {
     dbPromise = null;

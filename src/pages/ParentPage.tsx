@@ -5,6 +5,7 @@ import {
   getAppSettings,
   updateAppSettings,
 } from '../db/repositories/settingsRepository';
+import { AudioSettingsPanel } from '../features/audio';
 import {
   calculateLearningOverview,
   APP_VERSION,
@@ -491,6 +492,11 @@ export function ParentPage({
                 <option value={15}>15問</option>
               </select>
             </label>
+            <AudioSettingsPanel
+              onUpdated={reload}
+              parentMode
+              settings={settings}
+            />
             <div className="grid gap-2 rounded-[var(--radius-medium)] bg-slate-50 p-3">
               <p className="font-black">PIN変更・解除</p>
               <input

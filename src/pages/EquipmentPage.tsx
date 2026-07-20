@@ -5,12 +5,14 @@ import {
   equipmentData,
   getCollectionState,
 } from '../features/collection';
+import { useAudio } from '../features/audio';
 import type { Inventory } from '../types';
 
 export function EquipmentPage() {
   const [inventory, setInventory] = useState<Inventory | null>(null);
   const [message, setMessage] = useState('そうびを みてみよう');
   const [loading, setLoading] = useState(true);
+  const audio = useAudio();
 
   const reload = async () => {
     const state = await getCollectionState();
@@ -65,6 +67,9 @@ export function EquipmentPage() {
               key={equipment.id}
               onClick={() => {
                 void equipItem(equipment.id).then(async (done) => {
+                  if (done) {
+                    audio.playSoundEffect('equipment-acquired');
+                  }
                   setMessage(done ? 'にあってるね！' : 'まだ もっていないよ');
                   await reload();
                 });

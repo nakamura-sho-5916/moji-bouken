@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.0
+
+- Added an accessible game audio system based on the Web Audio API.
+- Added generated sound effects for UI, choices, correct answers, retry, battle, rewards, world recovery, companions, equipment, shop purchases, and area unlocks.
+- Added route-based BGM switching with fade support and safe mobile unlock handling.
+- Added child and parent audio settings for mute, BGM, sound effects, and volume.
+- Added `/debug/audio` for development-only audio checks.
+- Documented generated audio licensing and future audio asset requirements.
+
 ## v0.1.3
 
 - Fixed a similar-letter mission target ID mismatch that could show a different target letter from the correct answer.

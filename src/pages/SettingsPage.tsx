@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { DEFAULT_PLAYER_ID } from '../db/constants';
-import {
-  getAppSettings,
-  updateAppSettings,
-} from '../db/repositories/settingsRepository';
+import { getAppSettings } from '../db/repositories/settingsRepository';
+import { AudioSettingsPanel } from '../features/audio';
 import type { AppSettings } from '../types';
 
 export function SettingsPage() {
@@ -41,58 +39,16 @@ export function SettingsPage() {
           {message}
         </p>
       </div>
-      <div className="grid gap-3 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
-        <label className="flex min-h-14 items-center justify-between gap-3 font-black">
-          BGM
-          <input
-            checked={settings.bgmEnabled}
-            onChange={(event) => {
-              void updateAppSettings(DEFAULT_PLAYER_ID, {
-                bgmEnabled: event.target.checked,
-              }).then(async () => {
-                setMessage('ほぞんしました');
-                await reload();
-              });
-            }}
-            type="checkbox"
-          />
-        </label>
-        <label className="flex min-h-14 items-center justify-between gap-3 font-black">
-          こうかおん
-          <input
-            checked={settings.soundEffectsEnabled}
-            onChange={(event) => {
-              void updateAppSettings(DEFAULT_PLAYER_ID, {
-                soundEffectsEnabled: event.target.checked,
-              }).then(async () => {
-                setMessage('ほぞんしました');
-                await reload();
-              });
-            }}
-            type="checkbox"
-          />
-        </label>
-        <label className="grid gap-2 font-black">
-          おとの おおきさ {settings.volume}
-          <input
-            max={100}
-            min={0}
-            onChange={(event) => {
-              void updateAppSettings(DEFAULT_PLAYER_ID, {
-                volume: Number(event.target.value),
-              }).then(async () => {
-                setMessage('ほぞんしました');
-                await reload();
-              });
-            }}
-            type="range"
-            value={settings.volume}
-          />
-        </label>
-      </div>
+      <AudioSettingsPanel
+        onUpdated={async () => {
+          setMessage('ほぞんしました');
+          await reload();
+        }}
+        settings={settings}
+      />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
         <p className="font-black text-[var(--color-text-muted)]">
-          保護者用の設定は、保護者画面で変更できます。
+          おとが なくても ぜんぶ あそべます。
         </p>
       </div>
     </section>

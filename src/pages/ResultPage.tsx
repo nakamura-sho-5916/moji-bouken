@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loadLastMissionResult } from '../features/missions/MissionSession';
 import { RewardSummary } from '../features/rewards/components/RewardSummary';
@@ -11,6 +11,7 @@ import {
   joinEligibleCompanions,
   recordAlbumEvent,
 } from '../features/collection';
+import { useAudio } from '../features/audio';
 
 export function ResultPage() {
   const navigate = useNavigate();
@@ -18,6 +19,16 @@ export function ResultPage() {
   const [rewardSummary] = useState(() => RewardEngine.loadLastRewardSummary());
   const completedCount = result?.results.length ?? 0;
   const [recoveryEvents, setRecoveryEvents] = useState<RecoveryEvent[]>([]);
+  const audio = useAudio();
+  const playedResultAudioRef = useRef(false);
+
+  useEffect(() => {
+    if (playedResultAudioRef.current || !rewardSummary) {
+      return;
+    }
+    playedResultAudioRef.current = true;
+    audio.playSoundEffect(rewardSummary.levelUp ? 'level-up' : 'reward');
+  }, [audio, rewardSummary]);
 
   useEffect(() => {
     if (!rewardSummary) {
@@ -35,6 +46,9 @@ export function ResultPage() {
     }).then((recoveryResult) => {
       if (!active || !recoveryResult) {
         return;
+      }
+      if (recoveryResult.triggeredEvents.length > 0) {
+        audio.playSoundEffect('world-recovery');
       }
       void Promise.all(
         recoveryResult.triggeredEvents.map((event, index) =>
@@ -55,7 +69,7 @@ export function ResultPage() {
     return () => {
       active = false;
     };
-  }, [rewardSummary]);
+  }, [audio, rewardSummary]);
 
   return (
     <section className="grid min-h-full gap-5">
@@ -108,12 +122,14 @@ export function ResultPage() {
       <div className="mt-auto grid gap-3">
         <Link
           className="flex min-h-14 items-center justify-center rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-5 text-xl font-black text-white"
+          onClick={() => audio.playSoundEffect('ui-tap')}
           to="/mission"
         >
           もういちど
         </Link>
         <Link
           className="flex min-h-14 items-center justify-center rounded-[var(--radius-medium)] bg-[var(--color-secondary)] px-5 text-xl font-black text-white"
+          onClick={() => audio.playSoundEffect('ui-tap')}
           to="/world"
         >
           せかいへ

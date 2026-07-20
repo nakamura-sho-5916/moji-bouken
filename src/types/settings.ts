@@ -5,6 +5,11 @@ export type AppSettings = {
   bgmEnabled: boolean;
   soundEffectsEnabled: boolean;
   volume: number;
+  masterVolume: number;
+  bgmVolume: number;
+  soundEffectVolume: number;
+  muteAll: boolean;
+  lastAudioEnabledAt: IsoDateString | null;
   reducedMotion: boolean;
   fontSize: 'standard' | 'large' | 'extra-large';
   standardQuestionCount: 5 | 10 | 15;

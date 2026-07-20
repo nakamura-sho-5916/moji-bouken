@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useAudio } from '../features/audio';
 
 const navigationItems = [
   { label: 'ホーム', icon: '🏠', to: '/home' },
@@ -7,6 +8,7 @@ const navigationItems = [
 ] as const;
 
 export function BottomNavigation() {
+  const audio = useAudio();
   return (
     <nav
       aria-label="主な画面"
@@ -24,6 +26,7 @@ export function BottomNavigation() {
                     : 'text-[var(--color-text-muted)] hover:bg-orange-100',
                 ].join(' ')
               }
+              onClick={() => audio.playSoundEffect('ui-tap')}
               to={item.to}
             >
               <span aria-hidden="true" className="text-lg leading-none">

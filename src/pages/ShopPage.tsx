@@ -6,6 +6,7 @@ import {
   isShopOpen,
   purchaseEquipment,
 } from '../features/collection';
+import { useAudio } from '../features/audio';
 import type { Inventory } from '../types';
 
 export function ShopPage() {
@@ -15,6 +16,7 @@ export function ShopPage() {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const audio = useAudio();
 
   const reload = async () => {
     const [state, shopOpen] = await Promise.all([
@@ -104,6 +106,10 @@ export function ShopPage() {
                             setBusy(false);
                             await reload();
                             setMessage(result.message);
+                            if (result.status === 'purchased') {
+                              audio.playSoundEffect('shop-purchase');
+                              audio.playSoundEffect('equipment-acquired');
+                            }
                           },
                         );
                       }}
