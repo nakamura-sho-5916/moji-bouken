@@ -237,8 +237,13 @@ export function MissionRunner() {
 
   const answeredCorrect =
     answerSubmission.answerState === 'correct' || practiceCorrect;
+  const answerReady =
+    viewModel.mission.missionType === 'word-ordering'
+      ? Array.from(selectedValue ?? '').length ===
+        (viewModel.orderedSlots ?? []).length
+      : Boolean(selectedValue);
   const canAnswer =
-    Boolean(selectedValue) &&
+    answerReady &&
     answerSubmission.answerState !== 'correct' &&
     !answerSubmission.saving;
 

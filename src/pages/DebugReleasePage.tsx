@@ -31,7 +31,7 @@ export function DebugReleasePage() {
     }
     const backup = await createBackup();
     setCheck({
-      appVersion: '0.1.0',
+      appVersion: backup.appVersion,
       dbVersion: DB_VERSION,
       serviceWorkerSupported: 'serviceWorker' in navigator,
       stores,

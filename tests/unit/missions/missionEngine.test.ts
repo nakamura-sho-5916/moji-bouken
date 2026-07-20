@@ -11,6 +11,16 @@ import {
 } from '../../../src/features/missions';
 import { resetIndexedDb } from '../dbTestUtils';
 
+const fourChoiceMissionTypes = new Set([
+  'letter-search',
+  'similar-letter-choice',
+  'illustration-letter-choice',
+  'illustration-word-choice',
+  'word-completion',
+  'vertical-reading',
+  'horizontal-reading',
+]);
+
 describe('mission engine', () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -120,7 +130,9 @@ describe('mission engine', () => {
   it('choice missions always include exactly one correct answer', () => {
     const content = loadLearningContent();
 
-    for (const mission of content.missions) {
+    for (const mission of content.missions.filter((item) =>
+      fourChoiceMissionTypes.has(item.missionType),
+    )) {
       const viewModel = buildMissionViewModel({ content, mission, seed: 5916 });
       const values = viewModel.choices.map((choice) => choice.value);
 
@@ -137,7 +149,9 @@ describe('mission engine', () => {
     const content = loadLearningContent();
 
     for (let seed = 1; seed <= 1000; seed += 1) {
-      for (const mission of content.missions) {
+      for (const mission of content.missions.filter((item) =>
+        fourChoiceMissionTypes.has(item.missionType),
+      )) {
         const viewModel = buildMissionViewModel({ content, mission, seed });
         const values = viewModel.choices.map((choice) => choice.value);
 
@@ -148,6 +162,64 @@ describe('mission engine', () => {
           viewModel.choices.filter((choice) => choice.correct),
         ).toHaveLength(1);
       }
+    }
+  });
+
+  it('word-completion rebuilds the target word around the blank', () => {
+    const content = loadLearningContent();
+
+    for (const mission of content.missions.filter(
+      (item) => item.missionType === 'word-completion',
+    )) {
+      const viewModel = buildMissionViewModel({ content, mission, seed: 1 });
+      const missing = viewModel.missingWord;
+
+      expect(missing).toBeDefined();
+      expect(
+        `${missing?.before}${mission.correctAnswer}${missing?.after}`,
+      ).toBe(viewModel.word);
+    }
+  });
+
+  it('word-ordering exposes every character card and can rebuild the answer', () => {
+    const content = loadLearningContent();
+
+    for (let seed = 1; seed <= 1000; seed += 1) {
+      for (const mission of content.missions.filter(
+        (item) => item.missionType === 'word-ordering',
+      )) {
+        const viewModel = buildMissionViewModel({ content, mission, seed });
+        const expectedCharacters = Array.from(mission.correctAnswer).sort();
+        const choiceCharacters = viewModel.choices
+          .map((choice) => choice.value)
+          .sort();
+
+        expect(viewModel.choices).toHaveLength(expectedCharacters.length);
+        expect(new Set(viewModel.choices.map((choice) => choice.id)).size).toBe(
+          viewModel.choices.length,
+        );
+        expect(choiceCharacters).toEqual(expectedCharacters);
+        expect(viewModel.orderedSlots).toEqual(
+          Array.from(mission.correctAnswer),
+        );
+      }
+    }
+  });
+
+  it('text-search targets exist in the displayed text', () => {
+    const content = loadLearningContent();
+
+    for (const mission of content.missions.filter(
+      (item) => item.missionType === 'text-search',
+    )) {
+      const viewModel = buildMissionViewModel({ content, mission, seed: 1 });
+
+      expect(viewModel.prompt).toContain(mission.correctAnswer);
+      expect(
+        viewModel.textSearchUnits?.some(
+          (unit) => unit.value === mission.correctAnswer,
+        ),
+      ).toBe(true);
     }
   });
 });

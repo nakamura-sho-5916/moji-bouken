@@ -29,10 +29,16 @@ async function answerCurrentMissionCorrectly(page: Page) {
     const raw = localStorage.getItem('moji-bouken:active-battle-session');
     return raw ? (JSON.parse(raw) as { enemyCurrentHp: number }) : null;
   });
-  await page
-    .getByRole('button', { name: mission?.correctAnswer ?? '' })
-    .first()
-    .click();
+  if (mission?.missionType === 'word-ordering') {
+    for (const character of Array.from(mission.correctAnswer)) {
+      await page.getByRole('button', { name: character }).first().click();
+    }
+  } else {
+    await page
+      .getByRole('button', { name: mission?.correctAnswer ?? '' })
+      .first()
+      .click();
+  }
   await page.getByRole('button', { name: 'こたえる' }).click();
   await expect(page.getByText('やったね').first()).toBeVisible();
   const afterBattle = await page.evaluate(() => {
@@ -65,7 +71,8 @@ async function expectCurrentChoiceMissionHasCorrectAnswer(page: Page) {
 
   if (
     mission?.missionType === 'letter-introduction' ||
-    mission?.missionType === 'boss-mixed'
+    mission?.missionType === 'boss-mixed' ||
+    mission?.missionType === 'word-ordering'
   ) {
     return false;
   }
@@ -341,6 +348,11 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
           mission.missionType === 'letter-introduction' ? 'おぼえた' : 'つぎへ',
       })
       .click();
+  } else if (mission?.missionType === 'word-ordering') {
+    for (const character of Array.from(mission.correctAnswer)) {
+      await page.getByRole('button', { name: character }).first().click();
+    }
+    await page.getByRole('button', { name: 'こたえる' }).click();
   } else {
     await page
       .getByRole('button', { name: mission?.correctAnswer ?? '' })
@@ -408,7 +420,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.1.0')).toBeVisible();
+  await expect(page.getByText('バージョン 0.1.2')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');

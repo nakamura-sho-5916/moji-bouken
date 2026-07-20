@@ -85,6 +85,17 @@ function toChoices(
   mission: ContentMission,
   seed: number,
 ): MissionChoice[] {
+  if (mission.missionType === 'word-ordering') {
+    return shuffleChoices(Array.from(mission.correctAnswer), seed).map(
+      (choice, index) => ({
+        id: `${mission.missionId}:ordering:${index}:${choice}`,
+        label: choice,
+        value: choice,
+        correct: false,
+      }),
+    );
+  }
+
   const wrongChoices = shuffleChoices(
     getChoicePool(content, mission).filter(
       (choice) => choice !== mission.correctAnswer,
@@ -133,12 +144,23 @@ function findIllustration(
   };
 }
 
-function buildMissingWord(answer: string) {
-  const characters = Array.from(answer);
-  const blankIndex = Math.min(1, Math.max(0, characters.length - 1));
+function findAnswerIndex(word: string[], answer: string[]) {
+  return word.findIndex((_, index) =>
+    answer.every((character, offset) => word[index + offset] === character),
+  );
+}
+
+function buildMissingWord(answer: string, word: string | undefined) {
+  const characters = Array.from(word ?? answer);
+  const answerCharacters = Array.from(answer);
+  const blankIndex = findAnswerIndex(characters, answerCharacters);
+  if (blankIndex < 0) {
+    throw new Error(`Cannot build missing word for answer: ${answer}`);
+  }
+
   return {
     before: characters.slice(0, blankIndex).join(''),
-    after: characters.slice(blankIndex + 1).join(''),
+    after: characters.slice(blankIndex + answerCharacters.length).join(''),
     blankIndex,
   };
 }
@@ -213,7 +235,7 @@ export function buildMissionViewModel(input: {
     word: wordTarget?.display,
     missingWord:
       mission.missionType === 'word-completion'
-        ? buildMissingWord(mission.correctAnswer)
+        ? buildMissingWord(mission.correctAnswer, wordTarget?.display)
         : undefined,
     orderedSlots:
       mission.missionType === 'word-ordering'

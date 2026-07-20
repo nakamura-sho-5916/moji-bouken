@@ -7,6 +7,7 @@ import {
 } from '../db/repositories/settingsRepository';
 import {
   calculateLearningOverview,
+  APP_VERSION,
   changeParentPin,
   clearParentPin,
   configureParentPin,
@@ -541,7 +542,9 @@ export function ParentPage({
                 PIN解除
               </button>
             </div>
-            <p className="font-bold">バージョン 0.1.0 / DB v{DB_VERSION}</p>
+            <p className="font-bold">
+              バージョン {APP_VERSION} / DB v{DB_VERSION}
+            </p>
           </div>
         ) : null}
         {tab === 'backup' ? (

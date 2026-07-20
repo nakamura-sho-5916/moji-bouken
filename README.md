@@ -534,4 +534,36 @@ mainブランチを使用します。ユーザーの明示指示がない限りc
 
 ### 24. バージョン
 
-MVPバージョンは `0.1.0` です。
+MVPバージョンは `0.1.2` です。
+
+### 25. 公開URL
+
+本番URL：
+
+https://moji-bouken.vercel.app
+
+mainブランチへのpush後、Vercelで自動デプロイされます。
+
+### 26. ミッション品質監査
+
+v0.1.2では、全ミッション形式の回答可能性を監査しました。
+
+- letter-introduction
+- letter-search
+- similar-letter-choice
+- illustration-letter-choice
+- illustration-word-choice
+- word-completion
+- word-ordering
+- vertical-reading
+- horizontal-reading
+- text-search
+- boss-mixed
+
+4択形式では、正解1件、重複しない誤答3件、合計4件であることを検証しています。word-completionは対象単語から空欄を再構成し、word-orderingは文字カードを並べて回答します。
+
+追加の監査コマンド：
+
+```powershell
+npm run test:content:stress
+```

@@ -18,13 +18,32 @@ export function WordOrderingMission({
     () => Array.from(selectedValue ?? ''),
     [selectedValue],
   );
+  const remainingChoices = useMemo(() => {
+    const remaining = [...viewModel.choices];
+    for (const piece of selectedPieces) {
+      const index = remaining.findIndex((choice) => choice.value === piece);
+      if (index >= 0) {
+        remaining.splice(index, 1);
+      }
+    }
+    return remaining;
+  }, [selectedPieces, viewModel.choices]);
+  const completed =
+    selectedPieces.length >= (viewModel.orderedSlots ?? []).length;
 
   const handleChoice = (choice: MissionChoice) => {
-    if (!selectedValue) {
-      onSelect(choice.value);
+    if (completed) {
       return;
     }
-    onSelect(choice.value);
+    onSelect(`${selectedValue ?? ''}${choice.value}`);
+  };
+
+  const handleBack = () => {
+    onSelect(selectedPieces.slice(0, -1).join(''));
+  };
+
+  const handleReset = () => {
+    onSelect('');
   };
 
   return (
@@ -41,11 +60,29 @@ export function WordOrderingMission({
           ))}
         </div>
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          className="min-h-12 rounded-[var(--radius-medium)] border-2 border-[var(--color-border)] bg-white px-4 text-lg font-black disabled:opacity-50"
+          disabled={disabled || selectedPieces.length === 0}
+          onClick={handleBack}
+          type="button"
+        >
+          ひとつ もどす
+        </button>
+        <button
+          className="min-h-12 rounded-[var(--radius-medium)] border-2 border-[var(--color-border)] bg-white px-4 text-lg font-black disabled:opacity-50"
+          disabled={disabled || selectedPieces.length === 0}
+          onClick={handleReset}
+          type="button"
+        >
+          さいしょから
+        </button>
+      </div>
       <div className="grid grid-cols-1 gap-3">
-        {viewModel.choices.map((choice) => (
+        {remainingChoices.map((choice) => (
           <button
             className="min-h-16 rounded-[var(--radius-medium)] border-2 border-[var(--color-border)] bg-white p-3 text-3xl font-black shadow-sm"
-            disabled={disabled}
+            disabled={disabled || completed}
             key={choice.id}
             onClick={() => handleChoice(choice)}
             type="button"
