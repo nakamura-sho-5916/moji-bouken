@@ -25,6 +25,7 @@ export type MissionChoice = {
   id: string;
   label: string;
   value: string;
+  correct: boolean;
 };
 
 export type MissionIllustration = {

@@ -48,6 +48,34 @@ async function answerCurrentMissionCorrectly(page: Page) {
   return { answeredChoice: true, hpDecreased };
 }
 
+async function expectCurrentChoiceMissionHasCorrectAnswer(page: Page) {
+  const session = await page.evaluate(() => {
+    const raw = localStorage.getItem('moji-bouken:mission-session');
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as {
+      currentIndex: number;
+      missions: { missionType: string; correctAnswer: string }[];
+    };
+  });
+  expect(session).not.toBeNull();
+  const mission = session?.missions[session.currentIndex];
+  expect(mission).toBeDefined();
+
+  if (
+    mission?.missionType === 'letter-introduction' ||
+    mission?.missionType === 'boss-mixed'
+  ) {
+    return false;
+  }
+
+  await expect(
+    page.getByRole('button', { name: mission?.correctAnswer ?? '' }).first(),
+  ).toBeVisible();
+  return true;
+}
+
 test('トップ画面に仮タイトルが表示される', async ({ page }) => {
   await page.goto('/');
 
@@ -185,6 +213,31 @@ test('ミッションを10問進めて結果画面へ移動できる', async ({ 
     return count;
   });
   expect(missionLogCount).toBeGreaterThan(0);
+});
+
+test('generated missions expose a visible correct answer choice 20 times', async ({
+  browser,
+}) => {
+  for (let index = 0; index < 20; index += 1) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto('/mission');
+    await page.locator('button').first().click();
+    await page.waitForFunction(() =>
+      Boolean(localStorage.getItem('moji-bouken:mission-session')),
+    );
+
+    let foundChoiceMission =
+      await expectCurrentChoiceMissionHasCorrectAnswer(page);
+    for (let step = 0; step < 3 && !foundChoiceMission; step += 1) {
+      await answerCurrentMissionCorrectly(page);
+      foundChoiceMission =
+        await expectCurrentChoiceMissionHasCorrectAnswer(page);
+    }
+
+    expect(foundChoiceMission).toBe(true);
+    await context.close();
+  }
 });
 
 test('本番バトル画面にデバッグ回答ボタンが表示されない', async ({ page }) => {

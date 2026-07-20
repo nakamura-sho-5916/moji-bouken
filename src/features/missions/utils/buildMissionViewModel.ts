@@ -41,14 +41,76 @@ function getTextTarget(
   return 'character' in target ? target.character : target.display;
 }
 
-function toChoices(mission: ContentMission, seed: number): MissionChoice[] {
-  return shuffleChoices([...new Set(mission.choices)], seed).map(
-    (choice, index) => ({
-      id: `${mission.missionId}:choice:${index}:${choice}`,
-      label: choice,
-      value: choice,
-    }),
+function uniqueValues(values: string[]) {
+  return [...new Set(values.filter((value) => value.length > 0))];
+}
+
+function getChoicePool(content: LoadedContent, mission: ContentMission) {
+  const answerLength = Array.from(mission.correctAnswer).length;
+  if (answerLength === 1) {
+    const allLetters = [...content.hiragana, ...content.katakana];
+    const answerLetter = allLetters.find(
+      (letter) => letter.character === mission.correctAnswer,
+    );
+    const scriptLetters = answerLetter
+      ? allLetters.filter(
+          (letter) => letter.scriptType === answerLetter.scriptType,
+        )
+      : allLetters;
+    return uniqueValues([
+      ...scriptLetters.map((letter) => letter.character),
+      ...mission.choices,
+    ]);
+  }
+
+  return uniqueValues([
+    ...content.words.map((word) => word.display),
+    ...mission.choices,
+  ]);
+}
+
+function assertGeneratedChoices(choices: MissionChoice[]) {
+  const values = choices.map((choice) => choice.value);
+  const uniqueCount = new Set(values).size;
+  const correctCount = choices.filter((choice) => choice.correct).length;
+  if (choices.length !== 4 || uniqueCount !== 4 || correctCount !== 1) {
+    throw new Error(
+      `Invalid mission choices: length=${choices.length}, unique=${uniqueCount}, correct=${correctCount}`,
+    );
+  }
+}
+
+function toChoices(
+  content: LoadedContent,
+  mission: ContentMission,
+  seed: number,
+): MissionChoice[] {
+  const wrongChoices = shuffleChoices(
+    getChoicePool(content, mission).filter(
+      (choice) => choice !== mission.correctAnswer,
+    ),
+    seed + 101,
+  ).slice(0, 3);
+
+  if (wrongChoices.length !== 3) {
+    throw new Error(
+      `Mission ${mission.missionId} does not have enough wrong choices.`,
+    );
+  }
+
+  const choiceValues = shuffleChoices(
+    [mission.correctAnswer, ...wrongChoices],
+    seed,
   );
+  const choices = choiceValues.map((choice, index) => ({
+    id: `${mission.missionId}:choice:${index}:${choice}`,
+    label: choice,
+    value: choice,
+    correct: choice === mission.correctAnswer,
+  }));
+
+  assertGeneratedChoices(choices);
+  return choices;
 }
 
 function findIllustration(
@@ -145,7 +207,7 @@ export function buildMissionViewModel(input: {
       ? 'この ミッションは じゅんびちゅうだよ。'
       : mission.prompt,
     targetText,
-    choices: toChoices(mission, seed),
+    choices: toChoices(content, mission, seed),
     orientation: mission.orientation === 'vertical' ? 'vertical' : 'horizontal',
     illustration: findIllustration(content, mission),
     word: wordTarget?.display,
