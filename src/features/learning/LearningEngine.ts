@@ -3,26 +3,38 @@ import { initializeAppData } from '../../db/initializeAppData';
 import { loadLearningContent } from '../../content/loaders/contentLoader';
 import { getDueReviewSchedules } from '../../db/repositories/reviewScheduleRepository';
 import type {
-  ContentMission,
+  ContentLetter,
+  ContentWord,
   LetterProgress,
+  LoadedContent,
+  MissionType,
   ReviewSchedule,
 } from '../../types';
 import { calculateQuestionPriority } from './calculateQuestionPriority';
 import { selectDueReviews } from './selectDueReviews';
 import { toLocalDateString } from './createReviewSchedules';
 import { recordLearningAnswer } from './recordLearningAnswer';
-import type { QuestionCandidate, RecordAnswerInput } from './types';
+import type {
+  QuestionCandidate,
+  QuestionCategory,
+  RecordAnswerInput,
+} from './types';
 
-function missionForLetter(
-  missions: ContentMission[],
-  letterId: string,
-  index: number,
-) {
-  return (
-    missions.find((mission) => mission.targetIds.includes(letterId)) ??
-    missions[index % missions.length]
-  );
-}
+const letterMissionTypes: MissionType[] = [
+  'letter-introduction',
+  'letter-search',
+  'similar-letter-choice',
+];
+
+const wordMissionTypes: MissionType[] = [
+  'illustration-letter-choice',
+  'illustration-word-choice',
+  'word-completion',
+  'word-ordering',
+  'vertical-reading',
+  'horizontal-reading',
+  'text-search',
+];
 
 async function getAllLetterProgress() {
   const db = await openMojiBoukenDb();
@@ -34,20 +46,77 @@ async function getAllReviewSchedules() {
   return db.getAll('reviewSchedules');
 }
 
-function toCandidate(
-  category: QuestionCandidate['category'],
+function findLetter(content: LoadedContent, letterId: string) {
+  return [...content.hiragana, ...content.katakana].find(
+    (letter) => letter.id === letterId,
+  );
+}
+
+function wordsForLetter(content: LoadedContent, letterId: string) {
+  return content.words.filter(
+    (word) => word.active && word.letterIds.includes(letterId),
+  );
+}
+
+function hasSimilarGroup(content: LoadedContent, letterId: string) {
+  return content.similarLetters.some((group) =>
+    group.letterIds.includes(letterId),
+  );
+}
+
+function availableMissionTypes(
+  content: LoadedContent,
+  letter: ContentLetter,
+  words: ContentWord[],
+) {
+  const types: MissionType[] = letterMissionTypes.filter(
+    (missionType) =>
+      missionType !== 'similar-letter-choice' ||
+      hasSimilarGroup(content, letter.id),
+  );
+
+  if (words.length > 0) {
+    types.push(...wordMissionTypes);
+  }
+
+  return types;
+}
+
+function toCandidates(
+  category: QuestionCategory,
   letterId: string,
-  mission: ContentMission,
+  content: LoadedContent,
   index: number,
-): QuestionCandidate {
-  return {
-    id: `${category}:${letterId}:${mission.missionId}:${index}`,
-    letterId,
-    missionType: mission.missionType,
-    category,
-    easy:
-      mission.difficulty <= 1 || category === 'normal' || category === 'new',
-  };
+): QuestionCandidate[] {
+  const letter = findLetter(content, letterId);
+  if (!letter) {
+    return [];
+  }
+  const words = wordsForLetter(content, letterId);
+  const types = availableMissionTypes(content, letter, words);
+  return types.map((missionType, typeIndex) => {
+    const word = words[(index + typeIndex) % Math.max(words.length, 1)];
+    const usesWord = wordMissionTypes.includes(missionType);
+    return {
+      id: `${category}:${letterId}:${missionType}:${word?.id ?? letter.id}:${index}:${typeIndex}`,
+      letterId,
+      sourceContentId: usesWord ? (word?.id ?? letter.id) : letter.id,
+      correctAnswer:
+        missionType === 'illustration-word-choice' ||
+        missionType === 'word-ordering' ||
+        missionType === 'vertical-reading' ||
+        missionType === 'horizontal-reading'
+          ? (word?.display ?? letter.character)
+          : letter.character,
+      missionType,
+      category,
+      easy:
+        letter.order <= 10 ||
+        word?.difficulty === 1 ||
+        category === 'normal' ||
+        category === 'new',
+    };
+  });
 }
 
 export const LearningEngine = {
@@ -87,37 +156,19 @@ export const LearningEngine = {
     );
 
     return calculateQuestionPriority({
-      dueReview: dueReviews.map((schedule, index) =>
-        toCandidate(
-          'due-review',
-          schedule.letterId,
-          missionForLetter(content.missions, schedule.letterId, index),
-          index,
-        ),
+      dueReview: dueReviews
+        .map((schedule, index) =>
+          toCandidates('due-review', schedule.letterId, content, index),
+        )
+        .flat(),
+      weak: weakProgress.flatMap((item, index) =>
+        toCandidates('weak', item.letterId, content, index),
       ),
-      weak: weakProgress.map((item, index) =>
-        toCandidate(
-          'weak',
-          item.letterId,
-          missionForLetter(content.missions, item.letterId, index),
-          index,
-        ),
+      normal: normalProgress.flatMap((item, index) =>
+        toCandidates('normal', item.letterId, content, index),
       ),
-      normal: normalProgress.map((item, index) =>
-        toCandidate(
-          'normal',
-          item.letterId,
-          missionForLetter(content.missions, item.letterId, index),
-          index,
-        ),
-      ),
-      new: newLetters.map((letter, index) =>
-        toCandidate(
-          'new',
-          letter.id,
-          missionForLetter(content.missions, letter.id, index),
-          index,
-        ),
+      new: newLetters.flatMap((letter, index) =>
+        toCandidates('new', letter.id, content, index),
       ),
       count: input?.count,
       seed: input?.seed,

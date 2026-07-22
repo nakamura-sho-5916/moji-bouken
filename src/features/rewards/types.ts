@@ -18,9 +18,15 @@ export type RewardSummary = {
   goldEarned: number;
   experienceGained: number;
   goldGained: number;
+  experienceBefore: number;
+  experienceAfter: number;
+  goldBefore: number;
+  goldAfter: number;
   levelBefore: number;
   levelAfter: number;
   levelUp: boolean;
+  nextLevelExperience: number | null;
+  experienceToNextLevel: number;
   reasons: RewardReason[];
   alreadyRewarded: boolean;
   player: Player | null;

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.1
+
+- Fixed dynamic mission sessions so letter candidates generate missions from the full learning content instead of falling back to the same small sample mission set.
+- Added per-session and recent-history diversity guards for repeated targets, repeated answers, duplicate question signatures, and long runs of the same mission format.
+- Raised early world recovery visibility so a few completed adventures show clearer area progress and unlock feedback.
+- Added EXP, Gold, and next-level progress display to home and reward results.
+- Added mission diversity diagnostics to `/debug/missions` for development-only audits.
+
 ## v0.2.0
 
 - Added an accessible game audio system based on the Web Audio API.

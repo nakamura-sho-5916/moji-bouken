@@ -26,5 +26,5 @@ export const QUESTION_PRIORITY_WEIGHTS = {
 } as const;
 
 export const DEFAULT_SESSION_QUESTION_COUNT = 10;
-export const MAX_NEW_LETTERS_PER_SESSION = 2;
+export const MAX_NEW_LETTERS_PER_SESSION = 5;
 export const MIN_EASY_QUESTIONS_PER_SESSION = 3;

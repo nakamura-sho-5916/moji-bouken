@@ -88,11 +88,17 @@ async function answerCurrentMissionCorrectly(page: Page) {
   });
   if (mission?.missionType === 'word-ordering') {
     for (const character of Array.from(mission.correctAnswer)) {
-      await page.getByRole('button', { name: character }).first().click();
+      await page
+        .getByRole('button', { exact: true, name: character })
+        .first()
+        .click();
     }
   } else {
     await page
-      .getByRole('button', { name: mission?.correctAnswer ?? '' })
+      .getByRole('button', {
+        exact: true,
+        name: mission?.correctAnswer ?? '',
+      })
       .first()
       .click();
   }
@@ -129,13 +135,19 @@ async function expectCurrentChoiceMissionHasCorrectAnswer(page: Page) {
   if (
     mission?.missionType === 'letter-introduction' ||
     mission?.missionType === 'boss-mixed' ||
-    mission?.missionType === 'word-ordering'
+    mission?.missionType === 'word-ordering' ||
+    mission?.missionType === 'text-search'
   ) {
     return false;
   }
 
   await expect(
-    page.getByRole('button', { name: mission?.correctAnswer ?? '' }).first(),
+    page
+      .getByRole('button', {
+        exact: true,
+        name: mission?.correctAnswer ?? '',
+      })
+      .first(),
   ).toBeVisible();
   return true;
 }
@@ -156,7 +168,8 @@ async function getCurrentCorrectChoicePosition(page: Page) {
     !mission ||
     mission.missionType === 'letter-introduction' ||
     mission.missionType === 'boss-mixed' ||
-    mission.missionType === 'word-ordering'
+    mission.missionType === 'word-ordering' ||
+    mission.missionType === 'text-search'
   ) {
     return -1;
   }
@@ -394,7 +407,7 @@ test('generated missions expose a visible correct answer choice 20 times', async
 
     let foundChoiceMission =
       await expectCurrentChoiceMissionHasCorrectAnswer(page);
-    for (let step = 0; step < 3 && !foundChoiceMission; step += 1) {
+    for (let step = 0; step < 9 && !foundChoiceMission; step += 1) {
       await answerCurrentMissionCorrectly(page);
       foundChoiceMission =
         await expectCurrentChoiceMissionHasCorrectAnswer(page);
@@ -512,12 +525,18 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
       .click();
   } else if (mission?.missionType === 'word-ordering') {
     for (const character of Array.from(mission.correctAnswer)) {
-      await page.getByRole('button', { name: character }).first().click();
+      await page
+        .getByRole('button', { exact: true, name: character })
+        .first()
+        .click();
     }
     await page.getByRole('button', { name: 'こたえる' }).click();
   } else {
     await page
-      .getByRole('button', { name: mission?.correctAnswer ?? '' })
+      .getByRole('button', {
+        exact: true,
+        name: mission?.correctAnswer ?? '',
+      })
       .first()
       .click();
     await page.getByRole('button', { name: 'こたえる' }).click();
@@ -582,7 +601,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.2.0')).toBeVisible();
+  await expect(page.getByText('バージョン 0.2.1')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');

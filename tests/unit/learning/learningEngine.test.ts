@@ -42,7 +42,15 @@ function candidate(
   missionType: QuestionCandidate['missionType'] = 'letter-search',
   easy = true,
 ): QuestionCandidate {
-  return { id, category, letterId, missionType, easy };
+  return {
+    id,
+    category,
+    letterId,
+    sourceContentId: letterId,
+    correctAnswer: letterId,
+    missionType,
+    easy,
+  };
 }
 
 describe('learning calculations', () => {
@@ -179,7 +187,15 @@ describe('learning calculations', () => {
           .filter((item) => item.category === 'new')
           .map((item) => item.letterId),
       ).size,
-    ).toBeLessThanOrEqual(2);
+    ).toBeLessThanOrEqual(5);
+    for (const letterId of new Set(result1.map((item) => item.letterId))) {
+      expect(result1.filter((item) => item.letterId === letterId)).toHaveLength(
+        Math.min(
+          2,
+          result1.filter((item) => item.letterId === letterId).length,
+        ),
+      );
+    }
     expect(result1.filter((item) => item.easy).length).toBeGreaterThanOrEqual(
       3,
     );

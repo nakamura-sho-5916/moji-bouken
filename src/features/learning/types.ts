@@ -61,6 +61,8 @@ export type QuestionCategory = 'due-review' | 'weak' | 'normal' | 'new';
 export type QuestionCandidate = {
   id: string;
   letterId: string;
+  sourceContentId: string;
+  correctAnswer: string;
   missionType: ContentMission['missionType'];
   category: QuestionCategory;
   easy: boolean;

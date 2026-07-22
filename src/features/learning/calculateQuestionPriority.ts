@@ -26,6 +26,21 @@ function pickNext(
   const candidates = pool.filter((candidate) => {
     const last = selected.at(-1);
     const lastTwo = selected.slice(-2);
+    const sameLetterCount = selected.filter(
+      (item) => item.letterId === candidate.letterId,
+    ).length;
+    const sameAnswerCount = selected.filter(
+      (item) => item.correctAnswer === candidate.correctAnswer,
+    ).length;
+    if (selected.some((item) => item.id === candidate.id)) {
+      return false;
+    }
+    if (sameLetterCount >= 2) {
+      return false;
+    }
+    if (sameAnswerCount >= 2) {
+      return false;
+    }
     if (last?.letterId === candidate.letterId) {
       return false;
     }
@@ -41,15 +56,29 @@ function pickNext(
   return source[Math.floor(random() * source.length)];
 }
 
+function limitByLetters(candidates: QuestionCandidate[], maxLetters: number) {
+  const acceptedLetters = new Set<string>();
+  return candidates.filter((candidate) => {
+    if (!acceptedLetters.has(candidate.letterId)) {
+      if (acceptedLetters.size >= maxLetters) {
+        return false;
+      }
+      acceptedLetters.add(candidate.letterId);
+    }
+    return true;
+  });
+}
+
 export function calculateQuestionPriority(input: QuestionPriorityInput) {
   const count = input.count ?? DEFAULT_SESSION_QUESTION_COUNT;
   const random = createSeededRandom(input.seed);
   const selected: QuestionCandidate[] = [];
+  const newCandidates = limitByLetters(input.new, MAX_NEW_LETTERS_PER_SESSION);
   const reusablePools = {
     dueReview: [...input.dueReview],
     weak: [...input.weak],
     normal: [...input.normal],
-    new: [...input.new].slice(0, MAX_NEW_LETTERS_PER_SESSION),
+    new: [...newCandidates],
   };
   const pools = {
     dueReview: [...reusablePools.dueReview],
@@ -87,6 +116,9 @@ export function calculateQuestionPriority(input: QuestionPriorityInput) {
     }
 
     const next = pickNext(pool, selected, random);
+    if (!next) {
+      break;
+    }
     selected.push(next);
     if (pools[poolKey].length > 0) {
       pools[poolKey] = pools[poolKey].filter(

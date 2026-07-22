@@ -6,6 +6,10 @@ import {
   buildMissionViewModel,
   getTargetLetterIds,
 } from './utils/buildMissionViewModel';
+import {
+  createDynamicMission,
+  createQuestionSignature,
+} from './utils/dynamicMissionFactory';
 import { validateMissionAnswer } from './utils/validateMissionAnswer';
 import type {
   MissionResult,
@@ -16,6 +20,9 @@ import type {
 export const STANDARD_SESSION_QUESTION_COUNT = 10;
 export const MISSION_SESSION_STORAGE_KEY = 'moji-bouken:mission-session';
 export const MISSION_RESULT_STORAGE_KEY = 'moji-bouken:last-mission-result';
+export const MISSION_HISTORY_STORAGE_KEY =
+  'moji-bouken:recent-question-history';
+const RECENT_HISTORY_LIMIT = 20;
 
 function makeSessionId(seed: number) {
   return `mission-session-${seed}-${Date.now()}`;
@@ -48,6 +55,26 @@ function fallbackMissionForCandidate(
   );
 }
 
+function loadRecentQuestionHistory() {
+  const raw = localStorage.getItem(MISSION_HISTORY_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+  try {
+    return JSON.parse(raw) as string[];
+  } catch {
+    localStorage.removeItem(MISSION_HISTORY_STORAGE_KEY);
+    return [];
+  }
+}
+
+function saveRecentQuestionHistory(signatures: string[]) {
+  localStorage.setItem(
+    MISSION_HISTORY_STORAGE_KEY,
+    JSON.stringify(signatures.slice(-RECENT_HISTORY_LIMIT)),
+  );
+}
+
 function isAnswerableMission(
   mission: ContentMission,
   content: LoadedContent,
@@ -65,6 +92,123 @@ function isAnswerableMission(
   }
 }
 
+function canUseMission(input: {
+  mission: ContentMission;
+  selected: ContentMission[];
+  recentHistory: string[];
+}) {
+  const signature = createQuestionSignature(input.mission);
+  if (input.recentHistory.includes(signature)) {
+    return false;
+  }
+  if (
+    input.selected.some(
+      (mission) => createQuestionSignature(mission) === signature,
+    )
+  ) {
+    return false;
+  }
+  const targetKey = input.mission.targetIds.join('+');
+  const sameTargetCount = input.selected.filter(
+    (mission) => mission.targetIds.join('+') === targetKey,
+  ).length;
+  if (sameTargetCount >= 2) {
+    return false;
+  }
+  if (targetKey.startsWith('word-') && sameTargetCount >= 1) {
+    return false;
+  }
+  const sameAnswerCount = input.selected.filter(
+    (mission) => mission.correctAnswer === input.mission.correctAnswer,
+  ).length;
+  if (sameAnswerCount >= 2) {
+    return false;
+  }
+  const lastTwo = input.selected.slice(-2);
+  if (
+    lastTwo.length === 2 &&
+    lastTwo.every(
+      (mission) => mission.missionType === input.mission.missionType,
+    )
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function selectMissions(input: {
+  dynamicMissions: ContentMission[];
+  fallbackMissions: ContentMission[];
+  content: LoadedContent;
+  seed: number;
+  count: number;
+  recentHistory: string[];
+}) {
+  const selected: ContentMission[] = [];
+  const pools = [
+    input.dynamicMissions,
+    input.dynamicMissions.filter(
+      (mission) =>
+        !input.recentHistory.includes(createQuestionSignature(mission)),
+    ),
+    input.fallbackMissions,
+  ];
+
+  for (const pool of pools) {
+    for (const mission of pool) {
+      if (selected.length >= input.count) {
+        break;
+      }
+      if (
+        !isAnswerableMission(
+          mission,
+          input.content,
+          input.seed,
+          selected.length,
+        )
+      ) {
+        continue;
+      }
+      if (
+        !canUseMission({
+          mission,
+          selected,
+          recentHistory: input.recentHistory,
+        })
+      ) {
+        continue;
+      }
+      selected.push(mission);
+    }
+  }
+
+  if (selected.length < input.count) {
+    for (const mission of [
+      ...input.dynamicMissions,
+      ...input.fallbackMissions,
+    ]) {
+      if (selected.length >= input.count) {
+        break;
+      }
+      if (
+        selected.some(
+          (item) =>
+            createQuestionSignature(item) === createQuestionSignature(mission),
+        )
+      ) {
+        continue;
+      }
+      if (
+        isAnswerableMission(mission, input.content, input.seed, selected.length)
+      ) {
+        selected.push(mission);
+      }
+    }
+  }
+
+  return selected.slice(0, input.count);
+}
+
 export async function createMissionSession(input?: {
   seed?: number;
   count?: number;
@@ -77,21 +221,32 @@ export async function createMissionSession(input?: {
     seed,
   });
   const activeMissions = content.missions.filter((mission) => mission.active);
-  const selected = candidates.map((candidate, index) =>
-    fallbackMissionForCandidate(candidate, content, index),
-  );
-  const missions = [...selected, ...activeMissions]
-    .filter((mission): mission is ContentMission => Boolean(mission))
-    .filter((mission, index) =>
-      isAnswerableMission(mission, content, seed, index),
+  const dynamicMissions = candidates
+    .map((candidate, index) =>
+      createDynamicMission({ candidate, content, seed, index }),
     )
-    .filter((mission, index, all) => {
-      const firstIndex = all.findIndex(
-        (item) => item.missionId === mission.missionId,
-      );
-      return firstIndex === index || selected.length < count;
-    })
-    .slice(0, count);
+    .filter((mission): mission is ContentMission => Boolean(mission));
+  const candidateFallbackMissions = candidates
+    .map((candidate, index) =>
+      fallbackMissionForCandidate(candidate, content, index),
+    )
+    .filter((mission): mission is ContentMission => Boolean(mission));
+  const useRecentHistory = input?.seed === undefined;
+  const recentHistory = useRecentHistory ? loadRecentQuestionHistory() : [];
+  const missions = selectMissions({
+    dynamicMissions,
+    fallbackMissions: [...candidateFallbackMissions, ...activeMissions],
+    content,
+    seed,
+    count,
+    recentHistory,
+  });
+  if (useRecentHistory) {
+    saveRecentQuestionHistory([
+      ...recentHistory,
+      ...missions.map((mission) => createQuestionSignature(mission)),
+    ]);
+  }
 
   return {
     sessionId: makeSessionId(seed),

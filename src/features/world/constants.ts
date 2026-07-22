@@ -8,7 +8,7 @@ export const RECOVERY_POINT_VALUES = {
   finalReviewCompleted: 15,
 } as const;
 
-export const RECOVERY_STAGE_THRESHOLDS = [0, 20, 50, 90, 140] as const;
+export const RECOVERY_STAGE_THRESHOLDS = [0, 10, 20, 30, 50] as const;
 
 export const MAX_RECOVERY_STAGE = RECOVERY_STAGE_THRESHOLDS.length - 1;
 

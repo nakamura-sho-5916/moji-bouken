@@ -21,6 +21,29 @@ const fourChoiceMissionTypes = new Set([
   'horizontal-reading',
 ]);
 
+function createSignature(mission: {
+  missionType: string;
+  targetIds: string[];
+  correctAnswer: string;
+  choices: string[];
+}) {
+  return [
+    mission.missionType,
+    mission.targetIds.join('+'),
+    mission.correctAnswer,
+    [...new Set(mission.choices)].sort().join('|'),
+  ].join('::');
+}
+
+function countBy<T>(items: T[], getKey: (item: T) => string) {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const key = getKey(item);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+}
+
 function getCorrectPosition(input: {
   choices: { value: string }[];
   correctAnswer: string;
@@ -135,6 +158,53 @@ describe('mission engine', () => {
     expect(session2.missions.map((mission) => mission.missionId)).toEqual(
       session1.missions.map((mission) => mission.missionId),
     );
+  });
+
+  it('creates dynamic sessions without extreme target or format repetition', async () => {
+    const session = await createMissionSession({ seed: 20260722, count: 10 });
+    const signatures = session.missions.map(createSignature);
+    const targetCounts = countBy(session.missions, (mission) =>
+      mission.targetIds.join('+'),
+    );
+    const answerCounts = countBy(
+      session.missions,
+      (mission) => mission.correctAnswer,
+    );
+    const generatedCount = session.missions.filter((mission) =>
+      mission.missionId.startsWith('generated-'),
+    ).length;
+
+    expect(session.missions).toHaveLength(10);
+    expect(new Set(signatures).size).toBe(signatures.length);
+    expect(generatedCount).toBeGreaterThanOrEqual(8);
+    expect(Math.max(...targetCounts.values())).toBeLessThanOrEqual(2);
+    expect(Math.max(...answerCounts.values())).toBeLessThanOrEqual(2);
+    for (let index = 2; index < session.missions.length; index += 1) {
+      expect(
+        session.missions[index]?.missionType ===
+          session.missions[index - 1]?.missionType &&
+          session.missions[index]?.missionType ===
+            session.missions[index - 2]?.missionType,
+      ).toBe(false);
+    }
+  });
+
+  it('varies generated mission content across multiple seeded sessions', async () => {
+    const signatures = new Set<string>();
+    const targets = new Set<string>();
+
+    for (let seed = 1; seed <= 10; seed += 1) {
+      const session = await createMissionSession({ seed, count: 10 });
+      for (const mission of session.missions) {
+        signatures.add(createSignature(mission));
+        for (const targetId of mission.targetIds) {
+          targets.add(targetId);
+        }
+      }
+    }
+
+    expect(signatures.size).toBeGreaterThanOrEqual(30);
+    expect(targets.size).toBeGreaterThanOrEqual(10);
   });
 
   it('choice missions always include exactly one correct answer', () => {

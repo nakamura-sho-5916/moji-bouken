@@ -17,7 +17,7 @@ import type { BattleSession } from '../battle/types';
 import type { MissionResult } from '../missions';
 import { calculateExperience } from './calculateExperience';
 import { calculateGold } from './calculateGold';
-import { calculateLevel } from './calculateLevel';
+import { calculateLevel, experienceRequiredForLevel } from './calculateLevel';
 import type { RewardReason, RewardSummary } from './types';
 
 function loadRewardedIds() {
@@ -85,9 +85,23 @@ export const RewardEngine = {
       goldEarned: 0,
       experienceGained: 0,
       goldGained: 0,
+      experienceBefore: player?.experience ?? 0,
+      experienceAfter: player?.experience ?? 0,
+      goldBefore: inventory?.gold ?? 0,
+      goldAfter: inventory?.gold ?? 0,
       levelBefore: player?.level ?? 1,
       levelAfter: player?.level ?? 1,
       levelUp: false,
+      nextLevelExperience: player
+        ? experienceRequiredForLevel((player.level ?? 1) + 1)
+        : null,
+      experienceToNextLevel: player
+        ? Math.max(
+            0,
+            experienceRequiredForLevel((player.level ?? 1) + 1) -
+              player.experience,
+          )
+        : 0,
       reasons,
       player: player ?? null,
       inventory: inventory ?? null,
@@ -104,6 +118,7 @@ export const RewardEngine = {
     const goldGained = Math.max(0, calculateGold(reasons));
     const nextExperience = player.experience + experienceGained;
     const nextLevel = calculateLevel(nextExperience);
+    const nextLevelExperience = experienceRequiredForLevel(nextLevel + 1);
     const updatedPlayer = await updatePlayer(DEFAULT_PLAYER_ID, {
       experience: nextExperience,
       level: nextLevel,
@@ -118,8 +133,12 @@ export const RewardEngine = {
       experienceEarned: experienceGained,
       goldGained,
       goldEarned: goldGained,
+      experienceAfter: nextExperience,
+      goldAfter: updatedInventory?.gold ?? inventory.gold + goldGained,
       levelAfter: nextLevel,
       levelUp: nextLevel > player.level,
+      nextLevelExperience,
+      experienceToNextLevel: Math.max(0, nextLevelExperience - nextExperience),
       alreadyRewarded: false,
       player: updatedPlayer ?? player,
       inventory: updatedInventory ?? inventory,

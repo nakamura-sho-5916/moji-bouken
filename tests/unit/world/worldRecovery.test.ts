@@ -78,10 +78,10 @@ describe('world recovery', () => {
     ).toBe(75);
 
     expect(calculateRecoveryStage(0)).toBe(0);
-    expect(calculateRecoveryStage(20)).toBe(1);
-    expect(calculateRecoveryStage(50)).toBe(2);
-    expect(calculateRecoveryStage(90)).toBe(3);
-    expect(calculateRecoveryStage(140)).toBe(4);
+    expect(calculateRecoveryStage(10)).toBe(1);
+    expect(calculateRecoveryStage(20)).toBe(2);
+    expect(calculateRecoveryStage(30)).toBe(3);
+    expect(calculateRecoveryStage(50)).toBe(4);
   });
 
   it('前のエリアの復興段階からエリア解放を判定する', () => {
@@ -146,9 +146,9 @@ describe('world recovery', () => {
     );
 
     expect(first?.alreadyApplied).toBe(false);
-    expect(first?.nextStage).toBe(2);
+    expect(first?.nextStage).toBe(4);
     expect(second?.alreadyApplied).toBe(true);
-    expect(progress?.recoveryStage).toBe(2);
+    expect(progress?.recoveryStage).toBe(4);
     expect(progress?.unlockedEvents).toContain('reward:world-battle-1');
   });
 });
