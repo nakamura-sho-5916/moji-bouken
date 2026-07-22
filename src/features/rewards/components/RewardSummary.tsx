@@ -1,3 +1,4 @@
+import { TreasureChestEffect } from '../../effects';
 import type { RewardSummary as RewardSummaryData } from '../types';
 
 type RewardSummaryProps = {
@@ -20,11 +21,14 @@ export function RewardSummary({ summary }: RewardSummaryProps) {
   );
 
   return (
-    <section className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
+    <section className="relative overflow-hidden rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
+      <div className="absolute right-2 top-2 opacity-80">
+        <TreasureChestEffect rare={summary.levelUp} />
+      </div>
       <h2 className="text-xl font-black text-[var(--color-primary-strong)]">
         たからばこ
       </h2>
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="relative mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-[var(--radius-medium)] bg-orange-50 p-3 text-center font-black">
           <p>けいけん</p>
           <p className="text-2xl">+{summary.experienceGained}</p>
@@ -53,7 +57,7 @@ export function RewardSummary({ summary }: RewardSummaryProps) {
         </div>
       </div>
       {summary.levelUp ? (
-        <p className="mt-4 rounded-[var(--radius-medium)] bg-[var(--color-primary)] p-3 text-center text-lg font-black text-white">
+        <p className="mt-4 rounded-[var(--radius-medium)] bg-[var(--color-primary)] p-3 text-center text-lg font-black text-white motion-safe:animate-[game-rare-glow_1s_ease-in-out_2]">
           レベルアップ
         </p>
       ) : null}

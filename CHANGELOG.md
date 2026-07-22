@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+- CSS AnimationとSVG主体の本番ゲーム演出を追加
+- 正解・不正解、敵被弾、敵撃破、レベルアップ、宝箱、仲間、世界復興、ショップ購入、レア獲得の視覚フィードバックを強化
+- reduced-motionとスマートフォン表示を前提に、軽量なtransform / opacity中心の演出へ統一
+
 ## v0.3.0
 
 - Added original lightweight SVG game artwork for enemies, companions, area backgrounds, and items.

@@ -16,7 +16,7 @@ import type {
 export const BACKUP_FORMAT = 'moji-bouken-backup';
 export const BACKUP_VERSION = 1;
 export const MAX_BACKUP_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-export const APP_VERSION = '0.3.0';
+export const APP_VERSION = '0.4.0';
 
 export type BackupData = {
   players: Player[];

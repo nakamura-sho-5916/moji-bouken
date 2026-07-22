@@ -8,6 +8,7 @@ import {
   purchaseEquipment,
 } from '../features/collection';
 import { useAudio } from '../features/audio';
+import { TreasureChestEffect } from '../features/effects';
 import type { Inventory } from '../types';
 
 export function ShopPage() {
@@ -16,6 +17,7 @@ export function ShopPage() {
   const [message, setMessage] = useState('おみせは まだ じゅんびちゅうだよ');
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [purchasedId, setPurchasedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const audio = useAudio();
 
@@ -82,6 +84,9 @@ export function ShopPage() {
                 key={equipment.id}
               >
                 <div className="flex items-center gap-3">
+                  {purchasedId === equipment.id ? (
+                    <TreasureChestEffect rare={equipment.price >= 60} />
+                  ) : null}
                   <ItemArtwork
                     className="size-16 shrink-0"
                     itemId={equipment.id}
@@ -109,6 +114,7 @@ export function ShopPage() {
                             await reload();
                             setMessage(result.message);
                             if (result.status === 'purchased') {
+                              setPurchasedId(equipment.id);
                               audio.playSoundEffect('shop-purchase');
                               audio.playSoundEffect('equipment-acquired');
                             }

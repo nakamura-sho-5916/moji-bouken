@@ -103,7 +103,7 @@ async function answerCurrentMissionCorrectly(page: Page) {
       .click();
   }
   await page.getByRole('button', { name: 'こたえる' }).click();
-  await expect(page.getByText('やったね').first()).toBeVisible();
+  await expect(page.getByText('繧・▲縺溘・').first()).toBeVisible();
   const afterBattle = await page.evaluate(() => {
     const raw = localStorage.getItem('moji-bouken:active-battle-session');
     return raw ? (JSON.parse(raw) as { enemyCurrentHp: number }) : null;
@@ -601,7 +601,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.3.0')).toBeVisible();
+  await expect(page.getByText('バージョン 0.4.0')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');

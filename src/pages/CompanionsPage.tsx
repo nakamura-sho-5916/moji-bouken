@@ -8,6 +8,7 @@ import {
   selectCompanion,
 } from '../features/collection';
 import { useAudio } from '../features/audio';
+import { SceneEffect } from '../features/effects';
 import type { CompanionData } from '../features/collection';
 import type { Inventory } from '../types';
 
@@ -70,6 +71,13 @@ export function CompanionsPage() {
           {message}
         </p>
       </div>
+      {selectedId ? (
+        <SceneEffect
+          className="border-pink-200"
+          title="なかまと いっしょ"
+          tone="companion"
+        />
+      ) : null}
       <div className="grid gap-3">
         {companionData.map((companion) => {
           const joined = joinedIds.has(companion.id);
@@ -78,7 +86,7 @@ export function CompanionsPage() {
               className={[
                 'min-h-24 rounded-[var(--radius-large)] border bg-white p-4 text-left shadow-sm',
                 selectedId === companion.id
-                  ? 'border-[var(--color-primary)] ring-4 ring-orange-100'
+                  ? 'border-[var(--color-primary)] ring-4 ring-orange-100 motion-safe:animate-[game-companion-join_.7s_ease-out_1]'
                   : 'border-[var(--color-border)]',
               ].join(' ')}
               disabled={!joined}

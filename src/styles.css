@@ -117,6 +117,171 @@ button {
   }
 }
 
+@keyframes game-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.72) rotate(-8deg);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.06) rotate(4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18) rotate(10deg);
+  }
+}
+
+@keyframes game-slash {
+  0% {
+    opacity: 0;
+    transform: translate3d(-18px, -50%, 0) scale(0.82) rotate(-8deg);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(4px, -50%, 0) scale(1.06) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(20px, -50%, 0) scale(1.12) rotate(5deg);
+  }
+}
+
+@keyframes game-impact-card {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(-4px);
+  }
+  70% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes game-card-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes game-answer-correct {
+  0% {
+    transform: scale(0.98);
+  }
+  55% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes game-answer-retry {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(-3px);
+  }
+  70% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes game-treasure-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.82);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes game-sparkle-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes game-companion-join {
+  0% {
+    transform: translateY(8px) scale(0.98);
+  }
+  55% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes game-recovery-breathe {
+  0%,
+  100% {
+    box-shadow: 0 8px 18px rgb(22 163 74 / 8%);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 12px 26px rgb(22 163 74 / 16%);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes game-shop-buy {
+  0% {
+    transform: scale(0.98);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes game-rare-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgb(99 102 241 / 0%));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgb(99 102 241 / 38%));
+  }
+}
+
+@keyframes game-collection-new {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

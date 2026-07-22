@@ -16,6 +16,9 @@ export function AreaNode({
     <button
       className={[
         'relative w-full overflow-hidden rounded-[var(--radius-large)] border bg-white p-4 text-left shadow-sm',
+        area.recoveryStage > 0
+          ? 'motion-safe:animate-[game-recovery-breathe_2.8s_ease-in-out_infinite]'
+          : '',
         selected
           ? 'border-[var(--color-primary)] ring-4 ring-orange-100'
           : 'border-[var(--color-border)]',

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { SceneEffect } from '../../effects';
 import type { RecoveryEvent } from '../types';
 
 export function RecoveryEventModal({
@@ -20,9 +21,7 @@ export function RecoveryEventModal({
         className="w-full max-w-sm rounded-[var(--radius-large)] bg-white p-6 text-center shadow-xl"
         initial={{ opacity: 0, scale: 0.94 }}
       >
-        <p className="text-6xl" aria-hidden="true">
-          ✨
-        </p>
+        <SceneEffect title="せかいが ひかりだした" tone="recovery" />
         <h2 className="mt-3 text-3xl font-black text-[var(--color-primary-strong)]">
           {event.title}
         </h2>

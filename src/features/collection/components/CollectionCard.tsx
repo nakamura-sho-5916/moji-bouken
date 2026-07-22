@@ -15,7 +15,12 @@ export function CollectionCard({
 }) {
   return (
     <button
-      className="min-h-24 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-4 text-left shadow-sm"
+      className={[
+        'min-h-24 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-4 text-left shadow-sm',
+        discovered
+          ? 'motion-safe:animate-[game-collection-new_.6s_ease-out_1]'
+          : '',
+      ].join(' ')}
       onClick={onClick}
       type="button"
     >
