@@ -32,7 +32,14 @@ export function ResultPage() {
       return;
     }
     playedResultAudioRef.current = true;
-    audio.playSoundEffect(rewardSummary.levelUp ? 'level-up' : 'reward');
+    window.setTimeout(() => audio.playSoundEffect('reward'), 120);
+    window.setTimeout(() => audio.playSoundEffect('exp-gain'), 260);
+    if (rewardSummary.goldEarned > 0) {
+      window.setTimeout(() => audio.playSoundEffect('gold-gain'), 390);
+    }
+    if (rewardSummary.levelUp) {
+      window.setTimeout(() => audio.playSoundEffect('level-up'), 650);
+    }
   }, [audio, rewardSummary]);
 
   useEffect(() => {

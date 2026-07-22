@@ -148,7 +148,7 @@ export function MissionRunner() {
     }
     const answerResult = BattleEngine.applyAnswer({ battle, correct });
     if (correct) {
-      audio.playSoundEffect('attack');
+      window.setTimeout(() => audio.playSoundEffect('attack'), 90);
     }
     const nextBattle =
       answerResult.battle.status === 'feedback'
@@ -158,7 +158,7 @@ export function MissionRunner() {
     setLastDamage(answerResult.damage);
     saveActiveBattleSession(nextBattle);
     if (nextBattle.enemyCurrentHp <= 0) {
-      audio.playSoundEffect('enemy-defeated');
+      window.setTimeout(() => audio.playSoundEffect('enemy-defeated'), 180);
     }
     return nextBattle;
   };
@@ -167,18 +167,20 @@ export function MissionRunner() {
     if (!battle) {
       return;
     }
-    const specialResult = BattleEngine.applySpecialAttack(battle);
     audio.playSoundEffect('special-attack');
-    const nextBattle =
-      specialResult.battle.status === 'feedback'
-        ? { ...specialResult.battle, status: 'active' as const }
-        : specialResult.battle;
-    setBattle(nextBattle);
-    setLastDamage(specialResult.damage);
-    saveActiveBattleSession(nextBattle);
-    if (nextBattle.enemyCurrentHp <= 0) {
-      audio.playSoundEffect('enemy-defeated');
-    }
+    window.setTimeout(() => {
+      const specialResult = BattleEngine.applySpecialAttack(battle);
+      const nextBattle =
+        specialResult.battle.status === 'feedback'
+          ? { ...specialResult.battle, status: 'active' as const }
+          : specialResult.battle;
+      setBattle(nextBattle);
+      setLastDamage(specialResult.damage);
+      saveActiveBattleSession(nextBattle);
+      if (nextBattle.enemyCurrentHp <= 0) {
+        window.setTimeout(() => audio.playSoundEffect('enemy-defeated'), 120);
+      }
+    }, 220);
   };
 
   const finishCurrentMission = async (

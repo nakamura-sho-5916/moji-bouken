@@ -12,6 +12,9 @@ class MockParam {
   exponentialRampToValueAtTime(value: number) {
     this.value = value;
   }
+  cancelAndHoldAtTime() {
+    return undefined;
+  }
   setTargetAtTime(value: number) {
     this.value = value;
   }
@@ -128,5 +131,30 @@ describe('AudioManager', () => {
 
     expect(played).toEqual(['home', 'mission']);
     expect(manager.getState().currentBgm).toBe('mission');
+    expect(manager.getState().currentBpm).toBeGreaterThan(0);
+    manager.stopBgm(0);
+  });
+
+  it('ducks BGM during large reward sound effects and releases nodes', async () => {
+    const manager = new AudioManager();
+    const duckEvents: boolean[] = [];
+    manager.subscribe((event) => {
+      if (event.type === 'duck') {
+        duckEvents.push(event.active);
+      }
+    });
+
+    await manager.unlock();
+    manager.playBgm('home');
+    manager.playSoundEffect('level-up');
+
+    expect(manager.getState().ducking).toBe(true);
+    expect(duckEvents).toContain(true);
+
+    await vi.advanceTimersByTimeAsync(1200);
+
+    expect(manager.getState().ducking).toBe(false);
+    expect(duckEvents).toContain(false);
+    manager.stopBgm(0);
   });
 });

@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.0
+
+- Replaced placeholder Web Audio tones with original procedural production BGM and SFX.
+- Added nine BGM cues covering title, home, world, mission, battle, boss, result, world recovery, and victory fanfare.
+- Added expanded SFX patches for battle, rewards, drops, shop, companion, area unlock, EXP, Gold, and boss appearance cues.
+- Added BGM ducking for level up, victory, world recovery, companion joins, and rare reward moments.
+- Expanded `/debug/audio` with AudioContext state, current BGM, BPM, current step, node count, SFX/BGM triggers, and ducking checks.
+- Added audio validation tests for registries, BPM ranges, loop flags, duplicate BGM prevention, ducking, and node release.
+
 ## v0.5.0
 
 - 敵を50体へ拡張し、各エリアに9体の通常敵と1体のボスを配置

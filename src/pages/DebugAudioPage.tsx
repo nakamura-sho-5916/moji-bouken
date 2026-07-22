@@ -6,8 +6,10 @@ import {
 } from '../db/repositories/settingsRepository';
 import {
   audioManager,
+  bgmCompositions,
   bgmRegistry,
   soundEffectIds,
+  sfxPatches,
   useAudio,
   type AudioEvent,
 } from '../features/audio';
@@ -50,6 +52,11 @@ export function DebugAudioPage() {
         <p className="font-bold">
           currentBgm: {audio.state.currentBgm ?? 'none'}
         </p>
+        <p className="font-bold">bpm: {audio.state.currentBpm ?? 'none'}</p>
+        <p className="font-bold">step: {audio.state.currentStep ?? 'none'}</p>
+        <p className="font-bold">context: {audio.state.audioContextState}</p>
+        <p className="font-bold">nodes: {audio.state.activeNodeCount}</p>
+        <p className="font-bold">ducking: {String(audio.state.ducking)}</p>
         <p className="font-bold">queued: {audio.state.queuedRequests}</p>
       </div>
       <button
@@ -72,6 +79,9 @@ export function DebugAudioPage() {
               type="button"
             >
               {id}
+              <span className="block text-[10px] text-[var(--color-text-muted)]">
+                {sfxPatches[id].durationMs}ms
+              </span>
             </button>
           ))}
         </div>
@@ -87,8 +97,27 @@ export function DebugAudioPage() {
               type="button"
             >
               {id}
+              <span className="block text-[10px] text-[var(--color-text-muted)]">
+                {bgmCompositions[id as keyof typeof bgmRegistry].bpm} BPM
+              </span>
             </button>
           ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+            onClick={() => audio.playBgm('victory-fanfare')}
+            type="button"
+          >
+            duck + fanfare
+          </button>
+          <button
+            className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+            onClick={() => audio.playSoundEffect('level-up')}
+            type="button"
+          >
+            duck + level-up
+          </button>
         </div>
         <button
           className="min-h-11 rounded-[var(--radius-medium)] bg-slate-800 px-2 text-sm font-black text-white"

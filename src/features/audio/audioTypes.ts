@@ -12,10 +12,25 @@ export type SoundEffectId =
   | 'companion-joined'
   | 'equipment-acquired'
   | 'shop-purchase'
-  | 'area-unlocked';
+  | 'area-unlocked'
+  | 'critical-hit'
+  | 'chest-drop'
+  | 'rare-drop'
+  | 'legendary-drop'
+  | 'exp-gain'
+  | 'gold-gain'
+  | 'boss-appearance';
 
 export type BgmId =
-  'title' | 'home' | 'world' | 'mission' | 'battle' | 'boss' | 'result';
+  | 'title'
+  | 'home'
+  | 'world'
+  | 'mission'
+  | 'battle'
+  | 'boss'
+  | 'result'
+  | 'world-recovery'
+  | 'victory-fanfare';
 
 export type AudioCategory = 'sfx' | 'bgm';
 
@@ -30,6 +45,7 @@ export type AudioAsset = {
   cooldownMs: number;
   fadeInMs: number;
   fadeOutMs: number;
+  bpm?: number;
   description: string;
   licenseId: string;
 };
@@ -48,9 +64,16 @@ export type AudioState = {
   unlocked: boolean;
   currentBgm: BgmId | null;
   queuedRequests: number;
+  audioContextState: AudioContextState | 'unavailable';
+  currentBpm: number | null;
+  currentStep: number | null;
+  activeNodeCount: number;
+  ducking: boolean;
 };
 
 export type AudioEvent =
   | { type: 'unlock'; unlocked: boolean }
   | { type: 'sfx'; id: SoundEffectId; played: boolean }
-  | { type: 'bgm'; id: BgmId | null; played: boolean };
+  | { type: 'bgm'; id: BgmId | null; played: boolean }
+  | { type: 'duck'; active: boolean; ratio: number }
+  | { type: 'node-count'; activeNodeCount: number };

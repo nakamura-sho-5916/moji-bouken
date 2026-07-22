@@ -10,6 +10,8 @@ export {
   soundEffectIds,
   soundEffectRegistry,
 } from './audioRegistry';
+export { bgmCompositionIds, bgmCompositions } from './audioComposition';
+export { sfxPatchIds, sfxPatches } from './sfxPatches';
 export type {
   AudioAsset,
   AudioEvent,

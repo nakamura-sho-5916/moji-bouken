@@ -1,4 +1,6 @@
 import type { AudioAsset, BgmId, SoundEffectId } from './audioTypes';
+import { bgmCompositions } from './audioComposition';
+import { sfxPatches } from './sfxPatches';
 
 const sfx = (
   id: SoundEffectId,
@@ -25,12 +27,13 @@ const bgm = (id: BgmId, description: string): AudioAsset => ({
   src: null,
   category: 'bgm',
   defaultVolume: 0.22,
-  loop: true,
+  loop: bgmCompositions[id].loop,
   preload: false,
   maxSimultaneous: 1,
   cooldownMs: 0,
   fadeInMs: 500,
   fadeOutMs: 500,
+  bpm: bgmCompositions[id].bpm,
   description,
   licenseId: 'generated-web-audio',
 });
@@ -55,6 +58,13 @@ export const soundEffectRegistry: Record<SoundEffectId, AudioAsset> = {
   ),
   'shop-purchase': sfx('shop-purchase', 'Shop purchase', 0.32, 300),
   'area-unlocked': sfx('area-unlocked', 'Area unlocked', 0.38, 500),
+  'critical-hit': sfx('critical-hit', 'Critical hit', 0.4, 220),
+  'chest-drop': sfx('chest-drop', 'Chest drop', 0.34, 260),
+  'rare-drop': sfx('rare-drop', 'Rare drop', 0.38, 500),
+  'legendary-drop': sfx('legendary-drop', 'Legendary drop', 0.42, 700),
+  'exp-gain': sfx('exp-gain', 'Experience gain', 0.24, 100),
+  'gold-gain': sfx('gold-gain', 'Gold gain', 0.24, 100),
+  'boss-appearance': sfx('boss-appearance', 'Boss appearance', 0.38, 700),
 };
 
 export const bgmRegistry: Record<BgmId, AudioAsset> = {
@@ -65,7 +75,15 @@ export const bgmRegistry: Record<BgmId, AudioAsset> = {
   battle: bgm('battle', 'Battle ambience'),
   boss: bgm('boss', 'Boss battle ambience'),
   result: bgm('result', 'Result screen ambience'),
+  'world-recovery': bgm('world-recovery', 'World recovery cue'),
+  'victory-fanfare': bgm('victory-fanfare', 'Victory fanfare cue'),
 };
+
+for (const id of Object.keys(sfxPatches) as SoundEffectId[]) {
+  if (!soundEffectRegistry[id]) {
+    throw new Error(`Missing SFX registry entry: ${id}`);
+  }
+}
 
 export const audioRegistry = {
   ...soundEffectRegistry,
