@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export function CollectionCard({
   icon,
   title,
@@ -5,7 +7,7 @@ export function CollectionCard({
   discovered,
   onClick,
 }: {
-  icon: string;
+  icon: ReactNode;
   title: string;
   description: string;
   discovered: boolean;
@@ -19,17 +21,17 @@ export function CollectionCard({
     >
       <div className="flex items-center gap-3">
         <span
-          className="flex size-14 items-center justify-center rounded-full bg-orange-50 text-3xl"
           aria-hidden="true"
+          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-orange-50 text-3xl"
         >
-          {discovered ? icon : '？'}
+          {discovered ? icon : '?'}
         </span>
         <div>
           <p className="text-lg font-black text-[var(--color-primary-strong)]">
             {discovered ? title : 'まだ であっていないよ'}
           </p>
           <p className="text-sm font-bold text-[var(--color-text-muted)]">
-            {discovered ? description : '🔒 たのしみに していてね'}
+            {discovered ? description : 'たのしみに していてね'}
           </p>
         </div>
       </div>

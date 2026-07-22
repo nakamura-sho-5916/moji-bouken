@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { loadLearningContent } from '../content/loaders/contentLoader';
+import { CompanionArtwork, EnemyArtwork } from '../features/assets';
 import { CollectionCard } from '../features/collection/components/CollectionCard';
 import { companionData, getCollectionState } from '../features/collection';
 import type { CollectionProgress } from '../types';
@@ -120,7 +121,12 @@ export function CollectionPage({
                 'companion',
                 companion.id,
               )}
-              icon={companion.imageId}
+              icon={
+                <CompanionArtwork
+                  className="size-14"
+                  companionId={companion.id}
+                />
+              }
               key={companion.id}
               title={companion.name}
             />
@@ -133,7 +139,7 @@ export function CollectionPage({
             <CollectionCard
               description={`${enemy.areaId}で であったよ`}
               discovered={hasProgress(state.progress, 'enemy', enemy.id)}
-              icon={enemy.type === 'boss' ? '👑' : '🌀'}
+              icon={<EnemyArtwork className="size-14" enemyId={enemy.id} />}
               key={enemy.id}
               title={enemy.name}
             />

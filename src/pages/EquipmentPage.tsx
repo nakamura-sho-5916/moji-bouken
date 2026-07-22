@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
+import { ItemArtwork } from '../features/assets';
 import {
   equipItem,
   equipmentData,
@@ -77,9 +78,12 @@ export function EquipmentPage() {
               type="button"
             >
               <div className="flex items-center gap-3">
-                <span className="text-4xl" aria-hidden="true">
-                  {owned ? equipment.imageId : '🔒'}
-                </span>
+                <ItemArtwork
+                  className="size-16 shrink-0"
+                  equipped={equipped}
+                  itemId={equipment.id}
+                  locked={!owned}
+                />
                 <div>
                   <p className="text-xl font-black text-[var(--color-primary-strong)]">
                     {equipment.name}

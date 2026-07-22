@@ -1,7 +1,7 @@
 {
   "name": "moji-bouken",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,6 +13,7 @@
     "format:check": "prettier \"**/*.{ts,tsx,js,json,md,css,html,svg}\" --check --ignore-unknown",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:assets": "vitest run tests/unit/assets/assetRegistry.test.ts",
     "test:content:stress": "vitest run tests/unit/content/missionStress.test.ts",
     "test:e2e": "playwright test"
   },

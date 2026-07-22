@@ -91,6 +91,11 @@ const DebugAudioPage = lazy(() =>
     default: module.DebugAudioPage,
   })),
 );
+const DebugAssetsPage = lazy(() =>
+  import('../pages/DebugAssetsPage').then((module) => ({
+    default: module.DebugAssetsPage,
+  })),
+);
 
 export function AppRouter() {
   const location = useLocation();
@@ -180,6 +185,7 @@ export function AppRouter() {
                   />
                   <Route element={<DebugReleasePage />} path="/debug/release" />
                   <Route element={<DebugAudioPage />} path="/debug/audio" />
+                  <Route element={<DebugAssetsPage />} path="/debug/assets" />
                 </>
               ) : null}
               <Route element={<Navigate replace to="/" />} path="/index.html" />

@@ -51,6 +51,72 @@ button {
   font: inherit;
 }
 
+@keyframes asset-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.01);
+  }
+}
+
+@keyframes asset-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes asset-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 10px 18px rgb(14 165 233 / 18%));
+  }
+  50% {
+    filter: drop-shadow(0 14px 24px rgb(249 115 22 / 26%));
+  }
+}
+
+@keyframes asset-hit {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  35% {
+    transform: translateX(-5px) scale(1.03);
+  }
+  70% {
+    transform: translateX(5px) scale(0.98);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes asset-defeat {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.25;
+    transform: scale(0.86);
+  }
+}
+
+@keyframes asset-shine {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

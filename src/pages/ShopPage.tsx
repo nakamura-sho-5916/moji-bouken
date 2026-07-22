@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
+import { ItemArtwork } from '../features/assets';
 import {
   equipmentData,
   getCollectionState,
@@ -81,9 +82,10 @@ export function ShopPage() {
                 key={equipment.id}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-4xl" aria-hidden="true">
-                    {equipment.imageId}
-                  </span>
+                  <ItemArtwork
+                    className="size-16 shrink-0"
+                    itemId={equipment.id}
+                  />
                   <div>
                     <p className="text-xl font-black text-[var(--color-primary-strong)]">
                       {equipment.name}

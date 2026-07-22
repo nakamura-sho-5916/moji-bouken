@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { initializeAppData } from '../db/initializeAppData';
+import { preloadGameAssets } from '../features/assets';
 import { LoadingScreen } from './LoadingScreen';
 
 type AppInitializerProps = {
@@ -20,6 +21,7 @@ export function AppInitializer({ children }: AppInitializerProps) {
     }
 
     initializedRef.current = true;
+    preloadGameAssets();
     void initializeAppData()
       .then(() => {
         setState('ready');

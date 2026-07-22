@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
+import { CompanionArtwork } from '../features/assets';
 import {
   companionData,
   getCollectionState,
@@ -88,9 +89,12 @@ export function CompanionsPage() {
               type="button"
             >
               <div className="flex items-center gap-3">
-                <span className="text-5xl" aria-hidden="true">
-                  {joined ? companion.imageId : '？'}
-                </span>
+                <CompanionArtwork
+                  className="size-20 shrink-0"
+                  companionId={companion.id}
+                  locked={!joined}
+                  selected={selectedId === companion.id}
+                />
                 <div>
                   <p className="text-xl font-black text-[var(--color-primary-strong)]">
                     {joined ? companion.name : 'まだ であっていないよ'}

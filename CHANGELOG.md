@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.0
+
+- Added original lightweight SVG game artwork for enemies, companions, area backgrounds, and items.
+- Added a central asset registry, resolver, preloader, and reusable artwork components.
+- Integrated production artwork into battle, world, companion, collection, equipment, shop, and result screens.
+- Added development-only `/debug/assets` for asset audits and fallback checks.
+- Added asset safety tests for registry metadata, file existence, SVG viewBox, script-free SVG, and size limits.
+
 ## v0.2.1
 
 - Fixed dynamic mission sessions so letter candidates generate missions from the full learning content instead of falling back to the same small sample mission set.

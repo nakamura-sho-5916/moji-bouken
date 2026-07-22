@@ -601,7 +601,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.2.1')).toBeVisible();
+  await expect(page.getByText('バージョン 0.3.0')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');
@@ -618,4 +618,71 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
   await page.goto('/mission');
   await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
   await expect(page.getByText('1 / 5')).toBeVisible();
+});
+
+test('production artwork renders on main visual screens', async ({ page }) => {
+  await page.goto('/battle');
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'moji-bouken:active-battle-session',
+      JSON.stringify({
+        battleId: 'battle-e2e-enemy-moji-slime',
+        sessionId: 'e2e',
+        enemyId: 'enemy-moji-slime',
+        enemyMaxHp: 140,
+        enemyCurrentHp: 90,
+        playerAttack: 10,
+        comboCount: 1,
+        maxCombo: 1,
+        specialGauge: 20,
+        specialGaugeMax: 100,
+        totalDamage: 50,
+        currentMissionIndex: 1,
+        status: 'active',
+        startedAt: '2026-07-22T00:00:00.000Z',
+        completedAt: null,
+        lastMessage: 'e2e',
+      }),
+    );
+  });
+  await page.reload();
+  await expect(page.locator('img[src*="/assets/game/enemies/"]')).toBeVisible();
+
+  await page.goto('/world');
+  await expect(
+    page.locator('img[src*="/assets/game/backgrounds/"]').first(),
+  ).toBeVisible();
+
+  await page.goto('/companions');
+  await expect(
+    page.locator('img[src*="/assets/game/companions/"]').first(),
+  ).toBeVisible();
+
+  await page.goto('/equipment');
+  await expect(
+    page.locator('img[src*="/assets/game/items/"]').first(),
+  ).toBeVisible();
+
+  await page.goto('/shop');
+  const itemImages = page.locator('img[src*="/assets/game/items/"]');
+  if ((await itemImages.count()) > 0) {
+    await expect(itemImages.first()).toBeVisible();
+  }
+});
+
+test('debug assets audits registry and fallback in development', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/debug/assets');
+
+  await expect(
+    page.getByRole('heading', { name: 'Debug Assets' }),
+  ).toBeVisible();
+  await expect(page.getByText('assetCount: 51')).toBeVisible();
+  await expect(page.getByText('duplicateAssetIds: 0')).toBeVisible();
+  await expect(
+    page.locator('img[src*="/assets/game/enemies/"]').first(),
+  ).toBeVisible();
+  await expect(page.getByLabel('画像を読み込めません')).toBeVisible();
 });
