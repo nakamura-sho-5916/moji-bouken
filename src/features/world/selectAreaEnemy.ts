@@ -24,6 +24,12 @@ export function selectAreaEnemy(input: {
     return getEnemy(input.area.area.bossEnemyId) ?? null;
   }
 
+  const bossEnemyId = input.area.area.bossEnemyId;
+  const bossAvailable = bossEnemyId && input.area.recoveryStage >= 3;
+  if (bossAvailable && seededIndex(`${input.seed}-boss`, 5) === 0) {
+    return getEnemy(bossEnemyId) ?? null;
+  }
+
   const candidates = input.area.area.enemyIds
     .map((enemyId) => getEnemy(enemyId))
     .filter((enemy): enemy is Enemy => Boolean(enemy?.active));

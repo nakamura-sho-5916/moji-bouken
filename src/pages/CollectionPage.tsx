@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { loadLearningContent } from '../content/loaders/contentLoader';
-import { CompanionArtwork, EnemyArtwork } from '../features/assets';
+import {
+  CompanionArtwork,
+  EnemyArtwork,
+  ItemArtwork,
+} from '../features/assets';
 import { CollectionCard } from '../features/collection/components/CollectionCard';
-import { companionData, getCollectionState } from '../features/collection';
+import {
+  companionData,
+  equipmentData,
+  getCollectionState,
+} from '../features/collection';
 import type { CollectionProgress } from '../types';
 
-type CollectionTab = 'words' | 'companions' | 'enemies' | 'album';
+type CollectionTab = 'words' | 'companions' | 'enemies' | 'items' | 'album';
 
 function hasProgress(
   progress: CollectionProgress[],
@@ -50,8 +58,39 @@ export function CollectionPage({
     { id: 'words', label: 'ことば' },
     { id: 'companions', label: 'なかま' },
     { id: 'enemies', label: 'てき' },
+    { id: 'items', label: 'アイテム' },
     { id: 'album', label: 'アルバム' },
   ];
+  const ownedItemIds = new Set([
+    ...(state.inventory?.items.map((item) => item.id) ?? []),
+    ...(state.inventory?.equipment.map((item) => item.id) ?? []),
+  ]);
+  const wordTargets = [
+    ...content.hiragana.slice(0, 10).map((letter) => ({
+      id: letter.id,
+      category: 'hiragana' as const,
+    })),
+    ...content.katakana.slice(0, 6).map((letter) => ({
+      id: letter.id,
+      category: 'katakana' as const,
+    })),
+    ...content.words.slice(0, 8).map((word) => ({
+      id: word.id,
+      category: 'word' as const,
+    })),
+  ];
+  const wordFound = wordTargets.filter((item) =>
+    hasProgress(state.progress, item.category, item.id),
+  ).length;
+  const companionFound = companionData.filter((companion) =>
+    hasProgress(state.progress, 'companion', companion.id),
+  ).length;
+  const enemyFound = state.enemies.filter((enemy) =>
+    hasProgress(state.progress, 'enemy', enemy.id),
+  ).length;
+  const itemFound = equipmentData.filter((item) =>
+    ownedItemIds.has(item.id),
+  ).length;
 
   return (
     <section className="grid gap-4">
@@ -60,10 +99,15 @@ export function CollectionPage({
           ずかん
         </h1>
         <p className="mt-2 font-bold text-[var(--color-text-muted)]">
-          であった ものを みてみよう
+          であったものを みてみよう
+        </p>
+        <p className="mt-3 rounded-[var(--radius-medium)] bg-orange-50 p-3 text-sm font-black text-[var(--color-primary-strong)]">
+          ことば {wordFound}/{wordTargets.length} ・ なかま {companionFound}/
+          {companionData.length} ・ てき {enemyFound}/{state.enemies.length} ・
+          アイテム {itemFound}/{equipmentData.length}
         </p>
       </div>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         {tabs.map((item) => (
           <button
             className={[
@@ -137,11 +181,24 @@ export function CollectionPage({
         <div className="grid gap-3">
           {state.enemies.map((enemy) => (
             <CollectionCard
-              description={`${enemy.areaId}で であったよ`}
+              description={`${enemy.areaId} / ${enemy.rarity} / ${enemy.rewardExperience}EXP`}
               discovered={hasProgress(state.progress, 'enemy', enemy.id)}
               icon={<EnemyArtwork className="size-14" enemyId={enemy.id} />}
               key={enemy.id}
               title={enemy.name}
+            />
+          ))}
+        </div>
+      ) : null}
+      {tab === 'items' ? (
+        <div className="grid gap-3">
+          {equipmentData.map((item) => (
+            <CollectionCard
+              description={`${item.description} / ${item.price}G`}
+              discovered={ownedItemIds.has(item.id)}
+              icon={<ItemArtwork className="size-14" itemId={item.id} />}
+              key={item.id}
+              title={item.name}
             />
           ))}
         </div>
@@ -152,13 +209,13 @@ export function CollectionPage({
             <CollectionCard
               description="せかいを げんきにすると ふえるよ"
               discovered={false}
-              icon="📖"
+              icon="記"
               title="まだ ないよ"
             />
           ) : (
             state.albumEntries.map((entry) => (
               <CollectionCard
-                description={`${entry.beforeVisual} → ${entry.afterVisual} ${entry.description}`}
+                description={`${entry.beforeVisual} -> ${entry.afterVisual} ${entry.description}`}
                 discovered
                 icon={entry.afterVisual}
                 key={entry.eventId}

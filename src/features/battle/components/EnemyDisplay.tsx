@@ -15,7 +15,7 @@ export function EnemyDisplay({ enemy, currentHp }: EnemyDisplayProps) {
   return (
     <section className="relative overflow-hidden rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5 text-center shadow-sm">
       <p className="text-sm font-black text-[var(--color-text-muted)]">
-        てきが あらわれた
+        {defeated ? enemy.defeatLine : enemy.battleLine}
       </p>
       <div className="relative my-4">
         {hit ? (

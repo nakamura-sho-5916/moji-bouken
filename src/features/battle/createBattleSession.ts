@@ -6,6 +6,7 @@ export function createBattleSession(input?: {
   sessionId?: string;
   enemyId?: string;
   playerLevel?: number;
+  playerAttackBonus?: number;
   boss?: boolean;
   now?: string;
 }): BattleSession {
@@ -21,7 +22,10 @@ export function createBattleSession(input?: {
     enemyId: enemy.id,
     enemyMaxHp: enemy.maxHp,
     enemyCurrentHp: enemy.maxHp,
-    playerAttack: DEFAULT_PLAYER_ATTACK + ((input?.playerLevel ?? 1) - 1) * 2,
+    playerAttack:
+      DEFAULT_PLAYER_ATTACK +
+      ((input?.playerLevel ?? 1) - 1) * 2 +
+      (input?.playerAttackBonus ?? 0),
     comboCount: 0,
     maxCombo: 0,
     specialGauge: 0,

@@ -40,10 +40,12 @@ describe('world recovery', () => {
     const enemyIds = new Set(enemies.map((enemy) => enemy.id));
     const areaIds = new Set<string>(worldAreas.map((area) => area.id));
 
-    expect(normalEnemies).toHaveLength(5);
-    expect(bossEnemies).toHaveLength(1);
+    expect(normalEnemies).toHaveLength(45);
+    expect(bossEnemies).toHaveLength(5);
     expect(enemyIds.size).toBe(enemies.length);
     expect(enemies.every((enemy) => areaIds.has(enemy.areaId))).toBe(true);
+    expect(enemies.every((enemy) => enemy.drops.length > 0)).toBe(true);
+    expect(new Set(enemies.map((enemy) => enemy.rarity)).size).toBe(5);
   });
 
   it('世界エリアは5つで、最初のエリアだけ解放済みとして定義される', () => {
@@ -53,6 +55,8 @@ describe('world recovery', () => {
     expect(areaIds.size).toBe(5);
     expect(worldAreas.filter((area) => area.initiallyUnlocked)).toHaveLength(1);
     expect(worldAreas[0]?.id).toBe('starting-village');
+    expect(worldAreas.every((area) => area.enemyIds.length >= 9)).toBe(true);
+    expect(worldAreas.every((area) => area.bossEnemyId)).toBe(true);
   });
 
   it('復興ポイントと復興段階を計算する', () => {

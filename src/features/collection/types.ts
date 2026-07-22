@@ -23,8 +23,8 @@ export type CompanionData = {
 export type CompanionSkillId =
   | 'reduce-choice'
   | 'illustration-hint'
-  | 'word-candidate-sort'
-  | 'gentle-review'
+  | 'damage-up'
+  | 'review-bonus'
   | 'bonus-gold';
 
 export type CompanionSkillInput = {

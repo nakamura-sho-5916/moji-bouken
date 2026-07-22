@@ -4,15 +4,29 @@ export type BattleStatus =
   'ready' | 'active' | 'feedback' | 'victory' | 'completed' | 'error';
 
 export type EnemyType = 'normal' | 'boss';
+export type EnemyRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+export type EnemyDropItem = {
+  itemId: string;
+  kind: 'item' | 'equipment' | 'collection';
+  chance: number;
+  minCount: number;
+  maxCount: number;
+};
 
 export type Enemy = {
   id: string;
   name: string;
   type: EnemyType;
+  rarity: EnemyRarity;
   maxHp: number;
   defense: number;
   rewardExperience: number;
   rewardGold: number;
+  drops: EnemyDropItem[];
+  battleLine: string;
+  attackLine: string;
+  defeatLine: string;
   imageId: string;
   areaId: string;
   active: boolean;

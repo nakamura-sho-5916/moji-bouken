@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { getPlayerById } from '../../db/repositories/playerRepository';
@@ -10,7 +10,12 @@ import {
 } from '../battle';
 import { useAudio } from '../audio';
 import { BattleStatusPanel } from '../battle/components/BattleStatusPanel';
-import { recordEnemyEncounter } from '../collection';
+import {
+  applyCompanionSkill,
+  getSelectedCompanion,
+  recordEnemyEncounter,
+} from '../collection';
+import type { CompanionData } from '../collection';
 import { RewardEngine } from '../rewards';
 import { MissionFeedback } from './components/MissionFeedback';
 import { MissionHeader } from './components/MissionHeader';
@@ -54,14 +59,30 @@ export function MissionRunner() {
   const [battle, setBattle] = useState<BattleSession | null>(null);
   const [lastDamage, setLastDamage] = useState(0);
   const [practiceCorrect, setPracticeCorrect] = useState(false);
+  const [selectedCompanion, setSelectedCompanion] =
+    useState<CompanionData | null>(null);
   const audio = useAudio();
+
+  useEffect(() => {
+    let active = true;
+    void getSelectedCompanion().then((companion) => {
+      if (active) {
+        setSelectedCompanion(companion);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const createMissionBattle = async (sessionId: string) => {
     const player = await getPlayerById(DEFAULT_PLAYER_ID);
+    const companion = await getSelectedCompanion();
     const nextBattle = createBattleSession({
       sessionId,
       playerLevel: player?.level ?? 1,
       enemyId: searchParams.get('enemyId') ?? undefined,
+      playerAttackBonus: companion?.skillId === 'damage-up' ? 4 : 0,
     });
     setBattle(nextBattle);
     setLastDamage(0);
@@ -80,6 +101,31 @@ export function MissionRunner() {
       seed: session.seed + session.currentIndex,
     });
   }, [content, mission, session.currentIndex, session.seed]);
+
+  const companionSkill = useMemo(() => {
+    if (!viewModel || !selectedCompanion || viewModel.choices.length === 0) {
+      return null;
+    }
+    return applyCompanionSkill({
+      skillId: selectedCompanion.skillId,
+      missionType: viewModel.mission.missionType,
+      choices: viewModel.choices.map((choice) => choice.value),
+      correctAnswer: viewModel.mission.correctAnswer,
+      usedCount: 0,
+      maxUses: 1,
+    });
+  }, [selectedCompanion, viewModel]);
+
+  const playableViewModel = useMemo(() => {
+    if (!viewModel || !companionSkill?.activated) {
+      return viewModel;
+    }
+    const allowed = new Set(companionSkill.choices);
+    return {
+      ...viewModel,
+      choices: viewModel.choices.filter((choice) => allowed.has(choice.value)),
+    };
+  }, [companionSkill, viewModel]);
 
   const answerSubmission = useAnswerSubmission({
     content,
@@ -259,6 +305,7 @@ export function MissionRunner() {
     answerReady &&
     answerSubmission.answerState !== 'correct' &&
     !answerSubmission.saving;
+  const activeViewModel = playableViewModel ?? viewModel;
 
   return (
     <section className="grid gap-4">
@@ -269,8 +316,8 @@ export function MissionRunner() {
             navigate('/home');
           }
         }}
-        prompt={viewModel.prompt}
-        title={viewModel.title}
+        prompt={activeViewModel.prompt}
+        title={activeViewModel.title}
         totalCount={session.missions.length}
       />
       <MissionProgress
@@ -292,8 +339,13 @@ export function MissionRunner() {
           setSelectedValue(value);
         }}
         selectedValue={selectedValue}
-        viewModel={viewModel}
+        viewModel={activeViewModel}
       />
+      {companionSkill?.activated ? (
+        <p className="rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white p-3 text-center text-sm font-black text-[var(--color-primary-strong)]">
+          {companionSkill.message}
+        </p>
+      ) : null}
       <MissionFeedback
         errorMessage={answerSubmission.errorMessage}
         saving={answerSubmission.saving}

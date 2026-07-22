@@ -1,10 +1,10 @@
 import type { CompanionSkillInput, CompanionSkillResult } from './types';
 
 const SKILL_MESSAGES = {
-  'reduce-choice': 'うさぎが こうほを すっきりしたよ',
-  'illustration-hint': 'きつねが えを よくみせてくれたよ',
-  'word-candidate-sort': 'くまが ことばを ならべたよ',
-  'gentle-review': 'ふくろうが やさしく はじめたよ',
+  'reduce-choice': 'うさぎが えらぶものを ひとつ へらしたよ',
+  'illustration-hint': 'きつねが えのヒントを みつけたよ',
+  'damage-up': 'くまが ちからを かしてくれたよ',
+  'review-bonus': 'ふくろうが ふくしゅうを みまもるよ',
   'bonus-gold': 'りすが きらりを みつけたよ',
 } as const;
 
@@ -55,20 +55,7 @@ export function applyCompanionSkill(
   }
 
   if (
-    input.skillId === 'word-candidate-sort' &&
-    ['word-completion', 'text-search'].includes(input.missionType)
-  ) {
-    return {
-      activated: true,
-      message: SKILL_MESSAGES[input.skillId],
-      choices: [...input.choices].sort((a, b) => a.localeCompare(b, 'ja')),
-      correctAnswer: input.correctAnswer,
-      usedCount: input.usedCount + 1,
-    };
-  }
-
-  if (
-    input.skillId === 'gentle-review' &&
+    input.skillId === 'review-bonus' &&
     ['letter-introduction', 'letter-search'].includes(input.missionType)
   ) {
     return {
@@ -80,7 +67,7 @@ export function applyCompanionSkill(
     };
   }
 
-  if (input.skillId === 'bonus-gold') {
+  if (input.skillId === 'damage-up' || input.skillId === 'bonus-gold') {
     return {
       activated: true,
       message: SKILL_MESSAGES[input.skillId],

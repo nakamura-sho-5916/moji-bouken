@@ -36,10 +36,19 @@ export function getAssetOrFallback(assetId: string): GameAsset {
 }
 
 export function resolveEnemyAsset(enemyId: string): EnemyAsset {
-  return (
-    enemyAssets.find((asset) => asset.sourceEnemyId === enemyId) ??
-    enemyAssets[0]
+  const exact = enemyAssets.find((asset) => asset.sourceEnemyId === enemyId);
+  if (exact) {
+    return exact;
+  }
+  const index = Array.from(enemyId).reduce(
+    (total, char) => (total + char.charCodeAt(0)) % enemyAssets.length,
+    0,
   );
+  const fallback = enemyAssets[index] ?? enemyAssets[0];
+  if (!fallback) {
+    throw new Error('enemy assets are empty');
+  }
+  return fallback;
 }
 
 export function resolveCompanionAsset(companionId: string): CompanionAsset {

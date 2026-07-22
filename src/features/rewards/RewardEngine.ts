@@ -1,6 +1,8 @@
 import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { initializeAppData } from '../../db/initializeAppData';
 import {
+  addEquipment,
+  addItem,
   changeGold,
   getInventory,
 } from '../../db/repositories/inventoryRepository';
@@ -14,6 +16,7 @@ import {
 } from '../battle/constants';
 import { getEnemy } from '../battle/enemies';
 import type { BattleSession } from '../battle/types';
+import { equipmentData, getSelectedCompanion } from '../collection';
 import type { MissionResult } from '../missions';
 import { calculateExperience } from './calculateExperience';
 import { calculateGold } from './calculateGold';
@@ -41,6 +44,21 @@ function saveRewardedId(battleId: string) {
       JSON.stringify([...ids, battleId]),
     );
   }
+}
+
+function dropRoll(seed: string) {
+  let value = 0;
+  for (const char of seed) {
+    value = (value * 33 + char.charCodeAt(0)) % 100000;
+  }
+  return value / 100000;
+}
+
+function dropCount(seed: string, minCount: number, maxCount: number) {
+  if (minCount >= maxCount) {
+    return minCount;
+  }
+  return minCount + Math.floor(dropRoll(seed) * (maxCount - minCount + 1));
 }
 
 export function createRewardReasons(input: {
@@ -72,6 +90,7 @@ export const RewardEngine = {
     const rewardedIds = loadRewardedIds();
     const player = await getPlayerById(DEFAULT_PLAYER_ID);
     const inventory = await getInventory(DEFAULT_PLAYER_ID);
+    const selectedCompanion = await getSelectedCompanion(DEFAULT_PLAYER_ID);
     const reasons = createRewardReasons(input);
     const enemy = getEnemy(input.battle.enemyId);
     const bossDefeated =
@@ -113,9 +132,25 @@ export const RewardEngine = {
       return summary;
     }
 
+    const victory = input.battle.enemyCurrentHp <= 0;
+    const owlBonus =
+      selectedCompanion?.skillId === 'review-bonus' &&
+      reasons.some((reason) => reason.startsWith('weak-letter'))
+        ? 15
+        : 0;
     const experienceGained =
-      calculateExperience(reasons) + (input.battle.enemyCurrentHp <= 0 ? 0 : 0);
-    const goldGained = Math.max(0, calculateGold(reasons));
+      calculateExperience(reasons) +
+      (victory ? (enemy?.rewardExperience ?? 0) : 0) +
+      owlBonus;
+    const squirrelMultiplier =
+      selectedCompanion?.skillId === 'bonus-gold' ? 1.1 : 1;
+    const goldGained = Math.max(
+      0,
+      Math.round(
+        (calculateGold(reasons) + (victory ? (enemy?.rewardGold ?? 0) : 0)) *
+          squirrelMultiplier,
+      ),
+    );
     const nextExperience = player.experience + experienceGained;
     const nextLevel = calculateLevel(nextExperience);
     const nextLevelExperience = experienceRequiredForLevel(nextLevel + 1);
@@ -125,6 +160,27 @@ export const RewardEngine = {
       gold: player.gold + goldGained,
     });
     const updatedInventory = await changeGold(DEFAULT_PLAYER_ID, goldGained);
+    if (victory && enemy) {
+      for (const drop of enemy.drops) {
+        const key = `${input.battle.battleId}:${drop.itemId}`;
+        if (dropRoll(key) <= drop.chance) {
+          const equipment = equipmentData.find(
+            (item) => item.id === drop.itemId,
+          );
+          if (drop.kind === 'equipment' && equipment) {
+            await addEquipment(DEFAULT_PLAYER_ID, {
+              id: equipment.id,
+              slot: equipment.type,
+            });
+          } else {
+            await addItem(DEFAULT_PLAYER_ID, {
+              id: drop.itemId,
+              count: dropCount(key, drop.minCount, drop.maxCount),
+            });
+          }
+        }
+      }
+    }
     saveRewardedId(input.battle.battleId);
 
     const summary: RewardSummary = {
