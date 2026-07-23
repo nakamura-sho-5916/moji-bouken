@@ -603,7 +603,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.6.1')).toBeVisible();
+  await expect(page.getByText('バージョン 0.6.2')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');

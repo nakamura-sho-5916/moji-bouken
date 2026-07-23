@@ -673,6 +673,19 @@ Audio references:
 - `docs/AUDIO_COMPOSITION.md`
 - `docs/AUDIO_ACCEPTANCE_CHECKLIST.md`
 
+## Final Acceptance Candidate v0.6.2
+
+v0.6.2 is the final production acceptance candidate before the v1.0.0 decision.
+It adds `docs/FINAL_ACCEPTANCE_TEST.md`, expands `/debug/release`, and adds
+`npm run check:release` for release-gate checks after a production build.
+
+Public URL:
+
+https://moji-bouken.vercel.app
+
+v1.0.0 is not tagged in this phase. Create it only after human smartphone and
+parent/child acceptance on the public URL is complete.
+
 ## Stability Audit v0.6.1
 
 v0.6.1 is a public stabilization release. It resolves the transitive `fast-uri`

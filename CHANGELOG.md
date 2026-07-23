@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.6.2
+
+- Added final production acceptance documentation for the v1.0.0 readiness decision.
+- Expanded release diagnostics with app, DB, content, asset, audio, PWA, and unresolved issue checks.
+- Added `npm run check:release` for required files, generated PWA artifacts, audit status, and Blocker/Critical gating.
+- Re-ran integrated regression checks for learning, battle, world progression, audio, save/restore, PWA, and production debug behavior.
+- Marked the codebase as a v1.0.0 candidate pending human device acceptance.
+
 ## v0.6.1
 
 - Audited dependency security and resolved the transitive `fast-uri` high severity advisory without `--force`.

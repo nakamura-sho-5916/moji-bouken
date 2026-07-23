@@ -1,7 +1,7 @@
 {
   "name": "moji-bouken",
   "private": true,
-  "version": "0.6.1",
+  "version": "0.6.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,8 @@
     "test:assets": "vitest run tests/unit/assets/assetRegistry.test.ts",
     "test:audio": "vitest run tests/unit/audio",
     "test:content:stress": "vitest run tests/unit/content/missionStress.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check:release": "node scripts/check-release.mjs"
   },
   "dependencies": {
     "ajv": "^8.20.0",
