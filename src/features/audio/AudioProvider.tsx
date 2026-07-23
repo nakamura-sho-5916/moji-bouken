@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -13,24 +11,10 @@ import {
   getAppSettings,
   updateAppSettings,
 } from '../../db/repositories/settingsRepository';
+import { AudioContext, type AudioContextValue } from './AudioContext';
 import { AUDIO_SETTINGS_EVENT } from './audioConstants';
 import { audioManager } from './AudioManager';
-import type {
-  AudioSettings,
-  AudioState,
-  BgmId,
-  SoundEffectId,
-} from './audioTypes';
-
-type AudioContextValue = {
-  state: AudioState;
-  unlock: () => Promise<boolean>;
-  playSoundEffect: (id: SoundEffectId) => void;
-  playBgm: (id: BgmId | null) => void;
-  refreshSettings: () => Promise<void>;
-};
-
-const AudioContext = createContext<AudioContextValue | null>(null);
+import type { AudioSettings, AudioState, BgmId } from './audioTypes';
 
 function toRatio(value: number) {
   return Math.min(1, Math.max(0, value > 1 ? value / 100 : value));
@@ -165,18 +149,4 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   return (
     <AudioContext.Provider value={value}>{children}</AudioContext.Provider>
   );
-}
-
-export function useAudio() {
-  const context = useContext(AudioContext);
-  if (!context) {
-    return {
-      state: audioManager.getState(),
-      unlock: () => audioManager.unlock(),
-      playSoundEffect: (id: SoundEffectId) => audioManager.playSoundEffect(id),
-      playBgm: (id: BgmId | null) => audioManager.playBgm(id),
-      refreshSettings: async () => undefined,
-    };
-  }
-  return context;
 }

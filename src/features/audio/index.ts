@@ -1,5 +1,6 @@
 export { audioManager, AudioManager } from './AudioManager';
-export { AudioProvider, useAudio } from './AudioProvider';
+export { AudioProvider } from './AudioProvider';
+export { useAudio } from './useAudio';
 export { AudioSettingsPanel } from './components/AudioSettingsPanel';
 export { AudioUnlockPrompt } from './components/AudioUnlockPrompt';
 export { VolumeControl } from './components/VolumeControl';

@@ -672,3 +672,15 @@ Audio references:
 - `docs/AUDIO_GUIDE.md`
 - `docs/AUDIO_COMPOSITION.md`
 - `docs/AUDIO_ACCEPTANCE_CHECKLIST.md`
+
+## Stability Audit v0.6.1
+
+v0.6.1 is a public stabilization release. It resolves the transitive `fast-uri`
+high severity advisory without `npm audit fix --force`, keeps the dependency
+tree valid, removes the AudioProvider Fast Refresh warning by splitting context
+and hook exports, and revalidates the main public game flow.
+
+Security and release notes:
+
+- `docs/SECURITY_AUDIT.md`
+- `docs/RELEASE_CHECKLIST.md`

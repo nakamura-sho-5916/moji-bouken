@@ -433,6 +433,7 @@ test('本番バトル画面にデバッグ回答ボタンが表示されない',
 
 test('世界マップで復興とエリア解放を確認できる', async ({ page }) => {
   await page.goto('/world');
+  await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
   await expect(
     page.getByRole('heading', { name: 'もじの せかい' }),
   ).toBeVisible();
@@ -458,6 +459,7 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
   }
 
   await page.goto('/world');
+  await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
   await expect(page.getByText('はしが なおったよ')).toBeVisible();
   await expect(page.getByText('みどりが ふえたよ')).toBeVisible();
   await expect(page.getByText('おみせが あいたよ')).toBeVisible();
@@ -601,7 +603,7 @@ test('保護者PIN・概要・バックアップ画面を確認できる', async
 
   await page.getByRole('button', { name: '設定' }).click();
   await page.getByLabel('標準問題数').selectOption('5');
-  await expect(page.getByText('バージョン 0.6.0')).toBeVisible();
+  await expect(page.getByText('バージョン 0.6.1')).toBeVisible();
 
   await page.getByRole('button', { name: 'バックアップ' }).click();
   const downloadPromise = page.waitForEvent('download');
@@ -649,6 +651,7 @@ test('production artwork renders on main visual screens', async ({ page }) => {
   await expect(page.locator('img[src*="/assets/game/enemies/"]')).toBeVisible();
 
   await page.goto('/world');
+  await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
   await expect(
     page.locator('img[src*="/assets/game/backgrounds/"]').first(),
   ).toBeVisible();

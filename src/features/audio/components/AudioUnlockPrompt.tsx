@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAudio } from '../AudioProvider';
+import { useAudio } from '../useAudio';
 
 export function AudioUnlockPrompt() {
   const audio = useAudio();

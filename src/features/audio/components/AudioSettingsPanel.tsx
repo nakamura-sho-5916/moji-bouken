@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { saveAppSettings } from '../../../db/repositories/settingsRepository';
 import { AUDIO_SETTINGS_EVENT } from '../audioConstants';
-import { useAudio } from '../AudioProvider';
+import { useAudio } from '../useAudio';
 import { VolumeControl } from './VolumeControl';
 import type { AppSettings } from '../../../types';
 

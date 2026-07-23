@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.1
+
+- Audited dependency security and resolved the transitive `fast-uri` high severity advisory without `--force`.
+- Kept the dependency tree valid after the lockfile update and documented remaining dependency update policy.
+- Split the audio context and `useAudio` hook out of `AudioProvider.tsx` to remove the Fast Refresh warning.
+- Re-ran audio and main gameplay regression checks for the public build.
+
 ## v0.6.0
 
 - Replaced placeholder Web Audio tones with original procedural production BGM and SFX.
