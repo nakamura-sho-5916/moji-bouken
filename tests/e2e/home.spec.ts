@@ -103,7 +103,7 @@ async function answerCurrentMissionCorrectly(page: Page) {
       .click();
   }
   await page.getByRole('button', { name: 'こたえる' }).click();
-  await expect(page.getByText('繧・▲縺溘・').first()).toBeVisible();
+  await expect(page.getByText('やったね').first()).toBeVisible();
   const afterBattle = await page.evaluate(() => {
     const raw = localStorage.getItem('moji-bouken:active-battle-session');
     return raw ? (JSON.parse(raw) as { enemyCurrentHp: number }) : null;

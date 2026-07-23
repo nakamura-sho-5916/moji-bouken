@@ -21,7 +21,7 @@ export function AudioUnlockPrompt() {
             onClick={() => setDismissed(true)}
             type="button"
           >
-            縺翫→縺ｪ縺励〒
+            おとなしで
           </button>
           <button
             className="min-h-10 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-3 text-sm font-black text-white"

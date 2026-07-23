@@ -108,12 +108,12 @@ export function ResultPage() {
           つづけて できたね
         </h1>
         <p className="mt-3 text-lg font-black text-[var(--color-text-muted)]">
-          縺ｧ縺阪◆ 縺薙→縺・縺ｵ縺医◆繧・{' '}
+          できた ことが ふえたよ
         </p>
       </div>
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
         <p className="text-lg font-black text-[var(--color-text)]">
-          縺ｲ縺九▲縺・縺ｾ繧・{' '}
+          ひかった たま
         </p>
         <div className="mt-3 grid grid-cols-10 gap-1">
           {Array.from({ length: 10 }, (_, index) => (
@@ -133,10 +133,10 @@ export function ResultPage() {
       <RewardSummary summary={rewardSummary} />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
         <h2 className="text-xl font-black text-[var(--color-primary-strong)]">
-          縺ゅ◆繧峨＠縺・縺帙°縺・{' '}
+          あたらしい せかい
         </h2>
         <p className="mt-2 font-bold text-[var(--color-text-muted)]">
-          縺ｾ縺｡縺ｫ 縺ゅ°繧翫′ 縺ｵ縺医ｋ繧・{' '}
+          まちに あかりが ふえるよ
         </p>
       </div>
       <div className="mt-auto grid gap-3">
@@ -145,14 +145,14 @@ export function ResultPage() {
           onClick={() => audio.playSoundEffect('ui-tap')}
           to="/mission"
         >
-          繧ゅ≧縺・■縺ｩ
+          もういちど
         </Link>
         <Link
           className="flex min-h-14 items-center justify-center rounded-[var(--radius-medium)] bg-[var(--color-secondary)] px-5 text-xl font-black text-white"
           onClick={() => audio.playSoundEffect('ui-tap')}
           to="/world"
         >
-          縺帙°縺・∈
+          せかいへ
         </Link>
       </div>
     </section>
