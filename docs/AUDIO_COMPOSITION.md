@@ -12,7 +12,7 @@ The production audio in v0.6.0 is procedural. BGM patterns live in
 | `home`            |  96 | yes  | calm village      |
 | `world`           | 112 | yes  | forward world map |
 | `mission`         |  94 | yes  | focused learning  |
-| `battle`          | 136 | yes  | moderate tension  |
+| `battle`          | 128 | yes  | adventurous focus |
 | `boss`            | 148 | yes  | heavier battle    |
 | `result`          | 104 | yes  | reward screen     |
 | `world-recovery`  |  76 | no   | recovery cue      |

@@ -6,6 +6,7 @@ export type AudioContextValue = {
   unlock: () => Promise<boolean>;
   playSoundEffect: (id: SoundEffectId) => void;
   playBgm: (id: BgmId | null) => void;
+  stopBgm: (fadeOutMs?: number) => void;
   refreshSettings: () => Promise<void>;
 };
 

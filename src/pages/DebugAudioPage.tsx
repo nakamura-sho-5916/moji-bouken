@@ -182,6 +182,31 @@ export function DebugAudioPage() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <button
+            className="min-h-11 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-2 text-sm font-black text-white"
+            onClick={() => audio.playBgm('battle')}
+            type="button"
+          >
+            battle loop check
+            <span className="block text-[10px]">128 BPM</span>
+          </button>
+          <button
+            className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+            onClick={() => audio.stopBgm(180)}
+            type="button"
+          >
+            battle fade 180ms
+          </button>
+          <button
+            className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+            onClick={() => {
+              audio.playBgm('battle');
+              window.setTimeout(() => audio.playSoundEffect('level-up'), 120);
+            }}
+            type="button"
+          >
+            battle ducking check
+          </button>
+          <button
             className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
             onClick={() => audio.playBgm('victory-fanfare')}
             type="button"

@@ -11,6 +11,7 @@ export function useAudio() {
       unlock: () => audioManager.unlock(),
       playSoundEffect: (id: SoundEffectId) => audioManager.playSoundEffect(id),
       playBgm: (id: BgmId | null) => audioManager.playBgm(id),
+      stopBgm: (fadeOutMs?: number) => audioManager.stopBgm(fadeOutMs),
       refreshSettings: async () => undefined,
     };
   }

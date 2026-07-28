@@ -150,6 +150,78 @@ describe('AudioManager', () => {
     manager.stopBgm(0);
   });
 
+  it('starts battle BGM once and supports a fast mission-end fade', async () => {
+    const manager = new AudioManager();
+    const played: string[] = [];
+    manager.subscribe((event) => {
+      if (event.type === 'bgm' && event.id && event.played) {
+        played.push(event.id);
+      }
+    });
+
+    await manager.unlock();
+    manager.playBgm('battle');
+    manager.playBgm('battle');
+
+    expect(played).toEqual(['battle']);
+    expect(manager.getState().currentBgm).toBe('battle');
+    expect(manager.getState().currentBpm).toBe(128);
+
+    manager.stopBgm(180);
+
+    expect(manager.getState().currentBgm).toBeNull();
+  });
+
+  it('keeps result and boss BGM routing available without changing their tracks', async () => {
+    const manager = new AudioManager();
+    const played: string[] = [];
+    manager.subscribe((event) => {
+      if (event.type === 'bgm' && event.id && event.played) {
+        played.push(event.id);
+      }
+    });
+
+    await manager.unlock();
+    manager.playBgm('boss');
+    expect(manager.getState().currentBgm).toBe('boss');
+    manager.playBgm('result');
+    expect(manager.getState().currentBgm).toBe('result');
+
+    expect(played).toEqual(['boss', 'result']);
+  });
+
+  it('stops battle BGM when muted and restarts when volume settings are active', async () => {
+    const manager = new AudioManager();
+
+    await manager.unlock();
+    manager.playBgm('battle');
+    expect(manager.getState().currentBgm).toBe('battle');
+
+    manager.updateSettings({ muteAll: true });
+    expect(manager.getState().currentBgm).toBeNull();
+
+    manager.updateSettings({
+      bgmEnabled: true,
+      bgmVolume: 0.6,
+      masterVolume: 0.7,
+      muteAll: false,
+    });
+    manager.playBgm('battle');
+    expect(manager.getState().currentBgm).toBe('battle');
+  });
+
+  it('resumes the active battle BGM after AudioContext suspension', async () => {
+    const manager = new AudioManager();
+
+    await manager.unlock();
+    manager.playBgm('battle');
+    manager.suspend();
+    manager.resume();
+    await Promise.resolve();
+
+    expect(manager.getState().currentBgm).toBe('battle');
+  });
+
   it('ducks BGM during large reward sound effects and releases nodes', async () => {
     const manager = new AudioManager();
     const duckEvents: boolean[] = [];

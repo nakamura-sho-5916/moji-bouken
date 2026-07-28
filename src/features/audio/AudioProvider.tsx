@@ -95,6 +95,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       unlock,
       playSoundEffect: (id) => audioManager.playSoundEffect(id),
       playBgm: (id) => audioManager.playBgm(id),
+      stopBgm: (fadeOutMs) => audioManager.stopBgm(fadeOutMs),
       refreshSettings,
     }),
     [refreshSettings, state, unlock],

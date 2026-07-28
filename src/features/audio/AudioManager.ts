@@ -68,6 +68,7 @@ export class AudioManager {
   private activeSfxNodes = 0;
   private ducking = false;
   private duckRestoreTimer: number | null = null;
+  private suspendedBgmId: BgmId | null = null;
   private currentBgm: {
     id: BgmId;
     gain: GainNode;
@@ -198,13 +199,23 @@ export class AudioManager {
   }
 
   suspend() {
+    this.suspendedBgmId = this.currentBgm?.id ?? null;
     this.stopBgm(120);
     void this.context?.suspend().catch(() => undefined);
   }
 
   resume() {
     if (this.unlocked) {
-      void this.context?.resume().catch(() => undefined);
+      void this.context
+        ?.resume()
+        .then(() => {
+          const bgmId = this.suspendedBgmId;
+          this.suspendedBgmId = null;
+          if (bgmId && !this.currentBgm) {
+            this.playBgm(bgmId);
+          }
+        })
+        .catch(() => undefined);
     }
   }
 

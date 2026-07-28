@@ -35,6 +35,51 @@ async function clearAudioEvents(page: Page) {
   });
 }
 
+async function prepareCompletedResult(page: Page) {
+  await page.evaluate(() => {
+    const completedAt = new Date().toISOString();
+    localStorage.setItem(
+      'moji-bouken:last-mission-result',
+      JSON.stringify({
+        sessionId: 'mission-session-audio-result',
+        missions: [],
+        currentIndex: 0,
+        results: [],
+        startedAt: completedAt,
+        completedAt,
+        status: 'completed',
+        seed: 1,
+      }),
+    );
+    localStorage.setItem(
+      'moji-bouken:last-battle-result',
+      JSON.stringify({
+        battleId: 'battle-audio-result-enemy-moji-slime',
+        areaId: 'starting-village',
+        bossDefeated: false,
+        bonusReasons: ['session-complete'],
+        experienceEarned: 8,
+        goldEarned: 5,
+        experienceGained: 8,
+        goldGained: 5,
+        experienceBefore: 0,
+        experienceAfter: 8,
+        goldBefore: 0,
+        goldAfter: 5,
+        levelBefore: 1,
+        levelAfter: 1,
+        levelUp: false,
+        nextLevelExperience: 30,
+        experienceToNextLevel: 22,
+        reasons: ['session-complete'],
+        alreadyRewarded: false,
+        player: null,
+        inventory: null,
+      }),
+    );
+  });
+}
+
 async function readStoredAudioSettings(page: Page) {
   return page.evaluate(async () => {
     const request = indexedDB.open('moji-bouken-db');
@@ -358,6 +403,9 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
   }
   expect(answeredChoice).toBe(true);
   const missionEvents = await readAudioEvents(page);
+  const battleBgmEvents = missionEvents.filter(
+    (event) => event.type === 'bgm' && event.id === 'battle' && event.played,
+  );
   const correctEvents = missionEvents.filter(
     (event) =>
       event.type === 'sfx' &&
@@ -368,6 +416,7 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
   const attackEvent = missionEvents.find(
     (event) => event.type === 'sfx' && event.id === 'attack',
   );
+  expect(battleBgmEvents).toHaveLength(1);
   expect(correctEvents).toHaveLength(1);
   expect(attackEvent).toBeDefined();
   expect(
@@ -376,6 +425,22 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
   expect(
     (attackEvent?.atMs ?? 0) - (correctEvents[0]?.atMs ?? 0),
   ).toBeLessThanOrEqual(140);
+
+  await clearAudioEvents(page);
+  await prepareCompletedResult(page);
+  await page.evaluate(() => {
+    window.history.pushState(null, '', '/result');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await expect(page).toHaveURL(/\/result$/);
+  await expect
+    .poll(async () =>
+      (await readAudioEvents(page)).some(
+        (event) =>
+          event.type === 'bgm' && event.id === 'result' && event.played,
+      ),
+    )
+    .toBe(true);
 
   await clearAudioEvents(page);
   await page.goto('/settings');

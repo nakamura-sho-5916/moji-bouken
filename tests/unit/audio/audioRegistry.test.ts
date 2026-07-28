@@ -13,7 +13,7 @@ const bgmBpmRanges = {
   home: [90, 110],
   world: [105, 120],
   mission: [85, 105],
-  battle: [125, 145],
+  battle: [120, 135],
   boss: [135, 155],
   result: [90, 115],
   'world-recovery': [70, 90],
@@ -80,6 +80,29 @@ describe('production audio registry', () => {
         );
       }
     }
+  });
+
+  it('keeps the battle loop focused, original, and naturally loopable', () => {
+    const battle = bgmCompositions.battle;
+    const stepDurationSeconds = 60 / battle.bpm / (battle.stepsPerBar / 4);
+    const loopSeconds = battle.bars * battle.stepsPerBar * stepDurationSeconds;
+
+    expect(battle.bpm).toBeGreaterThanOrEqual(120);
+    expect(battle.bpm).toBeLessThanOrEqual(135);
+    expect(loopSeconds).toBeGreaterThanOrEqual(16);
+    expect(loopSeconds).toBeLessThanOrEqual(24);
+    expect(loopSeconds).toBeCloseTo(18.75, 2);
+    expect(battle.loop).toBe(true);
+    expect(battle.bars).toBe(10);
+    expect(battle.leadWave).toBe('triangle');
+    expect(battle.bassWave).toBe('square');
+    expect(battle.padWave).toBe('sine');
+    expect(battle.percussion.filter(Boolean).length).toBeLessThan(
+      battle.percussion.length / 2,
+    );
+    expect(battle.melody.slice(0, 16).some(Boolean)).toBe(true);
+    expect(battle.melody.slice(16, 48).some(Boolean)).toBe(true);
+    expect(battle.melody.slice(48).some(Boolean)).toBe(true);
   });
 
   it('marks cinematic SFX as BGM ducking cues', () => {

@@ -6,6 +6,7 @@ import { createCorrectAnswerFeedbackController } from '../audio';
 import {
   BattleEngine,
   createBattleSession,
+  getEnemy,
   saveActiveBattleSession,
   type BattleSession,
 } from '../battle';
@@ -76,6 +77,14 @@ export function MissionRunner() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (battle && session.status === 'active') {
+      audio.playBgm(
+        getEnemy(battle.enemyId)?.type === 'boss' ? 'boss' : 'battle',
+      );
+    }
+  }, [audio, battle, session.status]);
 
   const createMissionBattle = async (sessionId: string) => {
     const player = await getPlayerById(DEFAULT_PLAYER_ID);
@@ -221,6 +230,7 @@ export function MissionRunner() {
     setPendingBattle(null);
     setPracticeCorrect(false);
     if (nextSession.status === 'completed') {
+      audio.stopBgm(180);
       const completedBattle = battleForReward ?? battle;
       if (completedBattle) {
         await RewardEngine.grantBattleRewards({
