@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TownProgressPanel } from '../../../src/features/world/components/TownProgressPanel';
+import {
+  AREA_UNLOCK_CINEMATIC_DURATION_MS,
+  AreaUnlockCinematic,
+} from '../../../src/features/world/components/AreaUnlockCinematic';
 import { RecoveryEventModal } from '../../../src/features/world/components/RecoveryEventModal';
 import { RecoveryScene } from '../../../src/features/world/components/RecoveryScene';
 import { worldAreas } from '../../../src/features/world';
@@ -69,6 +73,25 @@ describe('town reconstruction presentation', () => {
 
     vi.advanceTimersByTime(1000);
     expect(onClose).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('shows the area unlock cinematic and closes automatically', () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+
+    render(
+      <AreaUnlockCinematic areaIds={['word-forest']} onComplete={onComplete} />,
+    );
+
+    expect(screen.getByTestId('area-unlock-cinematic')).toBeVisible();
+    expect(screen.getByText('NEW AREA')).toBeVisible();
+    expect(screen.getByText('解放！')).toBeVisible();
+    expect(screen.getByText('橋完成！')).toBeVisible();
+    expect(screen.getByText(/ありがとう/)).toBeVisible();
+
+    vi.advanceTimersByTime(AREA_UNLOCK_CINEMATIC_DURATION_MS);
+    expect(onComplete).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
   });
 });

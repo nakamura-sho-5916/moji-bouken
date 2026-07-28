@@ -17,9 +17,11 @@ import { WorldRecoveryEngine } from '../features/world';
 import type { RecoveryEvent } from '../features/world';
 import {
   joinEligibleCompanions,
+  recordAreaUnlock,
   recordAlbumEvent,
 } from '../features/collection';
 import { useAudio } from '../features/audio';
+import { AreaUnlockCinematic } from '../features/world/components/AreaUnlockCinematic';
 
 export function ResultPage() {
   const navigate = useNavigate();
@@ -27,6 +29,10 @@ export function ResultPage() {
   const [rewardSummary] = useState(() => RewardEngine.loadLastRewardSummary());
   const completedCount = result?.results.length ?? 0;
   const [recoveryEvents, setRecoveryEvents] = useState<RecoveryEvent[]>([]);
+  const [pendingAreaUnlockIds, setPendingAreaUnlockIds] = useState<string[]>(
+    [],
+  );
+  const [activeAreaUnlockIds, setActiveAreaUnlockIds] = useState<string[]>([]);
   const audio = useAudio();
   const playedResultAudioRef = useRef(false);
   const defeatedEnemy = rewardSummary
@@ -78,9 +84,14 @@ export function ResultPage() {
       if (recoveryResult.triggeredEvents.length > 0) {
         audio.playSoundEffect('world-recovery');
       }
+      const unlockedAreaIds = recoveryResult.unlockedAreaIds;
+      if (unlockedAreaIds.length > 0) {
+        unlockedAreaIds.forEach((areaId) => recordAreaUnlock(areaId));
+        setPendingAreaUnlockIds(unlockedAreaIds);
+      }
       void Promise.all(
-        recoveryResult.triggeredEvents.map((event, index) =>
-          recordAlbumEvent({
+        [
+          ...recoveryResult.triggeredEvents.map((event, index) => ({
             eventId: `${event.areaId}-${event.id}`,
             areaId: event.areaId,
             title: event.title,
@@ -88,12 +99,26 @@ export function ResultPage() {
             beforeVisual: 'before',
             afterVisual: 'after',
             order: index,
-          }),
-        ),
+          })),
+          ...unlockedAreaIds.map((areaId, index) => ({
+            eventId: `${areaId}-area-unlocked`,
+            areaId,
+            title: 'NEW AREA',
+            description: '新しい道がひらいた！',
+            beforeVisual: 'cloud',
+            afterVisual: 'open',
+            order: recoveryResult.triggeredEvents.length + index,
+          })),
+        ].map((event) => recordAlbumEvent(event)),
       ).then(() => joinEligibleCompanions());
       const showRecoveryEvents = () => {
         if (active) {
-          setRecoveryEvents(recoveryResult.triggeredEvents);
+          if (recoveryResult.triggeredEvents.length > 0) {
+            setRecoveryEvents(recoveryResult.triggeredEvents);
+          } else if (unlockedAreaIds.length > 0) {
+            audio.playSoundEffect('area-unlocked');
+            setActiveAreaUnlockIds(unlockedAreaIds);
+          }
         }
       };
       if (rewardSummary.bossDefeated) {
@@ -120,6 +145,19 @@ export function ResultPage() {
         events={recoveryEvents}
         onClose={() => {
           setRecoveryEvents([]);
+          if (pendingAreaUnlockIds.length > 0) {
+            audio.playSoundEffect('area-unlocked');
+            setActiveAreaUnlockIds(pendingAreaUnlockIds);
+            setPendingAreaUnlockIds([]);
+            return;
+          }
+          navigate('/world');
+        }}
+      />
+      <AreaUnlockCinematic
+        areaIds={activeAreaUnlockIds}
+        onComplete={() => {
+          setActiveAreaUnlockIds([]);
           navigate('/world');
         }}
       />

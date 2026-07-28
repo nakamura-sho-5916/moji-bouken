@@ -552,6 +552,8 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
     page.getByRole('heading', { name: '世界復興デバッグ' }),
   ).toBeVisible();
 
+  await expect(page.getByRole('button', { name: 'NEW AREA' })).toBeVisible();
+
   for (let index = 0; index < 2; index += 1) {
     await page.getByRole('button', { name: '大きく復興' }).click();
     await expect(page.getByText(/せかいが げんきになりました/)).toBeVisible();

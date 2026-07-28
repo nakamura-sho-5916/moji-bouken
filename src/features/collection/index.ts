@@ -1,3 +1,9 @@
+export {
+  loadAreaUnlockStats,
+  recordAreaUnlock,
+  resetAreaUnlockStats,
+  type AreaUnlockStat,
+} from './areaUnlockStats';
 export { companionData } from './companionData';
 export {
   getBossBattleStat,

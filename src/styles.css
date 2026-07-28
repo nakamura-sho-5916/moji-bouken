@@ -521,6 +521,67 @@ button {
   }
 }
 
+@keyframes game-area-resident-cheer {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes game-area-dog-run {
+  0% {
+    transform: translateX(-14px);
+  }
+  50% {
+    transform: translateX(18px);
+  }
+  100% {
+    transform: translateX(-14px);
+  }
+}
+
+@keyframes game-area-bridge-build {
+  0% {
+    opacity: 0.35;
+    transform: scaleX(0.35);
+  }
+  55% {
+    opacity: 0.75;
+    transform: scaleX(0.72);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes game-area-bridge-color {
+  0% {
+    filter: saturate(0.2);
+    opacity: 0.25;
+    transform: scaleX(0.1);
+  }
+  100% {
+    filter: saturate(1);
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes game-area-cloud-drift {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(54px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

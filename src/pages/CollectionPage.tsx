@@ -11,10 +11,11 @@ import {
   companionData,
   equipmentData,
   getCollectionState,
+  loadAreaUnlockStats,
   loadBossBattleStats,
   loadCompanionBattleStats,
 } from '../features/collection';
-import type { BossBattleStat } from '../features/collection';
+import type { AreaUnlockStat, BossBattleStat } from '../features/collection';
 import { RewardEngine } from '../features/rewards';
 import { getWorldArea } from '../features/world/areaData';
 import type { CollectionProgress } from '../types';
@@ -86,6 +87,7 @@ export function CollectionPage({
   );
   const [companionBattleStats] = useState(() => loadCompanionBattleStats());
   const [bossBattleStats] = useState(() => loadBossBattleStats());
+  const [areaUnlockStats] = useState(() => loadAreaUnlockStats());
 
   useEffect(() => {
     let active = true;
@@ -153,6 +155,19 @@ export function CollectionPage({
   const bossStatsById = new Map(
     bossBattleStats.stats.map((stat) => [stat.enemyId, stat]),
   );
+  const areaUnlockAlbumCards = areaUnlockStats.stats
+    .map((stat) => ({
+      stat,
+      area: getWorldArea(stat.areaId),
+    }))
+    .filter(
+      (
+        item,
+      ): item is {
+        stat: AreaUnlockStat;
+        area: NonNullable<ReturnType<typeof getWorldArea>>;
+      } => Boolean(item.area),
+    );
 
   return (
     <section className="grid gap-4">
@@ -285,7 +300,8 @@ export function CollectionPage({
       ) : null}
       {tab === 'album' ? (
         <div className="grid gap-3">
-          {state.albumEntries.length === 0 ? (
+          {state.albumEntries.length === 0 &&
+          areaUnlockAlbumCards.length === 0 ? (
             <CollectionCard
               description="せかいを げんきにすると ふえるよ"
               discovered={false}
@@ -293,15 +309,31 @@ export function CollectionPage({
               title="まだ ないよ"
             />
           ) : (
-            state.albumEntries.map((entry) => (
-              <CollectionCard
-                description={`${entry.beforeVisual} -> ${entry.afterVisual} ${entry.description}`}
-                discovered
-                icon={entry.afterVisual}
-                key={entry.eventId}
-                title={entry.title}
-              />
-            ))
+            <>
+              {areaUnlockAlbumCards.map(({ area, stat }) => {
+                const unlockedDate = new Date(
+                  stat.unlockedAt,
+                ).toLocaleDateString('ja-JP');
+                return (
+                  <CollectionCard
+                    description={`Unlocked ${unlockedDate} / New route opened`}
+                    discovered
+                    icon="NEW"
+                    key={`area-unlock-${area.id}`}
+                    title={`NEW AREA ${area.name}`}
+                  />
+                );
+              })}
+              {state.albumEntries.map((entry) => (
+                <CollectionCard
+                  description={`${entry.beforeVisual} -> ${entry.afterVisual} ${entry.description}`}
+                  discovered
+                  icon={entry.afterVisual}
+                  key={entry.eventId}
+                  title={entry.title}
+                />
+              ))}
+            </>
           )}
         </div>
       ) : null}

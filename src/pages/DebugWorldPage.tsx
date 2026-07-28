@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
+import { AreaUnlockCinematic } from '../features/world/components/AreaUnlockCinematic';
 import { WorldMap } from '../features/world/components/WorldMap';
 import {
   TOWN_RECONSTRUCTION_STEPS,
@@ -13,6 +14,9 @@ export function DebugWorldPage() {
   const [areas, setAreas] = useState<AreaViewModel[]>([]);
   const [selectedAreaId, setSelectedAreaId] = useState('starting-village');
   const [loading, setLoading] = useState(true);
+  const [previewAreaUnlockId, setPreviewAreaUnlockId] = useState<string | null>(
+    null,
+  );
   const [message, setMessage] = useState('せかいの 状態を 確認できます');
 
   const reload = async () => {
@@ -74,6 +78,10 @@ export function DebugWorldPage() {
 
   return (
     <section className="grid gap-4">
+      <AreaUnlockCinematic
+        areaIds={previewAreaUnlockId ? [previewAreaUnlockId] : []}
+        onComplete={() => setPreviewAreaUnlockId(null)}
+      />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
         <p className="text-sm font-black text-[var(--color-text-muted)]">
           Debug World
@@ -120,6 +128,15 @@ export function DebugWorldPage() {
             大きく復興
           </button>
         </div>
+        <button
+          className="min-h-14 rounded-[var(--radius-medium)] bg-emerald-600 px-4 font-black text-white"
+          onClick={() => {
+            setPreviewAreaUnlockId('word-forest');
+          }}
+          type="button"
+        >
+          NEW AREA
+        </button>
         <div className="grid gap-2">
           <p className="text-sm font-black text-[var(--color-text-muted)]">
             町の段階を ワンクリックで変更
