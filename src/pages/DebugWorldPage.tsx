@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { WorldMap } from '../features/world/components/WorldMap';
-import { WorldRecoveryEngine } from '../features/world';
+import {
+  TOWN_RECONSTRUCTION_STEPS,
+  WorldRecoveryEngine,
+} from '../features/world';
 import type { AreaViewModel } from '../features/world';
 
 const DEBUG_BATTLE_ID_PREFIX = 'debug-world';
@@ -48,6 +51,19 @@ export function DebugWorldPage() {
     setMessage(
       result
         ? `${result.pointsAdded}こぶん せかいが げんきになりました`
+        : 'エリアを みつけられませんでした',
+    );
+  };
+
+  const setDebugStage = async (stage: number) => {
+    const result = await WorldRecoveryEngine.setDebugTownReconstructionStage(
+      selectedAreaId,
+      stage,
+    );
+    await reload();
+    setMessage(
+      result
+        ? `町の復興段階を ${stage} にしました`
         : 'エリアを みつけられませんでした',
     );
   };
@@ -103,6 +119,25 @@ export function DebugWorldPage() {
           >
             大きく復興
           </button>
+        </div>
+        <div className="grid gap-2">
+          <p className="text-sm font-black text-[var(--color-text-muted)]">
+            町の段階を ワンクリックで変更
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {TOWN_RECONSTRUCTION_STEPS.map((step) => (
+              <button
+                className="min-h-12 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+                key={step.stage}
+                onClick={() => {
+                  void setDebugStage(step.stage);
+                }}
+                type="button"
+              >
+                {step.stage}: {step.title}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       <WorldMap

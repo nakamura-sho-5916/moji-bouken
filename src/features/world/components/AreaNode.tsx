@@ -16,7 +16,7 @@ export function AreaNode({
     <button
       className={[
         'relative w-full overflow-hidden rounded-[var(--radius-large)] border bg-white p-4 text-left shadow-sm',
-        area.recoveryStage > 0
+        area.reconstructionStage > 0
           ? 'motion-safe:animate-[game-recovery-breathe_2.8s_ease-in-out_infinite]'
           : '',
         selected
@@ -41,14 +41,14 @@ export function AreaNode({
           </h3>
         </div>
         <span
-          aria-label={`ふっこう ${area.recoveryStage}`}
+          aria-label={`復興 ${area.reconstructionStage}`}
           className="rounded-full bg-white px-3 py-1 text-sm font-black text-[var(--color-primary-strong)]"
         >
-          星{area.recoveryStage}
+          星{area.reconstructionStage}
         </span>
       </div>
       <div className="relative z-10 mt-3">
-        <RecoveryScene stage={area.recoveryStage} />
+        <RecoveryScene stage={area.reconstructionStage} />
       </div>
       {area.availableNpc.length > 0 ? (
         <div className="relative z-10 mt-3 grid gap-2">

@@ -534,12 +534,16 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
     await page.getByRole('button', { name: '大きく復興' }).click();
     await expect(page.getByText(/せかいが げんきになりました/)).toBeVisible();
   }
+  await page.getByRole('button', { name: '8: 噴水完成' }).click();
+  await expect(page.getByText(/町の復興段階を 8/)).toBeVisible();
 
   await page.goto('/world');
   await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
-  await expect(page.getByText('はしが なおったよ')).toBeVisible();
-  await expect(page.getByText('みどりが ふえたよ')).toBeVisible();
-  await expect(page.getByText('おみせが あいたよ')).toBeVisible();
+  await expect(page.getByText('まちの 復興率')).toBeVisible();
+  await expect(page.getByText('80%')).toBeVisible();
+  await expect(page.getByText('市場').first()).toBeVisible();
+  await expect(page.getByText('噴水').first()).toBeVisible();
+  await expect(page.getByText('兵士')).toBeVisible();
   await expect(
     page.getByRole('button', { name: /ことばの もり/ }),
   ).toBeVisible();

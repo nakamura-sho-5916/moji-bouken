@@ -6,6 +6,8 @@ import {
   calculateRecoveryPoints,
   calculateRecoveryStage,
   evaluateAreaUnlock,
+  getTownReconstructionStep,
+  TOWN_RECONSTRUCTION_STEPS,
   selectAreaEnemy,
   WorldRecoveryEngine,
   worldAreas,
@@ -23,6 +25,9 @@ function createAreaView(areaId = 'starting-village'): AreaViewModel {
     unlocked: true,
     recoveryStage: 0,
     recoveryPoints: 0,
+    reconstructionStage: 0,
+    reconstructionPercent: 0,
+    pointsToNextReconstructionStage: 5,
     unlockedEvents: [],
     availableNpc: [],
   };
@@ -154,5 +159,40 @@ describe('world recovery', () => {
     expect(second?.alreadyApplied).toBe(true);
     expect(progress?.recoveryStage).toBe(4);
     expect(progress?.unlockedEvents).toContain('reward:world-battle-1');
+  });
+  it('町の見た目用復興率と追加内容を保存して復元する', async () => {
+    const result = await WorldRecoveryEngine.applyRecovery({
+      battleId: 'world-battle-visual-1',
+      areaId: 'starting-village',
+      bossDefeated: false,
+      bonusReasons: ['weak-letter-progress'],
+      experienceEarned: 25,
+      goldEarned: 10,
+    });
+    const state = await WorldRecoveryEngine.getWorldState();
+    const village = state.find((area) => area.area.id === 'starting-village');
+
+    expect(result?.triggeredEvents.length).toBeGreaterThan(0);
+    expect(result?.triggeredEvents[0]?.title).toBe('まちが レベルアップ！');
+    expect(village?.reconstructionStage).toBe(3);
+    expect(village?.reconstructionPercent).toBe(30);
+    expect(village?.pointsToNextReconstructionStage).toBe(5);
+    expect(
+      getTownReconstructionStep(village?.reconstructionStage ?? 0).title,
+    ).toBe('木追加');
+  });
+
+  it('debugで各復興段階へ変更でき、ロード後も維持する', async () => {
+    await WorldRecoveryEngine.setDebugTownReconstructionStage(
+      'starting-village',
+      8,
+    );
+    const state = await WorldRecoveryEngine.getWorldState();
+    const village = state.find((area) => area.area.id === 'starting-village');
+
+    expect(TOWN_RECONSTRUCTION_STEPS).toHaveLength(11);
+    expect(village?.reconstructionStage).toBe(8);
+    expect(village?.reconstructionPercent).toBe(80);
+    expect(getTownReconstructionStep(8).residents).toContain('兵士');
   });
 });

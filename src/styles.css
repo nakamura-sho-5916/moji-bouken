@@ -249,6 +249,30 @@ button {
   }
 }
 
+@keyframes game-building-pop {
+  0% {
+    opacity: 0.65;
+    transform: translateY(6px) scale(0.94);
+  }
+  70% {
+    transform: translateY(-2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes game-resident-walk {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+
 @keyframes game-shop-buy {
   0% {
     transform: scale(0.98);

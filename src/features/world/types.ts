@@ -50,6 +50,9 @@ export type AreaViewModel = {
   unlocked: boolean;
   recoveryStage: number;
   recoveryPoints: number;
+  reconstructionStage: number;
+  reconstructionPercent: number;
+  pointsToNextReconstructionStage: number;
   unlockedEvents: string[];
   availableNpc: NpcData[];
 };
@@ -59,6 +62,7 @@ export type RecoveryEvent = {
   areaId: WorldAreaId;
   title: string;
   message: string;
+  addedDetail?: string;
 };
 
 export type WorldRecoveryResult = {

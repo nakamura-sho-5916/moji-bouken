@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from '../router';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { AreaDetailPanel } from '../features/world/components/AreaDetailPanel';
+import { TownProgressPanel } from '../features/world/components/TownProgressPanel';
 import { WorldMap } from '../features/world/components/WorldMap';
 import { selectAreaEnemy, WorldRecoveryEngine } from '../features/world';
 import type { AreaViewModel } from '../features/world';
@@ -89,6 +90,7 @@ export function WorldPage() {
           げんきにした ばしょから いろが もどるよ
         </p>
       </div>
+      {selectedArea ? <TownProgressPanel area={selectedArea} /> : null}
       <WorldMap
         areas={areas}
         onSelect={(area) => setSelectedAreaId(area.area.id)}

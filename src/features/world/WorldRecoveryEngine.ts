@@ -13,6 +13,13 @@ import { calculateRecoveryStage } from './calculateRecoveryStage';
 import { WORLD_EVENT_IDS, WORLD_RECOVERY_STORAGE_KEY } from './constants';
 import { evaluateAreaUnlock } from './evaluateAreaUnlock';
 import { worldNpcs } from './npcData';
+import {
+  calculateTownReconstructionPercent,
+  calculateTownReconstructionStage,
+  getPointsToNextTownStage,
+  getTownReconstructionStep,
+  TOWN_RECONSTRUCTION_STEPS,
+} from './reconstructionStages';
 import type {
   AreaViewModel,
   RecoveryEvent,
@@ -113,11 +120,16 @@ function buildViewModels(
       progress.recoveryStage,
       calculateRecoveryStage(recoveryPoints),
     );
+    const reconstructionStage =
+      calculateTownReconstructionStage(recoveryPoints);
     return {
       area,
       unlocked: progress.unlocked || unlock.unlocked,
       recoveryStage,
       recoveryPoints,
+      reconstructionStage,
+      reconstructionPercent: calculateTownReconstructionPercent(recoveryPoints),
+      pointsToNextReconstructionStage: getPointsToNextTownStage(recoveryPoints),
       unlockedEvents: progress.unlockedEvents,
       availableNpc: worldNpcs.filter(
         (npc) =>
@@ -131,13 +143,34 @@ function createRecoveryEvents(input: {
   areaId: WorldAreaId;
   previousStage: number;
   nextStage: number;
+  previousTownStage: number;
+  nextTownStage: number;
   unlockedEvents: string[];
 }): RecoveryEvent[] {
-  if (input.nextStage <= input.previousStage) {
+  if (
+    input.nextStage <= input.previousStage &&
+    input.nextTownStage <= input.previousTownStage
+  ) {
     return [];
   }
 
   const events: RecoveryEvent[] = [];
+  if (input.nextTownStage > input.previousTownStage) {
+    for (
+      let stage = input.previousTownStage + 1;
+      stage <= input.nextTownStage;
+      stage += 1
+    ) {
+      const step = getTownReconstructionStep(stage);
+      events.push({
+        id: `town-reconstruction-${stage}`,
+        areaId: input.areaId,
+        title: 'まちが レベルアップ！',
+        message: step.detail,
+        addedDetail: step.title,
+      });
+    }
+  }
   if (
     input.nextStage >= 1 &&
     !input.unlockedEvents.includes(WORLD_EVENT_IDS.natureReturned)
@@ -261,10 +294,14 @@ export const WorldRecoveryEngine = {
     const totalPoints = previousPoints + pointsAdded;
     const nextStage = calculateRecoveryStage(totalPoints);
     const previousStage = progress.recoveryStage;
+    const previousTownStage = calculateTownReconstructionStage(previousPoints);
+    const nextTownStage = calculateTownReconstructionStage(totalPoints);
     const triggeredEvents = createRecoveryEvents({
       areaId: area.id,
       previousStage,
       nextStage,
+      previousTownStage,
+      nextTownStage,
       unlockedEvents: progress.unlockedEvents,
     });
     const unlockedEvents = [
@@ -299,5 +336,40 @@ export const WorldRecoveryEngine = {
       unlockedAreaIds,
       alreadyApplied: false,
     };
+  },
+
+  async setDebugTownReconstructionStage(
+    areaId: string,
+    stage: number,
+    playerId = DEFAULT_PLAYER_ID,
+  ) {
+    const area = worldAreas.find((item) => item.id === areaId);
+    const step = TOWN_RECONSTRUCTION_STEPS[stage];
+    if (!area || !step) {
+      return null;
+    }
+
+    await ensureAreaProgress(playerId);
+    const progress = await getWorldProgress(playerId, area.id);
+    if (!progress) {
+      return null;
+    }
+
+    const store = readRecoveryPointStore();
+    store[area.id] = step.threshold;
+    writeRecoveryPointStore(store);
+
+    await saveWorldProgress({
+      ...progress,
+      recoveryStage: Math.max(
+        progress.recoveryStage,
+        calculateRecoveryStage(step.threshold),
+      ),
+      updatedAt: new Date().toISOString(),
+    });
+
+    return buildViewModels(playerId, await getWorldProgressList(playerId)).find(
+      (item) => item.area.id === area.id,
+    );
   },
 };
