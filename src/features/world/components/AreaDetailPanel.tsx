@@ -35,7 +35,11 @@ export function AreaDetailPanel({
       </p>
       {enemy ? (
         <div className="mt-3 flex justify-center">
-          <EnemyArtwork className="max-w-24" enemyId={enemy.id} />
+          <EnemyArtwork
+            alt={enemy.name}
+            className="max-w-24"
+            enemyId={enemy.id}
+          />
         </div>
       ) : null}
       <div className="mt-4 rounded-[var(--radius-medium)] bg-emerald-50 p-3 font-black">

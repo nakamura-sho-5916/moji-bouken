@@ -29,6 +29,7 @@ export function EnemyDisplay({ enemy, currentHp }: EnemyDisplayProps) {
           </div>
         ) : null}
         <EnemyArtwork
+          alt={enemy.name}
           className="max-w-72 sm:max-w-80"
           defeated={defeated}
           enemyId={enemy.id}

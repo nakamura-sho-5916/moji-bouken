@@ -95,6 +95,7 @@ export function ResultPage() {
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-6 text-center shadow-sm">
         {defeatedEnemy ? (
           <EnemyArtwork
+            alt={defeatedEnemy.name}
             className="mx-auto max-w-36"
             defeated
             enemyId={defeatedEnemy.id}

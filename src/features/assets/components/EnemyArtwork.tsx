@@ -3,6 +3,7 @@ import { GameAssetImage } from './GameAssetImage';
 
 type EnemyArtworkProps = {
   enemyId: string;
+  alt?: string;
   className?: string;
   defeated?: boolean;
   hit?: boolean;
@@ -10,6 +11,7 @@ type EnemyArtworkProps = {
 
 export function EnemyArtwork({
   enemyId,
+  alt,
   className,
   defeated = false,
   hit = false,
@@ -25,6 +27,7 @@ export function EnemyArtwork({
       ].join(' ')}
     >
       <GameAssetImage
+        alt={alt}
         assetId={asset.assetId}
         className="h-full w-full object-contain"
         loading="eager"

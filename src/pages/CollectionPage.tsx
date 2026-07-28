@@ -12,6 +12,7 @@ import {
   equipmentData,
   getCollectionState,
 } from '../features/collection';
+import { getWorldArea } from '../features/world/areaData';
 import type { CollectionProgress } from '../types';
 
 type CollectionTab = 'words' | 'companions' | 'enemies' | 'items' | 'album';
@@ -24,6 +25,24 @@ function hasProgress(
   return progress.some(
     (item) => item.category === category && item.targetId === targetId,
   );
+}
+
+const rarityLabels = {
+  common: 'よく でる',
+  uncommon: 'めずらしい',
+  rare: 'レア',
+  epic: 'とても レア',
+  legendary: 'でんせつ',
+} as const;
+
+function getEnemyCollectionDescription(enemy: {
+  areaId: string;
+  rarity: keyof typeof rarityLabels;
+  type: 'normal' | 'boss';
+}) {
+  const areaName = getWorldArea(enemy.areaId)?.shortName ?? 'どこか';
+  const enemyType = enemy.type === 'boss' ? 'ボス' : 'てき';
+  return `${areaName} / ${rarityLabels[enemy.rarity]} / ${enemyType}`;
 }
 
 export function CollectionPage({
@@ -181,9 +200,15 @@ export function CollectionPage({
         <div className="grid gap-3">
           {state.enemies.map((enemy) => (
             <CollectionCard
-              description={`${enemy.areaId} / ${enemy.rarity} / ${enemy.rewardExperience}EXP`}
+              description={getEnemyCollectionDescription(enemy)}
               discovered={hasProgress(state.progress, 'enemy', enemy.id)}
-              icon={<EnemyArtwork className="size-14" enemyId={enemy.id} />}
+              icon={
+                <EnemyArtwork
+                  alt={enemy.name}
+                  className="size-14"
+                  enemyId={enemy.id}
+                />
+              }
               key={enemy.id}
               title={enemy.name}
             />

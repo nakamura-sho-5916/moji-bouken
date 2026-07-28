@@ -585,6 +585,10 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
   await expect(page.getByText('うさぎ')).toBeVisible();
   await page.getByRole('button', { name: 'てき' }).click();
   await expect(page.getByText('もじスライム')).toBeVisible();
+  await expect(page.getByText('.png')).toHaveCount(0);
+  await expect(page.getByText('.svg')).toHaveCount(0);
+  await expect(page.getByText('/assets/')).toHaveCount(0);
+  await expect(page.getByText('まだ であっていないよ').first()).toBeVisible();
   await page.getByRole('button', { name: 'アルバム' }).click();
   await expect(page.getByText('はしが なおった！')).toBeVisible();
 
@@ -684,6 +688,9 @@ test('debug assets audits registry and fallback in development', async ({
   ).toBeVisible();
   await expect(page.getByText('assetCount: 51')).toBeVisible();
   await expect(page.getByText('duplicateAssetIds: 0')).toBeVisible();
+  await expect(
+    page.getByText('/assets/game/enemies/001-moji-slime.png'),
+  ).toBeVisible();
   await expect(
     page.locator('img[src*="/assets/game/enemies/"]').first(),
   ).toBeVisible();
