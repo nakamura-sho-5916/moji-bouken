@@ -20,6 +20,7 @@ export function RewardSummary({ summary }: RewardSummaryProps) {
     Math.min(progressMax, summary.experienceAfter - summary.experienceBefore),
   );
   const droppedItems = summary.droppedItems ?? [];
+  const companionSupports = summary.companionSupports ?? [];
 
   return (
     <section className="relative overflow-hidden rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
@@ -29,6 +30,27 @@ export function RewardSummary({ summary }: RewardSummaryProps) {
       <div className="mt-4">
         <RewardChestPresentation items={droppedItems} />
       </div>
+      {companionSupports.length > 0 ? (
+        <div className="mt-4 rounded-[var(--radius-medium)] border border-pink-200 bg-pink-50 p-3">
+          <p className="font-black text-pink-700">なかまの かつやく</p>
+          <div className="mt-2 grid gap-2">
+            {companionSupports.map((support) => (
+              <div
+                className="rounded-[var(--radius-medium)] bg-white p-3 font-black"
+                key={`${support.companionId}-${support.skill}`}
+              >
+                <p className="text-[var(--color-primary-strong)]">
+                  {support.companionName} / {support.skillName}
+                </p>
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  {support.effectLabel}
+                  {support.damageBonus > 0 ? ` / +${support.damageBonus}` : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="relative mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-[var(--radius-medium)] bg-orange-50 p-3 text-center font-black">
           <p>けいけん</p>

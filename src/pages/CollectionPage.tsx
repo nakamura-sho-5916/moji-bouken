@@ -11,6 +11,7 @@ import {
   companionData,
   equipmentData,
   getCollectionState,
+  loadCompanionBattleStats,
 } from '../features/collection';
 import { RewardEngine } from '../features/rewards';
 import { getWorldArea } from '../features/world/areaData';
@@ -58,6 +59,7 @@ export function CollectionPage({
   const [lastRewardSummary] = useState(() =>
     RewardEngine.loadLastRewardSummary(),
   );
+  const [companionBattleStats] = useState(() => loadCompanionBattleStats());
 
   useEffect(() => {
     let active = true;
@@ -119,6 +121,9 @@ export function CollectionPage({
   const itemFound = equipmentData.filter((item) =>
     ownedItemIds.has(item.id),
   ).length;
+  const companionStatsById = new Map(
+    companionBattleStats.stats.map((stat) => [stat.companionId, stat]),
+  );
 
   return (
     <section className="grid gap-4">
@@ -185,24 +190,32 @@ export function CollectionPage({
       ) : null}
       {tab === 'companions' ? (
         <div className="grid gap-3">
-          {companionData.map((companion) => (
-            <CollectionCard
-              description={`${companion.skillName} / ${companion.description}`}
-              discovered={hasProgress(
-                state.progress,
-                'companion',
-                companion.id,
-              )}
-              icon={
-                <CompanionArtwork
-                  className="size-14"
-                  companionId={companion.id}
+          {companionData.map((companion) =>
+            (() => {
+              const stat = companionStatsById.get(companion.id);
+              const supportText = stat
+                ? `発動 ${stat.activationCount} / 応援 ${stat.cheerCount} / 追加 ${stat.extraDamageTotal}`
+                : '発動 0 / 応援 0 / 追加 0';
+              return (
+                <CollectionCard
+                  description={`${companion.skillName} / ${supportText}`}
+                  discovered={hasProgress(
+                    state.progress,
+                    'companion',
+                    companion.id,
+                  )}
+                  icon={
+                    <CompanionArtwork
+                      className="size-14"
+                      companionId={companion.id}
+                    />
+                  }
+                  key={companion.id}
+                  title={companion.name}
                 />
-              }
-              key={companion.id}
-              title={companion.name}
-            />
-          ))}
+              );
+            })(),
+          )}
         </div>
       ) : null}
       {tab === 'enemies' ? (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from '../../router';
 import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getInventory } from '../../db/repositories/inventoryRepository';
 import { getPlayerById } from '../../db/repositories/playerRepository';
 import { createCorrectAnswerFeedbackController } from '../audio';
 import {
@@ -14,10 +15,14 @@ import { useAudio } from '../audio';
 import { BattleStatusPanel } from '../battle/components/BattleStatusPanel';
 import {
   applyCompanionSkill,
+  companionData,
+  evaluateCompanionBattleSupport,
+  loadCompanionBattleStats,
+  recordCompanionSupportEvent,
   getSelectedCompanion,
   recordEnemyEncounter,
 } from '../collection';
-import type { CompanionData } from '../collection';
+import type { CompanionData, CompanionSupportEvent } from '../collection';
 import { RewardEngine } from '../rewards';
 import { MissionFeedback } from './components/MissionFeedback';
 import { MissionHeader } from './components/MissionHeader';
@@ -63,8 +68,12 @@ export function MissionRunner() {
   const [practiceCorrect, setPracticeCorrect] = useState(false);
   const [selectedCompanion, setSelectedCompanion] =
     useState<CompanionData | null>(null);
+  const [joinedCompanions, setJoinedCompanions] = useState<CompanionData[]>([]);
+  const [lastCompanionSupport, setLastCompanionSupport] =
+    useState<CompanionSupportEvent | null>(null);
   const audio = useAudio();
   const correctFeedback = useRef(createCorrectAnswerFeedbackController());
+  const companionSupportsRef = useRef<CompanionSupportEvent[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -72,6 +81,17 @@ export function MissionRunner() {
       if (active) {
         setSelectedCompanion(companion);
       }
+    });
+    void getInventory(DEFAULT_PLAYER_ID).then((inventory) => {
+      if (!active) {
+        return;
+      }
+      const joinedIds = new Set(
+        inventory?.companions.map((companion) => companion.id) ?? [],
+      );
+      setJoinedCompanions(
+        companionData.filter((companion) => joinedIds.has(companion.id)),
+      );
     });
     return () => {
       active = false;
@@ -97,6 +117,8 @@ export function MissionRunner() {
     });
     setBattle(nextBattle);
     setLastDamage(0);
+    setLastCompanionSupport(null);
+    companionSupportsRef.current = [];
     saveActiveBattleSession(nextBattle);
     return nextBattle;
   };
@@ -175,20 +197,50 @@ export function MissionRunner() {
       return null;
     }
     const answerResult = BattleEngine.applyAnswer({ battle, correct });
+    let nextAnswerBattle = answerResult.battle;
+    let totalDamage = answerResult.damage;
     if (correct) {
+      const supportEvent = evaluateCompanionBattleSupport({
+        battle,
+        missionIndex: session.currentIndex,
+        totalMissions: session.missions.length,
+        companions: joinedCompanions,
+        previousCompanionId: loadCompanionBattleStats().lastCompanionId,
+        alreadyActivatedCount: companionSupportsRef.current.length,
+        baseDamage: answerResult.damage,
+      });
+      if (supportEvent) {
+        recordCompanionSupportEvent(supportEvent);
+        companionSupportsRef.current = [
+          ...companionSupportsRef.current,
+          supportEvent,
+        ];
+        setLastCompanionSupport(supportEvent);
+        nextAnswerBattle = BattleEngine.applySupportDamage({
+          battle: nextAnswerBattle,
+          damage: supportEvent.damageBonus,
+          message: `${supportEvent.companionName}が たすけてくれたよ`,
+        });
+        totalDamage += supportEvent.damageBonus;
+        window.setTimeout(() => audio.playSoundEffect('companion-joined'), 70);
+      } else {
+        setLastCompanionSupport(null);
+      }
       correctFeedback.current.play({
-        comboCount: answerResult.battle.comboCount,
+        comboCount: nextAnswerBattle.comboCount,
         feedbackKey,
         playSoundEffect: audio.playSoundEffect,
         seed: `${session.seed}:${session.currentIndex}:${feedbackKey}`,
       });
+    } else {
+      setLastCompanionSupport(null);
     }
     const nextBattle =
-      answerResult.battle.status === 'feedback'
-        ? { ...answerResult.battle, status: 'active' as const }
-        : answerResult.battle;
+      nextAnswerBattle.status === 'feedback'
+        ? { ...nextAnswerBattle, status: 'active' as const }
+        : nextAnswerBattle;
     setBattle(nextBattle);
-    setLastDamage(answerResult.damage);
+    setLastDamage(totalDamage);
     saveActiveBattleSession(nextBattle);
     if (nextBattle.enemyCurrentHp <= 0) {
       window.setTimeout(() => audio.playSoundEffect('enemy-defeated'), 180);
@@ -236,6 +288,7 @@ export function MissionRunner() {
         await RewardEngine.grantBattleRewards({
           battle: completedBattle,
           missionResults: nextSession.results,
+          companionSupports: companionSupportsRef.current,
         });
         await recordEnemyEncounter({
           enemyId: completedBattle.enemyId,
@@ -363,6 +416,7 @@ export function MissionRunner() {
       {battle ? (
         <BattleStatusPanel
           battle={battle}
+          companionSupport={lastCompanionSupport}
           lastDamage={lastDamage}
           onUseSpecial={handleSpecialAttack}
         />

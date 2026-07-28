@@ -18,6 +18,7 @@ import { getEnemy } from '../battle/enemies';
 import type { BattleSession } from '../battle/types';
 import { resolveItemAsset } from '../assets';
 import { equipmentData, getSelectedCompanion } from '../collection';
+import type { CompanionSupportEvent } from '../collection';
 import type { MissionResult } from '../missions';
 import { calculateExperience } from './calculateExperience';
 import { calculateGold } from './calculateGold';
@@ -86,6 +87,7 @@ export const RewardEngine = {
   async grantBattleRewards(input: {
     battle: BattleSession;
     missionResults: MissionResult[];
+    companionSupports?: CompanionSupportEvent[];
   }): Promise<RewardSummary> {
     await initializeAppData();
     const rewardedIds = loadRewardedIds();
@@ -94,6 +96,7 @@ export const RewardEngine = {
     const selectedCompanion = await getSelectedCompanion(DEFAULT_PLAYER_ID);
     const reasons = createRewardReasons(input);
     const enemy = getEnemy(input.battle.enemyId);
+    const companionSupports = input.companionSupports ?? [];
     const bossDefeated =
       input.battle.enemyCurrentHp <= 0 && enemy?.type === 'boss';
     const baseSummary = {
@@ -124,6 +127,7 @@ export const RewardEngine = {
         : 0,
       reasons,
       droppedItems: [],
+      companionSupports,
       player: player ?? null,
       inventory: inventory ?? null,
     };
@@ -143,16 +147,25 @@ export const RewardEngine = {
     const experienceGained =
       calculateExperience(reasons) +
       (victory ? (enemy?.rewardExperience ?? 0) : 0) +
-      owlBonus;
+      owlBonus +
+      companionSupports.reduce(
+        (total, support) => total + support.experienceBonus,
+        0,
+      );
     const squirrelMultiplier =
       selectedCompanion?.skillId === 'bonus-gold' ? 1.1 : 1;
-    const goldGained = Math.max(
+    const companionGoldBonus = companionSupports.reduce(
+      (total, support) => total + support.goldBonus,
       0,
-      Math.round(
-        (calculateGold(reasons) + (victory ? (enemy?.rewardGold ?? 0) : 0)) *
-          squirrelMultiplier,
-      ),
     );
+    const goldGained =
+      Math.max(
+        0,
+        Math.round(
+          (calculateGold(reasons) + (victory ? (enemy?.rewardGold ?? 0) : 0)) *
+            squirrelMultiplier,
+        ),
+      ) + companionGoldBonus;
     const nextExperience = player.experience + experienceGained;
     const nextLevel = calculateLevel(nextExperience);
     const nextLevelExperience = experienceRequiredForLevel(nextLevel + 1);

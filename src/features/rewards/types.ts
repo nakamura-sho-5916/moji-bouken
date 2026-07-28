@@ -1,5 +1,6 @@
 import type { Player, Inventory } from '../../types';
 import type { GameAssetRarity } from '../assets';
+import type { CompanionSupportEvent } from '../collection';
 
 export type RewardReason =
   | 'normal-correct'
@@ -39,6 +40,7 @@ export type RewardSummary = {
   experienceToNextLevel: number;
   reasons: RewardReason[];
   droppedItems: RewardDropItem[];
+  companionSupports: CompanionSupportEvent[];
   alreadyRewarded: boolean;
   player: Player | null;
   inventory: Inventory | null;

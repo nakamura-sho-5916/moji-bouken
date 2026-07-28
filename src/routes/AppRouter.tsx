@@ -81,6 +81,11 @@ const DebugCollectionPage = lazy(() =>
     default: module.DebugCollectionPage,
   })),
 );
+const DebugCompanionsPage = lazy(() =>
+  import('../pages/DebugCompanionsPage').then((module) => ({
+    default: module.DebugCompanionsPage,
+  })),
+);
 const DebugReleasePage = lazy(() =>
   import('../pages/DebugReleasePage').then((module) => ({
     default: module.DebugReleasePage,
@@ -162,6 +167,8 @@ function resolveRoute(pathname: string): ReactNode {
       return import.meta.env.DEV ? <DebugWorldPage /> : <NotFoundPage />;
     case '/debug/collection':
       return import.meta.env.DEV ? <DebugCollectionPage /> : <NotFoundPage />;
+    case '/debug/companions':
+      return import.meta.env.DEV ? <DebugCompanionsPage /> : <NotFoundPage />;
     case '/debug/release':
       return import.meta.env.DEV ? <DebugReleasePage /> : <NotFoundPage />;
     case '/debug/audio':

@@ -73,6 +73,7 @@ async function prepareCompletedResult(page: Page) {
         experienceToNextLevel: 22,
         reasons: ['session-complete'],
         droppedItems: [],
+        companionSupports: [],
         alreadyRewarded: false,
         player: null,
         inventory: null,
@@ -790,4 +791,19 @@ test('debug reward previews every rarity presentation', async ({ page }) => {
   await page.getByRole('button', { exact: true, name: 'Legendary' }).click();
   await expect(page.getByText('金箱')).toBeVisible();
   await expect(page.getByTestId('reward-legend')).toHaveText('LEGEND');
+});
+
+test('debug companions previews battle support presentation', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/debug/companions');
+
+  await expect(
+    page.getByRole('heading', { name: 'Debug Companions' }),
+  ).toBeVisible();
+  await expect(page.getByTestId('companion-support-effect')).toBeVisible();
+  await page.getByRole('button', { exact: true, name: 'きつね' }).click();
+  await expect(page.getByText(/きつね/).first()).toBeVisible();
+  await expect(page.getByText(/追加ダメージ/)).toBeVisible();
 });

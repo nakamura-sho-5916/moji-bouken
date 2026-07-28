@@ -43,4 +43,16 @@ describe('AppRouter', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText('Common').length).toBeGreaterThan(0);
   });
+
+  it('開発時に仲間デバッグ画面を表示する', async () => {
+    render(
+      <MemoryRouter initialEntries={['/debug/companions']}>
+        <AppRouter />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Debug Companions' }),
+    ).toBeInTheDocument();
+  });
 });

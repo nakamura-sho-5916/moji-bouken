@@ -1,6 +1,8 @@
 import { getDefaultEnemy, getEnemy } from '../enemies';
 import type { BattleSession } from '../types';
+import type { CompanionSupportEvent } from '../../collection';
 import { ComboDisplay } from './ComboDisplay';
+import { CompanionSupportEffect } from './CompanionSupportEffect';
 import { DamageEffect } from './DamageEffect';
 import { EnemyDisplay } from './EnemyDisplay';
 import { SpecialAttackButton } from './SpecialAttackButton';
@@ -10,11 +12,13 @@ import { VictoryEffect } from './VictoryEffect';
 type BattleStatusPanelProps = {
   battle: BattleSession;
   lastDamage?: number;
+  companionSupport?: CompanionSupportEvent | null;
   onUseSpecial?: () => void;
 };
 
 export function BattleStatusPanel({
   battle,
+  companionSupport = null,
   lastDamage = 0,
   onUseSpecial,
 }: BattleStatusPanelProps) {
@@ -27,6 +31,7 @@ export function BattleStatusPanel({
   return (
     <section className="grid gap-3">
       <EnemyDisplay enemy={enemy} currentHp={battle.enemyCurrentHp} />
+      <CompanionSupportEffect support={companionSupport} />
       <DamageEffect damage={lastDamage} />
       <ComboDisplay comboCount={battle.comboCount} />
       <SpecialGauge max={battle.specialGaugeMax} value={battle.specialGauge} />

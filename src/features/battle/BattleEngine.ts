@@ -122,4 +122,26 @@ export const BattleEngine = {
       specialGaugeGain: -battle.specialGauge,
     };
   },
+
+  applySupportDamage(input: {
+    battle: BattleSession;
+    damage: number;
+    message: string;
+  }): BattleSession {
+    if (
+      input.damage <= 0 ||
+      input.battle.status === 'victory' ||
+      input.battle.status === 'completed'
+    ) {
+      return input.battle;
+    }
+
+    const damaged: BattleSession = {
+      ...input.battle,
+      enemyCurrentHp: Math.max(0, input.battle.enemyCurrentHp - input.damage),
+      totalDamage: input.battle.totalDamage + input.damage,
+      lastMessage: input.message,
+    };
+    return completeIfDefeated(damaged);
+  },
 };

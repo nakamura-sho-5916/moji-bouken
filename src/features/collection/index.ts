@@ -1,4 +1,19 @@
 export { companionData } from './companionData';
+export {
+  COMPANION_SUPPORT_MAX_PER_BATTLE,
+  COMPANION_SUPPORT_RATE,
+  evaluateCompanionBattleSupport,
+  getCompanionSupportDefinition,
+  type CompanionSupportEvent,
+  type CompanionSupportSkill,
+} from './companionBattleSupport';
+export {
+  getCompanionBattleStat,
+  loadCompanionBattleStats,
+  recordCompanionSupportEvent,
+  resetCompanionBattleStats,
+  type CompanionBattleStat,
+} from './companionBattleStats';
 export { applyCompanionSkill } from './companionSkills';
 export { equipmentData, EQUIPMENT_BONUS_LIMITS } from './equipmentData';
 export {

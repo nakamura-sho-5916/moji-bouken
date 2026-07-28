@@ -6,6 +6,7 @@ import {
   SceneEffect,
   TreasureChestEffect,
 } from '../../../src/features/effects';
+import { CompanionSupportEffect } from '../../../src/features/battle/components/CompanionSupportEffect';
 
 describe('game effects', () => {
   it('renders effect bursts with semantic test hooks', () => {
@@ -34,5 +35,26 @@ describe('game effects', () => {
 
     expect(screen.getByText('なかまと いっしょ')).toBeVisible();
     expect(screen.getByTestId('scene-effect-companion')).toBeVisible();
+  });
+
+  it('renders companion battle support effects', () => {
+    render(
+      <CompanionSupportEffect
+        support={{
+          companionId: 'rabbit',
+          companionName: 'うさぎ',
+          skill: 'cheer',
+          skillName: '応援',
+          line: 'いまだよ、いっしょに！',
+          effectLabel: '攻撃+10%',
+          damageBonus: 2,
+          experienceBonus: 0,
+          goldBonus: 0,
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId('companion-support-effect')).toBeVisible();
+    expect(screen.getByText(/うさぎ/)).toBeVisible();
   });
 });

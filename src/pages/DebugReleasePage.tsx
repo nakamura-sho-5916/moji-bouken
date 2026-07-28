@@ -86,6 +86,7 @@ export function DebugReleasePage() {
         '/debug/battle',
         '/debug/world',
         '/debug/collection',
+        '/debug/companions',
         '/debug/release',
         '/debug/audio',
         '/debug/reward',
