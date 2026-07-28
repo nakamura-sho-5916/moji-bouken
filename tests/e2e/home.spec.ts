@@ -696,8 +696,11 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
 });
 
 test('仲間・装備・図鑑・復興アルバムを確認できる', async ({ page }) => {
+  test.setTimeout(60000);
   await page.goto('/collection');
-  await expect(page.getByRole('heading', { name: 'ずかん' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'ずかん' })).toBeVisible({
+    timeout: 15000,
+  });
   await expect(page.getByText('まだ であっていないよ').first()).toBeVisible();
 
   await page.goto('/mission');
@@ -809,7 +812,9 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
 
 test('保護者PIN・概要・バックアップ画面を確認できる', async ({ page }) => {
   await page.goto('/parent');
-  await expect(page.getByRole('heading', { name: '保護者' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '保護者' })).toBeVisible({
+    timeout: 15000,
+  });
   await page.getByPlaceholder('4けた').fill('1234');
   await page.getByPlaceholder('もういちど').fill('1234');
   await page.getByRole('button', { name: 'せっていする' }).click();

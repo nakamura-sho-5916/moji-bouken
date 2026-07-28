@@ -5,6 +5,11 @@ import {
   getAppSettings,
   updateAppSettings,
 } from '../../../src/db/repositories/settingsRepository';
+import {
+  listSaveSlotSummaries,
+  renameSaveSlot,
+  startSaveSlot,
+} from '../../../src/db/repositories/saveSlotRepository';
 import { addLearningLog } from '../../../src/db/repositories/learningLogRepository';
 import { saveLetterProgress } from '../../../src/db/repositories/letterProgressRepository';
 import { addReviewSchedule } from '../../../src/db/repositories/reviewScheduleRepository';
@@ -26,6 +31,7 @@ import {
 import { createMissionSession } from '../../../src/features/missions/MissionSession';
 import { getPlayerById } from '../../../src/db/repositories/playerRepository';
 import { resetIndexedDb } from '../dbTestUtils';
+import { addDebugGold } from '../../../src/features/collection';
 
 async function seedLearningData() {
   await addLearningLog({
@@ -236,5 +242,123 @@ describe('parent tools', () => {
     ).toBe(true);
     expect(await getPlayerById(DEFAULT_PLAYER_ID)).not.toBeUndefined();
     expect((await calculateLearningOverview()).totalAnswers).toBe(0);
+  });
+
+  it('backs up and restores save slots with scoped localStorage data', async () => {
+    await seedLearningData();
+    await renameSaveSlot('slot-1', 'slot one');
+    await startSaveSlot('slot-2');
+    await renameSaveSlot('slot-2', 'slot two');
+    await addDebugGold(22);
+    localStorage.setItem(
+      'moji-bouken:story-progress:save-slot-2',
+      JSON.stringify({ entries: [{ eventId: 'test', status: 'seen' }] }),
+    );
+    await configureParentPin({ pin: '1234', confirmPin: '1234' });
+
+    const backup = await createBackup();
+    const json = serializeBackup(backup);
+
+    expect(backup.data.saveSlots).toHaveLength(3);
+    expect(
+      backup.data.saveSlots.find((slot) => slot.id === 'slot-2')?.name,
+    ).toBe('slot two');
+    expect(backup.data.localStorage.entries).toHaveProperty(
+      'moji-bouken:story-progress:save-slot-2',
+    );
+    expect(json).not.toContain('1234');
+    expect(json).not.toContain('moji-bouken:mission-session');
+
+    await restoreBackup(parseBackupJson(json));
+
+    expect(
+      (await listSaveSlotSummaries()).find((slot) => slot.id === 'slot-2')
+        ?.name,
+    ).toBe('slot two');
+    expect((await getPlayerById('save-slot-2'))?.id).toBe('save-slot-2');
+    expect((await getAppSettings('save-slot-2'))?.parentPinConfigured).toBe(
+      false,
+    );
+    expect(
+      localStorage.getItem('moji-bouken:story-progress:save-slot-2'),
+    ).toContain('test');
+  });
+
+  it('uses v1.0 default audio volume settings and persists changes', async () => {
+    const initialSettings = await getAppSettings(DEFAULT_PLAYER_ID);
+
+    expect(initialSettings?.masterVolume).toBe(70);
+    expect(initialSettings?.bgmVolume).toBe(62);
+    expect(initialSettings?.soundEffectVolume).toBe(68);
+    expect(
+      (initialSettings?.bgmVolume ?? 0) <
+        (initialSettings?.soundEffectVolume ?? 0),
+    ).toBe(true);
+
+    await updateAppSettings(DEFAULT_PLAYER_ID, {
+      bgmVolume: 55,
+      soundEffectVolume: 66,
+      muteAll: true,
+    });
+
+    const reloadedSettings = await getAppSettings(DEFAULT_PLAYER_ID);
+    expect(reloadedSettings?.bgmVolume).toBe(55);
+    expect(reloadedSettings?.soundEffectVolume).toBe(66);
+    expect(reloadedSettings?.muteAll).toBe(true);
+  });
+
+  it('restores old backups without saveSlots into slot 1', async () => {
+    const legacyBackup = parseBackupJson(
+      JSON.stringify({
+        format: 'moji-bouken-backup',
+        version: 1,
+        appVersion: '0.6.2',
+        createdAt: '2026-07-01T00:00:00.000Z',
+        databaseVersion: 4,
+        data: {
+          players: [
+            {
+              id: 'default-player',
+              name: 'legacy',
+              level: 3,
+              experience: 70,
+              gold: 0,
+              createdAt: '2026-07-01T00:00:00.000Z',
+              updatedAt: '2026-07-01T00:00:00.000Z',
+            },
+          ],
+          learningLogs: [
+            {
+              id: 'default-player:legacy-log',
+              playerId: 'default-player',
+              missionId: 'mission-1',
+              targetLetter: 'hiragana-a',
+              correct: true,
+              responseTimeMs: 800,
+              answeredAt: '2026-07-01T00:00:00.000Z',
+            },
+          ],
+          letterProgress: [],
+          reviewSchedules: [],
+          worldProgress: [],
+          inventories: [],
+          settings: [],
+          collectionProgress: [],
+          albumEntries: [],
+          localStorage: {
+            rewardedBattleIds: '["legacy-battle"]',
+          },
+        },
+      }),
+    );
+
+    await restoreBackup(legacyBackup);
+
+    expect((await getPlayerById('save-slot-1'))?.experience).toBe(70);
+    expect(await getPlayerById('default-player')).toBeUndefined();
+    expect(await listSaveSlotSummaries()).toHaveLength(3);
+    expect(localStorage.getItem('moji-bouken:rewarded-battle-ids')).toBe(
+      '["legacy-battle"]',
+    );
   });
 });

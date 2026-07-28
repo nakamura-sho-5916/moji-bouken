@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AudioManager } from '../../../src/features/audio';
+import {
+  AudioManager,
+  bgmRegistry,
+  soundEffectRegistry,
+} from '../../../src/features/audio';
 
 class MockParam {
   value = 0;
@@ -208,6 +212,23 @@ describe('AudioManager', () => {
     });
     manager.playBgm('battle');
     expect(manager.getState().currentBgm).toBe('battle');
+  });
+
+  it('keeps default battle BGM below correct SFX effective volume', () => {
+    const masterVolume = 0.7;
+    const bgmVolume = 0.62;
+    const soundEffectVolume = 0.68;
+    const battleGain =
+      masterVolume * bgmVolume * bgmRegistry.battle.defaultVolume;
+    const correctGain =
+      masterVolume *
+      soundEffectVolume *
+      soundEffectRegistry.correct.defaultVolume;
+
+    expect(bgmVolume).toBeLessThan(soundEffectVolume);
+    expect(battleGain).toBeLessThan(correctGain);
+    expect(battleGain).toBeGreaterThan(0);
+    expect(correctGain).toBeLessThanOrEqual(1);
   });
 
   it('resumes the active battle BGM after AudioContext suspension', async () => {
