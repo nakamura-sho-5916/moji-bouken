@@ -11,8 +11,10 @@ import {
   companionData,
   equipmentData,
   getCollectionState,
+  loadBossBattleStats,
   loadCompanionBattleStats,
 } from '../features/collection';
+import type { BossBattleStat } from '../features/collection';
 import { RewardEngine } from '../features/rewards';
 import { getWorldArea } from '../features/world/areaData';
 import type { CollectionProgress } from '../types';
@@ -47,6 +49,29 @@ function getEnemyCollectionDescription(enemy: {
   return `${areaName} / ${rarityLabels[enemy.rarity]} / ${enemyType}`;
 }
 
+function getEnemyCollectionDescriptionWithBossStats(
+  enemy: {
+    areaId: string;
+    rarity: keyof typeof rarityLabels;
+    type: 'normal' | 'boss';
+  },
+  bossStat?: BossBattleStat,
+) {
+  const baseDescription = getEnemyCollectionDescription(enemy);
+  if (enemy.type !== 'boss') {
+    return baseDescription;
+  }
+
+  const count = bossStat?.defeatCount ?? 0;
+  const firstDate = bossStat
+    ? new Date(bossStat.firstDefeatedAt).toLocaleDateString('ja-JP')
+    : '未討伐';
+  const lastDate = bossStat
+    ? new Date(bossStat.lastDefeatedAt).toLocaleDateString('ja-JP')
+    : '未討伐';
+  return `${baseDescription} / 討伐 ${count} / 初回 ${firstDate} / 最終 ${lastDate}`;
+}
+
 export function CollectionPage({
   initialTab = 'words',
 }: {
@@ -60,6 +85,7 @@ export function CollectionPage({
     RewardEngine.loadLastRewardSummary(),
   );
   const [companionBattleStats] = useState(() => loadCompanionBattleStats());
+  const [bossBattleStats] = useState(() => loadBossBattleStats());
 
   useEffect(() => {
     let active = true;
@@ -123,6 +149,9 @@ export function CollectionPage({
   ).length;
   const companionStatsById = new Map(
     companionBattleStats.stats.map((stat) => [stat.companionId, stat]),
+  );
+  const bossStatsById = new Map(
+    bossBattleStats.stats.map((stat) => [stat.enemyId, stat]),
   );
 
   return (
@@ -222,7 +251,10 @@ export function CollectionPage({
         <div className="grid gap-3">
           {state.enemies.map((enemy) => (
             <CollectionCard
-              description={getEnemyCollectionDescription(enemy)}
+              description={getEnemyCollectionDescriptionWithBossStats(
+                enemy,
+                bossStatsById.get(enemy.id),
+              )}
               discovered={hasProgress(state.progress, 'enemy', enemy.id)}
               icon={
                 <EnemyArtwork

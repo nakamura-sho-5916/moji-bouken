@@ -9,8 +9,10 @@ import {
   createBattleSession,
   getEnemy,
   saveActiveBattleSession,
+  selectBossBattleMoment,
   type BattleSession,
 } from '../battle';
+import { BossIntroCinematic } from '../battle/components/BossIntroCinematic';
 import { useAudio } from '../audio';
 import { BattleStatusPanel } from '../battle/components/BattleStatusPanel';
 import {
@@ -18,6 +20,7 @@ import {
   companionData,
   evaluateCompanionBattleSupport,
   loadCompanionBattleStats,
+  recordBossDefeat,
   recordCompanionSupportEvent,
   getSelectedCompanion,
   recordEnemyEncounter,
@@ -64,6 +67,9 @@ export function MissionRunner() {
     null,
   );
   const [battle, setBattle] = useState<BattleSession | null>(null);
+  const [bossIntroBattleId, setBossIntroBattleId] = useState<string | null>(
+    null,
+  );
   const [lastDamage, setLastDamage] = useState(0);
   const [practiceCorrect, setPracticeCorrect] = useState(false);
   const [selectedCompanion, setSelectedCompanion] =
@@ -74,6 +80,7 @@ export function MissionRunner() {
   const audio = useAudio();
   const correctFeedback = useRef(createCorrectAnswerFeedbackController());
   const companionSupportsRef = useRef<CompanionSupportEvent[]>([]);
+  const playedBossIntroSfxRef = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -99,12 +106,33 @@ export function MissionRunner() {
   }, []);
 
   useEffect(() => {
-    if (battle && session.status === 'active') {
-      audio.playBgm(
-        getEnemy(battle.enemyId)?.type === 'boss' ? 'boss' : 'battle',
-      );
+    if (!battle || session.status !== 'active') {
+      return;
     }
-  }, [audio, battle, session.status]);
+
+    const enemy = getEnemy(battle.enemyId);
+    if (enemy?.type === 'boss') {
+      if (bossIntroBattleId === battle.battleId) {
+        return;
+      }
+      audio.playBgm('boss');
+      return;
+    }
+
+    audio.playBgm('battle');
+  }, [audio, battle, bossIntroBattleId, session.status]);
+
+  useEffect(() => {
+    if (!battle || bossIntroBattleId !== battle.battleId) {
+      return;
+    }
+    if (playedBossIntroSfxRef.current === battle.battleId) {
+      return;
+    }
+
+    playedBossIntroSfxRef.current = battle.battleId;
+    window.setTimeout(() => audio.playSoundEffect('boss-appearance'), 40);
+  }, [audio, battle, bossIntroBattleId]);
 
   const createMissionBattle = async (sessionId: string) => {
     const player = await getPlayerById(DEFAULT_PLAYER_ID);
@@ -116,6 +144,11 @@ export function MissionRunner() {
       playerAttackBonus: companion?.skillId === 'damage-up' ? 4 : 0,
     });
     setBattle(nextBattle);
+    setBossIntroBattleId(
+      getEnemy(nextBattle.enemyId)?.type === 'boss'
+        ? nextBattle.battleId
+        : null,
+    );
     setLastDamage(0);
     setLastCompanionSupport(null);
     companionSupportsRef.current = [];
@@ -285,17 +318,25 @@ export function MissionRunner() {
       audio.stopBgm(180);
       const completedBattle = battleForReward ?? battle;
       if (completedBattle) {
+        const completedEnemy = getEnemy(completedBattle.enemyId);
+        const defeated = completedBattle.enemyCurrentHp <= 0;
+        const encounterSource =
+          defeated && completedEnemy?.type === 'boss'
+            ? 'boss'
+            : defeated
+              ? 'normal-victory'
+              : 'encounter';
         await RewardEngine.grantBattleRewards({
           battle: completedBattle,
           missionResults: nextSession.results,
           companionSupports: companionSupportsRef.current,
         });
+        if (encounterSource === 'boss') {
+          recordBossDefeat(completedBattle.enemyId);
+        }
         await recordEnemyEncounter({
           enemyId: completedBattle.enemyId,
-          source:
-            completedBattle.enemyCurrentHp <= 0
-              ? 'normal-victory'
-              : 'encounter',
+          source: encounterSource,
         });
         saveActiveBattleSession({ ...completedBattle, status: 'completed' });
       }
@@ -395,9 +436,32 @@ export function MissionRunner() {
     answerSubmission.answerState !== 'correct' &&
     !answerSubmission.saving;
   const activeViewModel = playableViewModel ?? viewModel;
+  const battleEnemy = battle ? getEnemy(battle.enemyId) : null;
+  const bossIntroVisible =
+    Boolean(battle && battleEnemy?.type === 'boss') &&
+    bossIntroBattleId === battle?.battleId;
+  const bossMoment =
+    battle && battleEnemy?.type === 'boss'
+      ? selectBossBattleMoment({
+          battleId: battle.battleId,
+          enemy: battleEnemy,
+          missionIndex: session.currentIndex,
+        })
+      : null;
 
   return (
     <section className="grid gap-4">
+      {battle && battleEnemy?.type === 'boss' ? (
+        <BossIntroCinematic
+          enemy={battleEnemy}
+          onComplete={() => {
+            setBossIntroBattleId((current) =>
+              current === battle.battleId ? null : current,
+            );
+          }}
+          visible={bossIntroVisible}
+        />
+      ) : null}
       <MissionHeader
         currentIndex={session.currentIndex}
         onBack={() => {
@@ -415,6 +479,7 @@ export function MissionRunner() {
       />
       {battle ? (
         <BattleStatusPanel
+          bossMoment={bossMoment}
           battle={battle}
           companionSupport={lastCompanionSupport}
           lastDamage={lastDamage}

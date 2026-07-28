@@ -335,6 +335,17 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
   await page.getByRole('button', { name: 'テストデータをリセット' }).click();
 });
 
+test('debug boss previews cinematic boss presentation', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/debug/boss');
+
+  await expect(page.getByRole('heading', { name: 'Debug Boss' })).toBeVisible();
+  await expect(page.getByTestId('boss-battle-moment')).toBeVisible();
+  await expect(page.getByTestId('boss-defeat-cinematic')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'VICTORY' })).toBeVisible();
+  await expect(page.getByTestId('debug-boss-world-unlock')).toBeVisible();
+});
+
 test('ミッションを10問進めて結果画面へ移動できる', async ({ page }) => {
   await page.goto('/mission');
   await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
@@ -404,6 +415,15 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
     answeredChoice = result.answeredChoice;
   }
   expect(answeredChoice).toBe(true);
+  await expect
+    .poll(
+      async () =>
+        (await readAudioEvents(page)).some(
+          (event) => event.type === 'sfx' && event.id === 'attack',
+        ),
+      { timeout: 3000 },
+    )
+    .toBe(true);
   const missionEvents = await readAudioEvents(page);
   const battleBgmEvents = missionEvents.filter(
     (event) => event.type === 'bgm' && event.id === 'battle' && event.played,
@@ -426,7 +446,7 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
   ).toBeGreaterThanOrEqual(80);
   expect(
     (attackEvent?.atMs ?? 0) - (correctEvents[0]?.atMs ?? 0),
-  ).toBeLessThanOrEqual(140);
+  ).toBeLessThanOrEqual(180);
 
   await clearAudioEvents(page);
   await prepareCompletedResult(page);

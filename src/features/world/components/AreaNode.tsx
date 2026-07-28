@@ -12,6 +12,9 @@ export function AreaNode({
   selected: boolean;
   onSelect: (area: AreaViewModel) => void;
 }) {
+  const showsRouteOpening =
+    area.unlocked && area.area.requiredPreviousAreaId !== null;
+
   return (
     <button
       className={[
@@ -31,6 +34,12 @@ export function AreaNode({
         className="absolute inset-0 -z-0 rounded-none opacity-70"
         dimmed={!area.unlocked}
       />
+      {showsRouteOpening ? (
+        <div
+          className="absolute left-0 right-0 top-0 z-10 h-2 bg-gradient-to-r from-transparent via-amber-300 to-transparent motion-safe:animate-[game-world-route-open_1.1s_ease-out_1]"
+          data-testid="world-route-opening"
+        />
+      ) : null}
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-black text-[var(--color-text-muted)]">
@@ -47,6 +56,11 @@ export function AreaNode({
           星{area.reconstructionStage}
         </span>
       </div>
+      {showsRouteOpening ? (
+        <p className="relative z-10 mt-2 w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800 motion-safe:animate-[game-world-gate-open_.75s_ease-out_1]">
+          道が ひらいた
+        </p>
+      ) : null}
       <div className="relative z-10 mt-3">
         <RecoveryScene stage={area.reconstructionStage} />
       </div>

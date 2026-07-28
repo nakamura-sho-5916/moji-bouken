@@ -55,4 +55,18 @@ describe('AppRouter', () => {
       await screen.findByRole('heading', { name: 'Debug Companions' }),
     ).toBeInTheDocument();
   });
+  it('shows the boss debug page in development', async () => {
+    render(
+      <MemoryRouter initialEntries={['/debug/boss']}>
+        <AppRouter />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Debug Boss' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'VICTORY' }),
+    ).toBeInTheDocument();
+  });
 });

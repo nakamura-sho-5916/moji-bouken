@@ -2,6 +2,8 @@
 import { Link, useNavigate } from '../router';
 import { EnemyArtwork } from '../features/assets';
 import { enemies } from '../features/battle/enemies';
+import { BOSS_DEFEAT_RECOVERY_DELAY_MS } from '../features/battle';
+import { BossDefeatCinematic } from '../features/battle/components/BossDefeatCinematic';
 import { loadLastMissionResult } from '../features/missions/MissionSession';
 import { RewardSummary } from '../features/rewards/components/RewardSummary';
 import { LevelUpEffect } from '../features/rewards/components/LevelUpEffect';
@@ -30,6 +32,7 @@ export function ResultPage() {
   const defeatedEnemy = rewardSummary
     ? enemies.find((enemy) => rewardSummary.battleId.endsWith(enemy.id))
     : null;
+  const visibleDefeatedEnemy = defeatedEnemy ?? null;
 
   useEffect(() => {
     if (playedResultAudioRef.current || !rewardSummary) {
@@ -60,6 +63,7 @@ export function ResultPage() {
     }
 
     let active = true;
+    let recoveryTimer: number | null = null;
     void WorldRecoveryEngine.applyRecovery({
       battleId: rewardSummary.battleId,
       areaId: rewardSummary.areaId,
@@ -87,11 +91,26 @@ export function ResultPage() {
           }),
         ),
       ).then(() => joinEligibleCompanions());
-      setRecoveryEvents(recoveryResult.triggeredEvents);
+      const showRecoveryEvents = () => {
+        if (active) {
+          setRecoveryEvents(recoveryResult.triggeredEvents);
+        }
+      };
+      if (rewardSummary.bossDefeated) {
+        recoveryTimer = window.setTimeout(
+          showRecoveryEvents,
+          BOSS_DEFEAT_RECOVERY_DELAY_MS,
+        );
+      } else {
+        showRecoveryEvents();
+      }
     });
 
     return () => {
       active = false;
+      if (recoveryTimer !== null) {
+        window.clearTimeout(recoveryTimer);
+      }
     };
   }, [audio, rewardSummary]);
 
@@ -103,6 +122,10 @@ export function ResultPage() {
           setRecoveryEvents([]);
           navigate('/world');
         }}
+      />
+      <BossDefeatCinematic
+        enemy={visibleDefeatedEnemy}
+        visible={Boolean(rewardSummary?.bossDefeated)}
       />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-6 text-center shadow-sm">
         {defeatedEnemy ? (

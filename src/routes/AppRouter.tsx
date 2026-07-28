@@ -71,6 +71,11 @@ const DebugBattlePage = lazy(() =>
     default: module.DebugBattlePage,
   })),
 );
+const DebugBossPage = lazy(() =>
+  import('../pages/DebugBossPage').then((module) => ({
+    default: module.DebugBossPage,
+  })),
+);
 const DebugWorldPage = lazy(() =>
   import('../pages/DebugWorldPage').then((module) => ({
     default: module.DebugWorldPage,
@@ -163,6 +168,8 @@ function resolveRoute(pathname: string): ReactNode {
       return import.meta.env.DEV ? <DebugMissionsPage /> : <NotFoundPage />;
     case '/debug/battle':
       return import.meta.env.DEV ? <DebugBattlePage /> : <NotFoundPage />;
+    case '/debug/boss':
+      return import.meta.env.DEV ? <DebugBossPage /> : <NotFoundPage />;
     case '/debug/world':
       return import.meta.env.DEV ? <DebugWorldPage /> : <NotFoundPage />;
     case '/debug/collection':

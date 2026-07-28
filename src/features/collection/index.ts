@@ -1,5 +1,12 @@
 export { companionData } from './companionData';
 export {
+  getBossBattleStat,
+  loadBossBattleStats,
+  recordBossDefeat,
+  resetBossBattleStats,
+  type BossBattleStat,
+} from './bossBattleStats';
+export {
   COMPANION_SUPPORT_MAX_PER_BATTLE,
   COMPANION_SUPPORT_RATE,
   evaluateCompanionBattleSupport,

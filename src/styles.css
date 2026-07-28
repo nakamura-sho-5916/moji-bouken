@@ -374,6 +374,153 @@ button {
   }
 }
 
+@keyframes game-boss-darken {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes game-boss-warning {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+}
+
+@keyframes game-boss-title {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes game-boss-zoom {
+  0% {
+    transform: scale(0.72);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes game-boss-screen-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  28% {
+    transform: translateX(-4px);
+  }
+  58% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes game-boss-aura {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes game-boss-moment {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes game-boss-attack-flash {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes game-boss-combo-pulse {
+  0% {
+    transform: scale(0.98);
+  }
+  55% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes game-boss-defeat-vanish {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.55;
+    filter: brightness(1.7);
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 0.25;
+    filter: brightness(2);
+    transform: scale(0.86);
+  }
+}
+
+@keyframes game-boss-victory-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes game-world-route-open {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes game-world-gate-open {
+  0% {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

@@ -84,6 +84,7 @@ export function DebugReleasePage() {
         '/debug/learning',
         '/debug/missions',
         '/debug/battle',
+        '/debug/boss',
         '/debug/world',
         '/debug/collection',
         '/debug/companions',
