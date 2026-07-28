@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '../router';
 import { motion } from 'framer-motion';
 import { buttonTap } from '../utils/motion';
 

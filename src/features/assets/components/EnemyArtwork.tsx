@@ -18,7 +18,7 @@ export function EnemyArtwork({
   return (
     <div
       className={[
-        'relative mx-auto flex aspect-square w-full max-w-56 items-center justify-center',
+        'relative mx-auto flex aspect-square w-full max-w-64 items-center justify-center',
         hit ? 'motion-safe:animate-[asset-hit_.28s_ease-out_1]' : '',
         defeated ? 'motion-safe:animate-[asset-defeat_.42s_ease-in_1]' : '',
         className ?? '',
@@ -26,7 +26,7 @@ export function EnemyArtwork({
     >
       <GameAssetImage
         assetId={asset.assetId}
-        className="h-full w-full"
+        className="h-full w-full object-contain"
         loading="eager"
         size="full"
       />

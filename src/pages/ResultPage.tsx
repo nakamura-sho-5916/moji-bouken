@@ -1,5 +1,5 @@
 ﻿import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '../router';
 import { EnemyArtwork } from '../features/assets';
 import { enemies } from '../features/battle/enemies';
 import { loadLastMissionResult } from '../features/missions/MissionSession';

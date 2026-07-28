@@ -50,7 +50,39 @@ export function GameAssetImage({
   onError,
 }: GameAssetImageProps) {
   const asset = getAssetOrFallback(assetId);
+
+  return (
+    <ResolvedGameAssetImage
+      alt={alt}
+      animate={animate}
+      asset={asset}
+      className={className}
+      decorative={decorative}
+      fallbackMode={fallbackMode}
+      key={asset.assetId}
+      loading={loading}
+      onError={onError}
+      onLoad={onLoad}
+      size={size}
+    />
+  );
+}
+
+function ResolvedGameAssetImage({
+  asset,
+  alt,
+  className,
+  size = 'md',
+  loading = 'lazy',
+  fallbackMode = 'emoji',
+  animate = true,
+  decorative = false,
+  onLoad,
+  onError,
+}: Omit<GameAssetImageProps, 'assetId'> & { asset: GameAsset }) {
   const reducedMotion = useReducedMotion();
+  const [source, setSource] = useState(asset.src);
+  const [fallbackTried, setFallbackTried] = useState(false);
   const [failed, setFailed] = useState(!asset.src);
   const label = alt ?? asset.altText;
 
@@ -74,11 +106,17 @@ export function GameAssetImage({
       decoding="async"
       loading={loading}
       onError={() => {
+        if (asset.fallbackSrc && !fallbackTried) {
+          setSource(asset.fallbackSrc);
+          setFallbackTried(true);
+          onError?.();
+          return;
+        }
         setFailed(true);
         onError?.();
       }}
       onLoad={onLoad}
-      src={asset.src}
+      src={source}
       style={{
         filter: `drop-shadow(0 16px 18px ${asset.shadowColor}30)`,
       }}

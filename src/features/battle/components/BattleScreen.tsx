@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../../router';
 import { loadActiveBattleSession } from '../BattleSessionStore';
 import { BattleStatusPanel } from './BattleStatusPanel';
 

@@ -28,7 +28,12 @@ export function EnemyDisplay({ enemy, currentHp }: EnemyDisplayProps) {
             <EffectBurst size="lg" tone="victory" />
           </div>
         ) : null}
-        <EnemyArtwork defeated={defeated} enemyId={enemy.id} hit={hit} />
+        <EnemyArtwork
+          className="max-w-72 sm:max-w-80"
+          defeated={defeated}
+          enemyId={enemy.id}
+          hit={hit}
+        />
       </div>
       <h1 className="text-2xl font-black text-[var(--color-primary-strong)]">
         {enemy.name}

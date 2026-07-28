@@ -693,6 +693,12 @@ high severity advisory without `npm audit fix --force`, keeps the dependency
 tree valid, removes the AudioProvider Fast Refresh warning by splitting context
 and hook exports, and revalidates the main public game flow.
 
+Additional dependency stabilization on 2026-07-26 removed `react-router-dom`
+from the app and replaced the small SPA routing surface with an internal router.
+This avoids the current React Router RSC audit advisory, which the app did not
+use at runtime, while keeping the public routes and navigation behavior the
+same.
+
 Security and release notes:
 
 - `docs/SECURITY_AUDIT.md`

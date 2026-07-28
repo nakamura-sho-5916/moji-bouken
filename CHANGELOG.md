@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Removed `react-router-dom` and replaced the simple client-side routing needs
+  with a small internal router to eliminate the current React Router high
+  severity audit finding.
+- Added an override for `brace-expansion@5.0.8` to keep the PWA/Workbox build
+  dependency tree on the patched release without forcing an incompatible
+  `vite-plugin-pwa` downgrade.
+- Re-ran dependency, audio, gameplay, PWA build, and E2E checks after the
+  dependency stabilization pass.
+
 ## v0.6.2
 
 - Added final production acceptance documentation for the v1.0.0 readiness decision.

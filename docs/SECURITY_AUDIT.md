@@ -1,5 +1,52 @@
 # Security Audit
 
+## Follow-up Audit Date
+
+2026-07-26
+
+## Follow-up Environment
+
+- OS: Windows
+- Node.js: v24.16.0
+- npm: 11.13.0
+- Branch: main
+- App version: 0.6.2
+
+## Follow-up Findings
+
+`npm audit` detected high severity advisories after the dependency ecosystem
+changed:
+
+- `brace-expansion` through build/tooling paths, including PWA/Workbox tooling.
+- `react-router` through the direct `react-router-dom` app dependency.
+
+The `react-router` advisory was for React Router RSC/Action/Server Action
+behavior. Mojibouken is a static client-side PWA and does not use React Router
+RSC, server actions, SSR, or user-controlled redirects. The practical runtime
+attack path was not present, but the direct dependency kept `npm audit` red.
+
+## Follow-up Remediation
+
+- Removed `react-router-dom`.
+- Added `src/router.tsx`, a minimal internal SPA router covering the existing
+  BrowserRouter, MemoryRouter, Link, NavLink, navigate, location, and search
+  parameter usage.
+- Added an `overrides` entry for `brace-expansion@5.0.8`, the patched version
+  available in the current npm registry.
+- Preserved the existing public route URLs and production debug-route gating.
+- Re-ran dependency, unit, content, asset, audio, build, and E2E validation.
+
+## Follow-up Result
+
+`npm audit` reports `found 0 vulnerabilities`.
+
+## Follow-up Residual Risk
+
+The internal router intentionally supports only the route features this app
+uses. Future route features should be added deliberately with tests rather than
+reintroducing a broad routing dependency. The `brace-expansion` override should
+be reviewed once upstream Workbox/PWA tooling adopts a patched dependency range.
+
 ## Audit Date
 
 2026-07-23

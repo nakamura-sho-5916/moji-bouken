@@ -14,6 +14,7 @@ export type GameAssetBase = {
   type: GameAssetType;
   name: string;
   src: string;
+  fallbackSrc?: string;
   altText: string;
   fallbackEmoji: string;
   dominantColor: string;

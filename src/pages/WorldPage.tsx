@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '../router';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { AreaDetailPanel } from '../features/world/components/AreaDetailPanel';
 import { WorldMap } from '../features/world/components/WorldMap';

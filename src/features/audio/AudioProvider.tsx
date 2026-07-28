@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '../../router';
 import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import {
   getAppSettings,

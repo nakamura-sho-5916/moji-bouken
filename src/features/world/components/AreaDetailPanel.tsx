@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../../../router';
+import { EnemyArtwork } from '../../assets';
 import type { Enemy } from '../../battle/types';
 import { RECOVERY_STAGE_THRESHOLDS } from '../constants';
 import type { AreaViewModel } from '../types';
@@ -32,6 +33,11 @@ export function AreaDetailPanel({
       <p className="mt-2 font-bold text-[var(--color-text-muted)]">
         {enemy ? `${enemy.name}が まっているよ` : 'いまは ひとやすみ'}
       </p>
+      {enemy ? (
+        <div className="mt-3 flex justify-center">
+          <EnemyArtwork className="max-w-24" enemyId={enemy.id} />
+        </div>
+      ) : null}
       <div className="mt-4 rounded-[var(--radius-medium)] bg-emerald-50 p-3 font-black">
         <div className="flex items-center justify-between gap-3 text-sm">
           <span>ふっこう {area.recoveryStage}</span>

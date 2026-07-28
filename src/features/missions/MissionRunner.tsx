@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from '../../router';
 import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { getPlayerById } from '../../db/repositories/playerRepository';
 import {

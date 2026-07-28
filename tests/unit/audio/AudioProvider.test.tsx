@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from '../../../src/router';
 import { describe, expect, it } from 'vitest';
 import { AudioProvider, useAudio } from '../../../src/features/audio';
 

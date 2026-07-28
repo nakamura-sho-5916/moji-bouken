@@ -1,4 +1,4 @@
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from './router';
 import { AppInitializer } from './components/AppInitializer';
 import { AppRouter } from './routes/AppRouter';
 import { ErrorBoundary } from './components/ErrorBoundary';

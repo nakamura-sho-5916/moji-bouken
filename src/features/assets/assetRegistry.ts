@@ -11,6 +11,7 @@ const enemyAssetData = [
   [
     'enemy-moji-slime',
     'enemy-moji-slime',
+    '001-moji-slime',
     'モジスライム',
     'E',
     '#60a5fa',
@@ -19,6 +20,7 @@ const enemyAssetData = [
   [
     'enemy-ink-slime',
     'enemy-moya-ghost',
+    '002-ink-slime',
     'インクスライム',
     'E',
     '#4c1d95',
@@ -27,6 +29,7 @@ const enemyAssetData = [
   [
     'enemy-paper-slime',
     'enemy-hidden-moji',
+    '003-paper-slime',
     'ペラペラスライム',
     'E',
     '#f59e0b',
@@ -35,6 +38,7 @@ const enemyAssetData = [
   [
     'enemy-moji-bat',
     'enemy-guruguru-bat',
+    '004-moji-bat',
     'モジコウモリ',
     'E',
     '#8b5cf6',
@@ -43,6 +47,7 @@ const enemyAssetData = [
   [
     'enemy-ink-bat',
     'enemy-guruguru-bat',
+    '005-ink-bat',
     'インクコウモリ',
     'D',
     '#312e81',
@@ -51,6 +56,7 @@ const enemyAssetData = [
   [
     'enemy-moji-wolf',
     'enemy-magic-kinoko',
+    '006-moji-wolf',
     'モジオオカミ',
     'D',
     '#93c5fd',
@@ -59,6 +65,7 @@ const enemyAssetData = [
   [
     'enemy-paper-goblin',
     'enemy-hidden-moji',
+    '007-paper-goblin',
     'ペーパーゴブリン',
     'D',
     '#84cc16',
@@ -67,6 +74,7 @@ const enemyAssetData = [
   [
     'enemy-ink-goblin',
     'enemy-magic-kinoko',
+    '008-ink-goblin',
     'インクゴブリン',
     'C',
     '#5b21b6',
@@ -75,6 +83,7 @@ const enemyAssetData = [
   [
     'enemy-dakuten-ghost',
     'enemy-moya-ghost',
+    '009-dakuten-ghost',
     'ダクテンゴースト',
     'D',
     '#a78bfa',
@@ -83,6 +92,7 @@ const enemyAssetData = [
   [
     'enemy-question-ghost',
     'boss-mojinexus',
+    '010-hatena-ghost',
     'ハテナゴースト',
     'D',
     '#06b6d4',
@@ -187,12 +197,21 @@ const itemFolderBySlot: Record<ItemAsset['slot'], string> = {
 };
 
 export const enemyAssets: EnemyAsset[] = enemyAssetData.map(
-  ([assetId, sourceEnemyId, name, rank, dominantColor, shadowColor]) => ({
+  ([
+    assetId,
+    sourceEnemyId,
+    pngFilename,
+    name,
+    rank,
+    dominantColor,
+    shadowColor,
+  ]) => ({
     assetId,
     type: 'enemy',
     sourceEnemyId,
     name,
-    src: `/assets/game/enemies/${assetId}.svg`,
+    src: `/assets/game/enemies/${pngFilename}.png`,
+    fallbackSrc: `/assets/game/enemies/${assetId}.svg`,
     altText: `${name}の絵`,
     fallbackEmoji: rank === 'C' ? '◆' : '●',
     dominantColor,

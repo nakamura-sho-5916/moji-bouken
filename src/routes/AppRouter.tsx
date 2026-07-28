@@ -1,8 +1,8 @@
-import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AppShell } from '../components/AppShell';
 import { LoadingScreen } from '../components/LoadingScreen';
+import { useLocation, useNavigate } from '../router';
 import { pageTransition } from '../utils/motion';
 import { BattlePage } from '../pages/BattlePage';
 import { HomePage } from '../pages/HomePage';
@@ -97,8 +97,86 @@ const DebugAssetsPage = lazy(() =>
   })),
 );
 
+function resolveRoute(pathname: string): ReactNode {
+  switch (pathname) {
+    case '/':
+      return <TitlePage />;
+    case '/home':
+      return <HomePage />;
+    case '/world':
+      return <WorldPage />;
+    case '/mission':
+      return <MissionPage />;
+    case '/battle':
+      return <BattlePage />;
+    case '/result':
+      return <ResultPage />;
+    case '/collection':
+      return <CollectionPage />;
+    case '/collection/words':
+      return <CollectionPage initialTab="words" />;
+    case '/collection/companions':
+      return <CollectionPage initialTab="companions" />;
+    case '/collection/enemies':
+      return <CollectionPage initialTab="enemies" />;
+    case '/collection/album':
+      return <CollectionPage initialTab="album" />;
+    case '/companions':
+      return <CompanionsPage />;
+    case '/equipment':
+      return <EquipmentPage />;
+    case '/shop':
+      return <ShopPage />;
+    case '/parent':
+      return <ParentPage />;
+    case '/parent/overview':
+      return <ParentPage initialTab="overview" />;
+    case '/parent/weak-letters':
+      return <ParentPage initialTab="weak" />;
+    case '/parent/speed':
+      return <ParentPage initialTab="speed" />;
+    case '/parent/history':
+      return <ParentPage initialTab="history" />;
+    case '/parent/settings':
+      return <ParentPage initialTab="settings" />;
+    case '/parent/backup':
+      return <ParentPage initialTab="backup" />;
+    case '/settings':
+      return <SettingsPage />;
+    case '/debug/data':
+      return import.meta.env.DEV ? <DebugDataPage /> : <NotFoundPage />;
+    case '/debug/content':
+      return import.meta.env.DEV ? <DebugContentPage /> : <NotFoundPage />;
+    case '/debug/learning':
+      return import.meta.env.DEV ? <DebugLearningPage /> : <NotFoundPage />;
+    case '/debug/missions':
+      return import.meta.env.DEV ? <DebugMissionsPage /> : <NotFoundPage />;
+    case '/debug/battle':
+      return import.meta.env.DEV ? <DebugBattlePage /> : <NotFoundPage />;
+    case '/debug/world':
+      return import.meta.env.DEV ? <DebugWorldPage /> : <NotFoundPage />;
+    case '/debug/collection':
+      return import.meta.env.DEV ? <DebugCollectionPage /> : <NotFoundPage />;
+    case '/debug/release':
+      return import.meta.env.DEV ? <DebugReleasePage /> : <NotFoundPage />;
+    case '/debug/audio':
+      return import.meta.env.DEV ? <DebugAudioPage /> : <NotFoundPage />;
+    case '/debug/assets':
+      return import.meta.env.DEV ? <DebugAssetsPage /> : <NotFoundPage />;
+    default:
+      return <NotFoundPage />;
+  }
+}
+
 export function AppRouter() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === '/index.html') {
+      navigate('/', { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   return (
     <AppShell>
@@ -112,85 +190,7 @@ export function AppRouter() {
           variants={pageTransition}
         >
           <Suspense fallback={<LoadingScreen />}>
-            <Routes location={location}>
-              <Route element={<TitlePage />} path="/" />
-              <Route element={<HomePage />} path="/home" />
-              <Route element={<WorldPage />} path="/world" />
-              <Route element={<MissionPage />} path="/mission" />
-              <Route element={<BattlePage />} path="/battle" />
-              <Route element={<ResultPage />} path="/result" />
-              <Route element={<CollectionPage />} path="/collection" />
-              <Route
-                element={<CollectionPage initialTab="words" />}
-                path="/collection/words"
-              />
-              <Route
-                element={<CollectionPage initialTab="companions" />}
-                path="/collection/companions"
-              />
-              <Route
-                element={<CollectionPage initialTab="enemies" />}
-                path="/collection/enemies"
-              />
-              <Route
-                element={<CollectionPage initialTab="album" />}
-                path="/collection/album"
-              />
-              <Route element={<CompanionsPage />} path="/companions" />
-              <Route element={<EquipmentPage />} path="/equipment" />
-              <Route element={<ShopPage />} path="/shop" />
-              <Route element={<ParentPage />} path="/parent" />
-              <Route
-                element={<ParentPage initialTab="overview" />}
-                path="/parent/overview"
-              />
-              <Route
-                element={<ParentPage initialTab="weak" />}
-                path="/parent/weak-letters"
-              />
-              <Route
-                element={<ParentPage initialTab="speed" />}
-                path="/parent/speed"
-              />
-              <Route
-                element={<ParentPage initialTab="history" />}
-                path="/parent/history"
-              />
-              <Route
-                element={<ParentPage initialTab="settings" />}
-                path="/parent/settings"
-              />
-              <Route
-                element={<ParentPage initialTab="backup" />}
-                path="/parent/backup"
-              />
-              <Route element={<SettingsPage />} path="/settings" />
-              {import.meta.env.DEV ? (
-                <>
-                  <Route element={<DebugDataPage />} path="/debug/data" />
-                  <Route element={<DebugContentPage />} path="/debug/content" />
-                  <Route
-                    element={<DebugLearningPage />}
-                    path="/debug/learning"
-                  />
-                  <Route
-                    element={<DebugMissionsPage />}
-                    path="/debug/missions"
-                  />
-                  <Route element={<DebugBattlePage />} path="/debug/battle" />
-                  <Route element={<DebugWorldPage />} path="/debug/world" />
-                  <Route
-                    element={<DebugCollectionPage />}
-                    path="/debug/collection"
-                  />
-                  <Route element={<DebugReleasePage />} path="/debug/release" />
-                  <Route element={<DebugAudioPage />} path="/debug/audio" />
-                  <Route element={<DebugAssetsPage />} path="/debug/assets" />
-                </>
-              ) : null}
-              <Route element={<Navigate replace to="/" />} path="/index.html" />
-              <Route element={<NotFoundPage />} path="*" />
-            </Routes>
+            {resolveRoute(location.pathname)}
           </Suspense>
         </motion.div>
       </AnimatePresence>

@@ -27,3 +27,12 @@
 - Confirm production debug routes remain inaccessible in production behavior.
 - Confirm app version is updated.
 - Commit, tag, and push only after all checks pass.
+
+## 2026-07-26 Dependency Follow-up
+
+- Confirm `react-router-dom` is not present in app dependencies.
+- Confirm `src/router.tsx` covers the existing SPA route behavior.
+- Confirm `npm audit` returns 0 vulnerabilities.
+- Confirm `npm ls` has no invalid or extraneous dependencies.
+- Confirm production debug routes remain unavailable outside development.
+- Confirm PWA build still generates `dist/sw.js` and `dist/manifest.webmanifest`.

@@ -20,6 +20,7 @@ const validRarities = new Set([
   'legendary',
 ]);
 const maxSvgBytes = 24 * 1024;
+const maxPngBytes = 512 * 1024;
 
 function publicPath(asset: GameAsset) {
   return join(process.cwd(), 'public', asset.src.replace(/^\//, ''));
@@ -27,6 +28,12 @@ function publicPath(asset: GameAsset) {
 
 function readSvg(asset: GameAsset) {
   return readFileSync(publicPath(asset), 'utf8');
+}
+
+function publicFallbackPath(asset: GameAsset) {
+  return asset.fallbackSrc
+    ? join(process.cwd(), 'public', asset.fallbackSrc.replace(/^\//, ''))
+    : null;
 }
 
 describe('game asset registry', () => {
@@ -51,19 +58,33 @@ describe('game asset registry', () => {
     }
   });
 
-  it('points every registry src to an existing lightweight svg', () => {
+  it('points every registry src to an existing lightweight asset', () => {
     for (const asset of gameAssets) {
       const file = publicPath(asset);
 
       expect(existsSync(file), asset.assetId).toBe(true);
-      expect(statSync(file).size, asset.assetId).toBeLessThan(maxSvgBytes);
-      expect(asset.src.endsWith('.svg')).toBe(true);
+      if (asset.src.endsWith('.png')) {
+        expect(statSync(file).size, asset.assetId).toBeLessThan(maxPngBytes);
+        expect(readFileSync(file).subarray(0, 8), asset.assetId).toEqual(
+          Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        );
+      } else {
+        expect(statSync(file).size, asset.assetId).toBeLessThan(maxSvgBytes);
+        expect(asset.src.endsWith('.svg')).toBe(true);
+      }
+      const fallbackFile = publicFallbackPath(asset);
+      if (fallbackFile) {
+        expect(existsSync(fallbackFile), asset.assetId).toBe(true);
+      }
     }
   });
 
   it('keeps svg files safe and parseable', () => {
     for (const asset of gameAssets) {
-      const svg = readSvg(asset);
+      const svgAsset = asset.src.endsWith('.svg')
+        ? asset
+        : { ...asset, src: asset.fallbackSrc ?? asset.src };
+      const svg = readSvg(svgAsset);
       const document = new DOMParser().parseFromString(svg, 'image/svg+xml');
       const root = document.querySelector('svg');
 

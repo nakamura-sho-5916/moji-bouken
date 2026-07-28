@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from '../router';
 import { useAudio } from '../features/audio';
 
 const navigationItems = [
