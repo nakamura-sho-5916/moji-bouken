@@ -5,6 +5,7 @@ type AudioDebugEvent = {
   id?: string | null;
   played?: boolean;
   unlocked?: boolean;
+  atMs?: number;
 };
 
 async function collectAudioEvents(page: Page) {
@@ -12,7 +13,10 @@ async function collectAudioEvents(page: Page) {
     const target = window as Window & { __audioEvents?: unknown[] };
     target.__audioEvents = [];
     window.addEventListener('moji-bouken:audio-event', (event) => {
-      target.__audioEvents?.push((event as CustomEvent).detail);
+      target.__audioEvents?.push({
+        ...(event as CustomEvent).detail,
+        atMs: performance.now(),
+      });
     });
   });
 }
@@ -354,16 +358,24 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
   }
   expect(answeredChoice).toBe(true);
   const missionEvents = await readAudioEvents(page);
+  const correctEvents = missionEvents.filter(
+    (event) =>
+      event.type === 'sfx' &&
+      event.played === true &&
+      typeof event.id === 'string' &&
+      event.id.startsWith('correct'),
+  );
+  const attackEvent = missionEvents.find(
+    (event) => event.type === 'sfx' && event.id === 'attack',
+  );
+  expect(correctEvents).toHaveLength(1);
+  expect(attackEvent).toBeDefined();
   expect(
-    missionEvents.some(
-      (event) => event.type === 'sfx' && event.id === 'correct',
-    ),
-  ).toBe(true);
+    (attackEvent?.atMs ?? 0) - (correctEvents[0]?.atMs ?? 0),
+  ).toBeGreaterThanOrEqual(80);
   expect(
-    missionEvents.some(
-      (event) => event.type === 'sfx' && event.id === 'attack',
-    ),
-  ).toBe(true);
+    (attackEvent?.atMs ?? 0) - (correctEvents[0]?.atMs ?? 0),
+  ).toBeLessThanOrEqual(140);
 
   await clearAudioEvents(page);
   await page.goto('/settings');

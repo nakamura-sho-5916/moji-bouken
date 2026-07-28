@@ -12,6 +12,12 @@ Use this checklist before releasing audio changes.
 - BGM volume, SFX volume, and master volume apply immediately.
 - Correct answer sound plays before attack sound.
 - Incorrect answer sound does not trigger attack sound.
+- Correct answer sound clearly feels successful and refreshing.
+- Correct answer sound is not sharp or tiring after 10 questions.
+- Correct answer sound does not blur too much with the attack sound.
+- Correct answer volume is not too loud on a phone speaker.
+- Children say the correct answer sound feels good.
+- Correct answer sound respects the mute setting.
 - Level up and world recovery duck BGM and restore it.
 - `/debug/audio` shows AudioContext state, BGM, BPM, step, node count, and ducking.
 - `/debug/audio` is unavailable in production builds.

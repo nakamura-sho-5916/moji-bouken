@@ -100,6 +100,21 @@ describe('AudioManager', () => {
     expect(events.at(-1)).toBe(false);
   });
 
+  it('does not play when sound effects are disabled', async () => {
+    const manager = new AudioManager();
+    const events: boolean[] = [];
+    manager.subscribe((event) => {
+      if (event.type === 'sfx') {
+        events.push(event.played);
+      }
+    });
+    manager.updateSettings({ soundEffectsEnabled: false });
+    await manager.unlock();
+    manager.playSoundEffect('correct');
+
+    expect(events.at(-1)).toBe(false);
+  });
+
   it('prevents repeated sound effects inside cooldown', async () => {
     const manager = new AudioManager();
     const played: boolean[] = [];
@@ -156,5 +171,25 @@ describe('AudioManager', () => {
     expect(manager.getState().ducking).toBe(false);
     expect(duckEvents).toContain(false);
     manager.stopBgm(0);
+  });
+
+  it('keeps game flow safe when AudioContext is unavailable', async () => {
+    Object.defineProperty(window, 'AudioContext', {
+      configurable: true,
+      value: undefined,
+    });
+    const manager = new AudioManager();
+    const played: boolean[] = [];
+    manager.subscribe((event) => {
+      if (event.type === 'sfx') {
+        played.push(event.played);
+      }
+    });
+
+    await expect(manager.unlock()).resolves.toBe(false);
+    manager.playSoundEffect('correct');
+
+    expect(manager.getState().supported).toBe(false);
+    expect(played.at(-1)).toBe(false);
   });
 });

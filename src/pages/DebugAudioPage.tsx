@@ -8,6 +8,9 @@ import {
   audioManager,
   bgmCompositions,
   bgmRegistry,
+  CORRECT_ATTACK_DELAY_MS,
+  correctAnswerVariationIds,
+  createCorrectAnswerFeedbackController,
   soundEffectIds,
   sfxPatches,
   useAudio,
@@ -20,6 +23,9 @@ export function DebugAudioPage() {
   const audio = useAudio();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [events, setEvents] = useState<AudioEvent[]>([]);
+  const [correctFeedback] = useState(() =>
+    createCorrectAnswerFeedbackController(),
+  );
 
   const reload = async () => {
     const persistedSettings = (await getAppSettings(DEFAULT_PLAYER_ID)) ?? null;
@@ -68,6 +74,77 @@ export function DebugAudioPage() {
       >
         unlock
       </button>
+      <div className="grid gap-2 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-4">
+        <h2 className="font-black">Correct Answer Tests</h2>
+        <p className="text-sm font-bold">
+          correct→attack delay: {CORRECT_ATTACK_DELAY_MS}ms
+        </p>
+        <p className="text-sm font-bold">
+          variations: {correctAnswerVariationIds.join(', ')}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            ['correct standard', 'correct'],
+            ['correct variation A', 'correct-rise'],
+            ['correct variation B', 'correct-spark'],
+            ['correct 3 combo', 'correct-combo-3'],
+            ['correct 5 combo', 'correct-combo-5'],
+            ['correct 10 combo', 'correct-combo-10'],
+          ].map(([label, id]) => (
+            <button
+              className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+              key={id}
+              onClick={() =>
+                audio.playSoundEffect(id as keyof typeof sfxPatches)
+              }
+              type="button"
+            >
+              {label}
+              <span className="block text-[10px] text-[var(--color-text-muted)]">
+                {sfxPatches[id as keyof typeof sfxPatches].durationMs}ms
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            className="min-h-11 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-2 text-sm font-black text-white"
+            onClick={() =>
+              correctFeedback.play({
+                comboCount: 1,
+                feedbackKey: `debug-sequence-${Date.now()}`,
+                playSoundEffect: audio.playSoundEffect,
+              })
+            }
+            type="button"
+          >
+            correct→attack sequence
+          </button>
+          <button
+            className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
+            onClick={() => {
+              const feedbackKey = `debug-dedupe-${Date.now()}`;
+              correctFeedback.play({
+                comboCount: 1,
+                feedbackKey,
+                playSoundEffect: audio.playSoundEffect,
+              });
+              correctFeedback.play({
+                comboCount: 1,
+                feedbackKey,
+                playSoundEffect: audio.playSoundEffect,
+              });
+            }}
+            type="button"
+          >
+            double-play guard
+          </button>
+        </div>
+        <p className="text-xs font-bold text-[var(--color-text-muted)]">
+          Check settings below for volume, mute, SFX off, cooldown, and event
+          history.
+        </p>
+      </div>
       <div className="grid gap-2 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-4">
         <h2 className="font-black">SFX</h2>
         <div className="grid grid-cols-2 gap-2">

@@ -41,7 +41,37 @@ const bgm = (id: BgmId, description: string): AudioAsset => ({
 export const soundEffectRegistry: Record<SoundEffectId, AudioAsset> = {
   'ui-tap': sfx('ui-tap', 'Small UI tap', 0.2, 45),
   'choice-select': sfx('choice-select', 'Choice selected', 0.25, 45),
-  correct: sfx('correct', 'Correct answer', 0.45, 120),
+  correct: sfx('correct', 'Correct answer fanfare', 0.48, 120),
+  'correct-rise': sfx(
+    'correct-rise',
+    'Correct answer rise variation',
+    0.47,
+    120,
+  ),
+  'correct-spark': sfx(
+    'correct-spark',
+    'Correct answer sparkle variation',
+    0.47,
+    120,
+  ),
+  'correct-combo-3': sfx(
+    'correct-combo-3',
+    'Correct 3 combo accent',
+    0.48,
+    120,
+  ),
+  'correct-combo-5': sfx(
+    'correct-combo-5',
+    'Correct 5 combo accent',
+    0.48,
+    120,
+  ),
+  'correct-combo-10': sfx(
+    'correct-combo-10',
+    'Correct 10 combo accent',
+    0.49,
+    120,
+  ),
   retry: sfx('retry', 'Retry prompt', 0.28, 160),
   attack: sfx('attack', 'Battle attack', 0.35, 120),
   'special-attack': sfx('special-attack', 'Special attack', 0.4, 250),

@@ -13,6 +13,12 @@ export {
 } from './audioRegistry';
 export { bgmCompositionIds, bgmCompositions } from './audioComposition';
 export { sfxPatchIds, sfxPatches } from './sfxPatches';
+export {
+  CORRECT_ATTACK_DELAY_MS,
+  correctAnswerVariationIds,
+  createCorrectAnswerFeedbackController,
+  selectCorrectAnswerSound,
+} from './correctAnswerFeedback';
 export type {
   AudioAsset,
   AudioEvent,

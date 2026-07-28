@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from '../../router';
 import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { getPlayerById } from '../../db/repositories/playerRepository';
+import { createCorrectAnswerFeedbackController } from '../audio';
 import {
   BattleEngine,
   createBattleSession,
@@ -62,6 +63,7 @@ export function MissionRunner() {
   const [selectedCompanion, setSelectedCompanion] =
     useState<CompanionData | null>(null);
   const audio = useAudio();
+  const correctFeedback = useRef(createCorrectAnswerFeedbackController());
 
   useEffect(() => {
     let active = true;
@@ -131,24 +133,46 @@ export function MissionRunner() {
     content,
     session: session.status === 'active' ? session : null,
     onSaved: (result) => {
-      audio.playSoundEffect(result.correct ? 'correct' : 'retry');
-      setPendingBattle(applyBattleAnswer(result.correct));
+      if (!result.correct) {
+        audio.playSoundEffect('retry');
+      }
+      setPendingBattle(
+        applyBattleAnswer(
+          result.correct,
+          `${session.sessionId}:${session.currentIndex}:${result.missionId}`,
+        ),
+      );
       setPendingResult(result);
       setPracticeCorrect(result.correct);
     },
     onPractice: (correct) => {
-      audio.playSoundEffect(correct ? 'correct' : 'retry');
+      if (correct) {
+        correctFeedback.current.play({
+          comboCount: battle?.comboCount ?? 0,
+          feedbackKey: `${session.sessionId}:${session.currentIndex}:practice`,
+          playSoundEffect: audio.playSoundEffect,
+          scheduleAttack: false,
+          seed: `${session.seed}:${session.currentIndex}:practice`,
+        });
+      } else {
+        audio.playSoundEffect('retry');
+      }
       setPracticeCorrect(correct);
     },
   });
 
-  const applyBattleAnswer = (correct: boolean) => {
+  const applyBattleAnswer = (correct: boolean, feedbackKey: string) => {
     if (!battle) {
       return null;
     }
     const answerResult = BattleEngine.applyAnswer({ battle, correct });
     if (correct) {
-      window.setTimeout(() => audio.playSoundEffect('attack'), 90);
+      correctFeedback.current.play({
+        comboCount: answerResult.battle.comboCount,
+        feedbackKey,
+        playSoundEffect: audio.playSoundEffect,
+        seed: `${session.seed}:${session.currentIndex}:${feedbackKey}`,
+      });
     }
     const nextBattle =
       answerResult.battle.status === 'feedback'
