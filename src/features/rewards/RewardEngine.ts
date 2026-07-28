@@ -16,12 +16,13 @@ import {
 } from '../battle/constants';
 import { getEnemy } from '../battle/enemies';
 import type { BattleSession } from '../battle/types';
+import { resolveItemAsset } from '../assets';
 import { equipmentData, getSelectedCompanion } from '../collection';
 import type { MissionResult } from '../missions';
 import { calculateExperience } from './calculateExperience';
 import { calculateGold } from './calculateGold';
 import { calculateLevel, experienceRequiredForLevel } from './calculateLevel';
-import type { RewardReason, RewardSummary } from './types';
+import type { RewardDropItem, RewardReason, RewardSummary } from './types';
 
 function loadRewardedIds() {
   const raw = localStorage.getItem(REWARDED_BATTLE_IDS_STORAGE_KEY);
@@ -122,6 +123,7 @@ export const RewardEngine = {
           )
         : 0,
       reasons,
+      droppedItems: [],
       player: player ?? null,
       inventory: inventory ?? null,
     };
@@ -160,6 +162,7 @@ export const RewardEngine = {
       gold: player.gold + goldGained,
     });
     const updatedInventory = await changeGold(DEFAULT_PLAYER_ID, goldGained);
+    const droppedItems: RewardDropItem[] = [];
     if (victory && enemy) {
       for (const drop of enemy.drops) {
         const key = `${input.battle.battleId}:${drop.itemId}`;
@@ -167,6 +170,11 @@ export const RewardEngine = {
           const equipment = equipmentData.find(
             (item) => item.id === drop.itemId,
           );
+          const itemAsset = resolveItemAsset(drop.itemId);
+          const alreadyOwned =
+            inventory.items.some((item) => item.id === drop.itemId) ||
+            inventory.equipment.some((item) => item.id === drop.itemId);
+          const count = dropCount(key, drop.minCount, drop.maxCount);
           if (drop.kind === 'equipment' && equipment) {
             await addEquipment(DEFAULT_PLAYER_ID, {
               id: equipment.id,
@@ -175,9 +183,17 @@ export const RewardEngine = {
           } else {
             await addItem(DEFAULT_PLAYER_ID, {
               id: drop.itemId,
-              count: dropCount(key, drop.minCount, drop.maxCount),
+              count,
             });
           }
+          droppedItems.push({
+            itemId: drop.itemId,
+            name: equipment?.name ?? itemAsset.name,
+            kind: drop.kind,
+            count,
+            rarity: itemAsset.rarity,
+            newToCollection: !alreadyOwned,
+          });
         }
       }
     }
@@ -195,6 +211,7 @@ export const RewardEngine = {
       levelUp: nextLevel > player.level,
       nextLevelExperience,
       experienceToNextLevel: Math.max(0, nextLevelExperience - nextExperience),
+      droppedItems,
       alreadyRewarded: false,
       player: updatedPlayer ?? player,
       inventory: updatedInventory ?? inventory,

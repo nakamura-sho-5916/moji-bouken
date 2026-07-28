@@ -99,6 +99,8 @@ describe('battle and rewards', () => {
     expect(second.alreadyRewarded).toBe(true);
     expect(player?.experience).toBe(first.experienceGained);
     expect(inventory?.gold).toBe(first.goldGained);
+    expect(Array.isArray(first.droppedItems)).toBe(true);
+    expect(second.droppedItems).toEqual([]);
   });
 
   it('経験値からレベルを計算する', () => {

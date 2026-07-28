@@ -12,6 +12,7 @@ import {
   equipmentData,
   getCollectionState,
 } from '../features/collection';
+import { RewardEngine } from '../features/rewards';
 import { getWorldArea } from '../features/world/areaData';
 import type { CollectionProgress } from '../types';
 
@@ -54,6 +55,9 @@ export function CollectionPage({
   const [state, setState] = useState<Awaited<
     ReturnType<typeof getCollectionState>
   > | null>(null);
+  const [lastRewardSummary] = useState(() =>
+    RewardEngine.loadLastRewardSummary(),
+  );
 
   useEffect(() => {
     let active = true;
@@ -84,6 +88,11 @@ export function CollectionPage({
     ...(state.inventory?.items.map((item) => item.id) ?? []),
     ...(state.inventory?.equipment.map((item) => item.id) ?? []),
   ]);
+  const newlyDroppedItemIds = new Set(
+    (lastRewardSummary?.droppedItems ?? [])
+      .filter((item) => item.newToCollection)
+      .map((item) => item.itemId),
+  );
   const wordTargets = [
     ...content.hiragana.slice(0, 10).map((letter) => ({
       id: letter.id,
@@ -223,6 +232,7 @@ export function CollectionPage({
               discovered={ownedItemIds.has(item.id)}
               icon={<ItemArtwork className="size-14" itemId={item.id} />}
               key={item.id}
+              newlyDiscovered={newlyDroppedItemIds.has(item.id)}
               title={item.name}
             />
           ))}

@@ -88,6 +88,7 @@ export function DebugReleasePage() {
         '/debug/collection',
         '/debug/release',
         '/debug/audio',
+        '/debug/reward',
         '/debug/assets',
       ],
       productionDebugDisabled:

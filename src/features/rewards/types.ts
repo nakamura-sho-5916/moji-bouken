@@ -1,4 +1,5 @@
 import type { Player, Inventory } from '../../types';
+import type { GameAssetRarity } from '../assets';
 
 export type RewardReason =
   | 'normal-correct'
@@ -8,6 +9,15 @@ export type RewardReason =
   | 'weak-letter-mastered'
   | 'final-review-completed'
   | 'boss-defeated';
+
+export type RewardDropItem = {
+  itemId: string;
+  name: string;
+  kind: 'item' | 'equipment' | 'collection';
+  count: number;
+  rarity: GameAssetRarity;
+  newToCollection: boolean;
+};
 
 export type RewardSummary = {
   battleId: string;
@@ -28,6 +38,7 @@ export type RewardSummary = {
   nextLevelExperience: number | null;
   experienceToNextLevel: number;
   reasons: RewardReason[];
+  droppedItems: RewardDropItem[];
   alreadyRewarded: boolean;
   player: Player | null;
   inventory: Inventory | null;

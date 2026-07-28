@@ -6,6 +6,10 @@ import { loadLastMissionResult } from '../features/missions/MissionSession';
 import { RewardSummary } from '../features/rewards/components/RewardSummary';
 import { LevelUpEffect } from '../features/rewards/components/LevelUpEffect';
 import { RewardEngine } from '../features/rewards';
+import {
+  getHighestRewardRarity,
+  rewardRarityOrder,
+} from '../features/rewards/rewardPresentation';
 import { RecoveryEventModal } from '../features/world/components/RecoveryEventModal';
 import { WorldRecoveryEngine } from '../features/world';
 import type { RecoveryEvent } from '../features/world';
@@ -32,10 +36,18 @@ export function ResultPage() {
       return;
     }
     playedResultAudioRef.current = true;
+    const droppedItems = rewardSummary.droppedItems ?? [];
+    const highestRarity = getHighestRewardRarity(droppedItems);
     window.setTimeout(() => audio.playSoundEffect('reward'), 120);
+    window.setTimeout(() => audio.playSoundEffect('chest-drop'), 210);
     window.setTimeout(() => audio.playSoundEffect('exp-gain'), 260);
     if (rewardSummary.goldEarned > 0) {
       window.setTimeout(() => audio.playSoundEffect('gold-gain'), 390);
+    }
+    if (highestRarity === 'legendary') {
+      window.setTimeout(() => audio.playSoundEffect('legendary-drop'), 480);
+    } else if (rewardRarityOrder[highestRarity] >= rewardRarityOrder.rare) {
+      window.setTimeout(() => audio.playSoundEffect('rare-drop'), 480);
     }
     if (rewardSummary.levelUp) {
       window.setTimeout(() => audio.playSoundEffect('level-up'), 650);

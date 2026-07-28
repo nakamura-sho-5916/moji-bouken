@@ -5,12 +5,14 @@ export function CollectionCard({
   title,
   description,
   discovered,
+  newlyDiscovered = false,
   onClick,
 }: {
   icon: ReactNode;
   title: string;
   description: string;
   discovered: boolean;
+  newlyDiscovered?: boolean;
   onClick?: () => void;
 }) {
   return (
@@ -31,11 +33,16 @@ export function CollectionCard({
         >
           {discovered ? icon : '?'}
         </span>
-        <div>
-          <p className="text-lg font-black text-[var(--color-primary-strong)]">
+        <div className="min-w-0">
+          {discovered && newlyDiscovered ? (
+            <span className="mb-1 inline-flex rounded-[var(--radius-pill)] bg-[var(--color-primary)] px-2 py-0.5 text-xs font-black text-white">
+              NEW
+            </span>
+          ) : null}
+          <p className="break-words text-lg font-black text-[var(--color-primary-strong)]">
             {discovered ? title : 'まだ であっていないよ'}
           </p>
-          <p className="text-sm font-bold text-[var(--color-text-muted)]">
+          <p className="break-words text-sm font-bold text-[var(--color-text-muted)]">
             {discovered ? description : 'たのしみに していてね'}
           </p>
         </div>

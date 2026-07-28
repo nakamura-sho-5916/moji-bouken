@@ -91,6 +91,11 @@ const DebugAudioPage = lazy(() =>
     default: module.DebugAudioPage,
   })),
 );
+const DebugRewardPage = lazy(() =>
+  import('../pages/DebugRewardPage').then((module) => ({
+    default: module.DebugRewardPage,
+  })),
+);
 const DebugAssetsPage = lazy(() =>
   import('../pages/DebugAssetsPage').then((module) => ({
     default: module.DebugAssetsPage,
@@ -161,6 +166,8 @@ function resolveRoute(pathname: string): ReactNode {
       return import.meta.env.DEV ? <DebugReleasePage /> : <NotFoundPage />;
     case '/debug/audio':
       return import.meta.env.DEV ? <DebugAudioPage /> : <NotFoundPage />;
+    case '/debug/reward':
+      return import.meta.env.DEV ? <DebugRewardPage /> : <NotFoundPage />;
     case '/debug/assets':
       return import.meta.env.DEV ? <DebugAssetsPage /> : <NotFoundPage />;
     default:

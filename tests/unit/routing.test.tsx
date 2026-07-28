@@ -30,4 +30,17 @@ describe('AppRouter', () => {
 
     expect(screen.getByRole('heading', { name: '404' })).toBeInTheDocument();
   });
+
+  it('開発時に報酬デバッグ画面を表示する', async () => {
+    render(
+      <MemoryRouter initialEntries={['/debug/reward']}>
+        <AppRouter />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Debug Reward' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('Common').length).toBeGreaterThan(0);
+  });
 });

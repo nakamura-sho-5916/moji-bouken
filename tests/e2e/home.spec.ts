@@ -72,6 +72,7 @@ async function prepareCompletedResult(page: Page) {
         nextLevelExperience: 30,
         experienceToNextLevel: 22,
         reasons: ['session-complete'],
+        droppedItems: [],
         alreadyRewarded: false,
         player: null,
         inventory: null,
@@ -776,4 +777,17 @@ test('debug assets audits registry and fallback in development', async ({
     page.locator('img[src*="/assets/game/enemies/"]').first(),
   ).toBeVisible();
   await expect(page.getByLabel('画像を読み込めません')).toBeVisible();
+});
+
+test('debug reward previews every rarity presentation', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/debug/reward');
+
+  await expect(
+    page.getByRole('heading', { name: 'Debug Reward' }),
+  ).toBeVisible();
+  await expect(page.getByTestId('reward-chest-presentation')).toBeVisible();
+  await page.getByRole('button', { exact: true, name: 'Legendary' }).click();
+  await expect(page.getByText('金箱')).toBeVisible();
+  await expect(page.getByTestId('reward-legend')).toHaveText('LEGEND');
 });

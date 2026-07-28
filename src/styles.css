@@ -211,6 +211,59 @@ button {
   }
 }
 
+@keyframes game-chest-shake {
+  0% {
+    transform: translateY(10px) scale(0.92);
+  }
+  35% {
+    transform: translateY(-8px) scale(1.06);
+  }
+  58% {
+    transform: translateX(-3px) rotate(-2deg);
+  }
+  74% {
+    transform: translateX(3px) rotate(2deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes game-chest-open {
+  0%,
+  55% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-8px) rotate(-4deg);
+  }
+}
+
+@keyframes game-item-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes game-legend-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes game-sparkle-rise {
   0% {
     opacity: 0;
