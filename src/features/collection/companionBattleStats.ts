@@ -1,4 +1,6 @@
 import type { CompanionSupportEvent } from './companionBattleSupport';
+import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 
 export const COMPANION_BATTLE_STATS_STORAGE_KEY =
   'moji-bouken:companion-battle-stats';
@@ -24,8 +26,15 @@ function emptyState(): CompanionBattleStatsState {
   };
 }
 
+function storageKey() {
+  const playerId = getActivePlayerId();
+  return playerId === DEFAULT_PLAYER_ID
+    ? COMPANION_BATTLE_STATS_STORAGE_KEY
+    : `${COMPANION_BATTLE_STATS_STORAGE_KEY}:${playerId}`;
+}
+
 export function loadCompanionBattleStats(): CompanionBattleStatsState {
-  const raw = localStorage.getItem(COMPANION_BATTLE_STATS_STORAGE_KEY);
+  const raw = localStorage.getItem(storageKey());
   if (!raw) {
     return emptyState();
   }
@@ -37,7 +46,7 @@ export function loadCompanionBattleStats(): CompanionBattleStatsState {
       stats: Array.isArray(parsed.stats) ? parsed.stats : [],
     };
   } catch {
-    localStorage.removeItem(COMPANION_BATTLE_STATS_STORAGE_KEY);
+    localStorage.removeItem(storageKey());
     return emptyState();
   }
 }
@@ -58,10 +67,7 @@ export function getCompanionBattleStat(companionId: string) {
 }
 
 export function saveCompanionBattleStats(state: CompanionBattleStatsState) {
-  localStorage.setItem(
-    COMPANION_BATTLE_STATS_STORAGE_KEY,
-    JSON.stringify(state),
-  );
+  localStorage.setItem(storageKey(), JSON.stringify(state));
 }
 
 export function recordCompanionSupportEvent(event: CompanionSupportEvent) {
@@ -88,5 +94,5 @@ export function recordCompanionSupportEvent(event: CompanionSupportEvent) {
 }
 
 export function resetCompanionBattleStats() {
-  localStorage.removeItem(COMPANION_BATTLE_STATS_STORAGE_KEY);
+  localStorage.removeItem(storageKey());
 }

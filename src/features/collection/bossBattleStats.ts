@@ -1,3 +1,6 @@
+import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
+
 export const BOSS_BATTLE_STATS_STORAGE_KEY = 'moji-bouken:boss-battle-stats';
 
 export type BossBattleStat = {
@@ -15,8 +18,15 @@ function emptyState(): BossBattleStatsState {
   return { stats: [] };
 }
 
+function storageKey() {
+  const playerId = getActivePlayerId();
+  return playerId === DEFAULT_PLAYER_ID
+    ? BOSS_BATTLE_STATS_STORAGE_KEY
+    : `${BOSS_BATTLE_STATS_STORAGE_KEY}:${playerId}`;
+}
+
 export function loadBossBattleStats(): BossBattleStatsState {
-  const raw = localStorage.getItem(BOSS_BATTLE_STATS_STORAGE_KEY);
+  const raw = localStorage.getItem(storageKey());
   if (!raw) {
     return emptyState();
   }
@@ -27,7 +37,7 @@ export function loadBossBattleStats(): BossBattleStatsState {
       stats: Array.isArray(parsed.stats) ? parsed.stats : [],
     };
   } catch {
-    localStorage.removeItem(BOSS_BATTLE_STATS_STORAGE_KEY);
+    localStorage.removeItem(storageKey());
     return emptyState();
   }
 }
@@ -37,7 +47,7 @@ export function getBossBattleStat(enemyId: string) {
 }
 
 export function saveBossBattleStats(state: BossBattleStatsState) {
-  localStorage.setItem(BOSS_BATTLE_STATS_STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(storageKey(), JSON.stringify(state));
 }
 
 export function recordBossDefeat(enemyId: string, defeatedAt = new Date()) {
@@ -67,5 +77,5 @@ export function recordBossDefeat(enemyId: string, defeatedAt = new Date()) {
 }
 
 export function resetBossBattleStats() {
-  localStorage.removeItem(BOSS_BATTLE_STATS_STORAGE_KEY);
+  localStorage.removeItem(storageKey());
 }

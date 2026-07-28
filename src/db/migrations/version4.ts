@@ -26,8 +26,8 @@ async function updateSettingsStore(
     await cursor.update({
       ...settings,
       masterVolume: settings.masterVolume ?? settings.volume ?? 70,
-      bgmVolume: settings.bgmVolume ?? 45,
-      soundEffectVolume: settings.soundEffectVolume ?? settings.volume ?? 70,
+      bgmVolume: settings.bgmVolume ?? 62,
+      soundEffectVolume: settings.soundEffectVolume ?? settings.volume ?? 68,
       muteAll: settings.muteAll ?? false,
       lastAudioEnabledAt: settings.lastAudioEnabledAt ?? null,
     });

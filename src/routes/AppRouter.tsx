@@ -9,6 +9,7 @@ import { HomePage } from '../pages/HomePage';
 import { MissionPage } from '../pages/MissionPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { ResultPage } from '../pages/ResultPage';
+import { SaveSlotPage } from '../pages/SaveSlotPage';
 import { TitlePage } from '../pages/TitlePage';
 
 const WorldPage = lazy(() =>
@@ -111,6 +112,11 @@ const DebugStoryPage = lazy(() =>
     default: module.DebugStoryPage,
   })),
 );
+const DebugSavePage = lazy(() =>
+  import('../pages/DebugSavePage').then((module) => ({
+    default: module.DebugSavePage,
+  })),
+);
 const DebugAssetsPage = lazy(() =>
   import('../pages/DebugAssetsPage').then((module) => ({
     default: module.DebugAssetsPage,
@@ -120,6 +126,8 @@ const DebugAssetsPage = lazy(() =>
 function resolveRoute(pathname: string): ReactNode {
   switch (pathname) {
     case '/':
+      return <SaveSlotPage />;
+    case '/title':
       return <TitlePage />;
     case '/home':
       return <HomePage />;
@@ -191,6 +199,8 @@ function resolveRoute(pathname: string): ReactNode {
       return import.meta.env.DEV ? <DebugRewardPage /> : <NotFoundPage />;
     case '/debug/story':
       return import.meta.env.DEV ? <DebugStoryPage /> : <NotFoundPage />;
+    case '/debug/save':
+      return import.meta.env.DEV ? <DebugSavePage /> : <NotFoundPage />;
     case '/debug/assets':
       return import.meta.env.DEV ? <DebugAssetsPage /> : <NotFoundPage />;
     default:

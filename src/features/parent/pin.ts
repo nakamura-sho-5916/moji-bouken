@@ -1,9 +1,9 @@
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { initializeAppData } from '../../db/initializeAppData';
 import {
   getAppSettings,
   updateAppSettings,
 } from '../../db/repositories/settingsRepository';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 
 export const PIN_LENGTH = 4;
 export const PIN_MAX_FAILURES = 5;
@@ -49,7 +49,7 @@ export async function configureParentPin(input: {
   }
   const salt = createSalt();
   const hash = await sha256Base64(input.pin, salt);
-  await updateAppSettings(input.playerId ?? DEFAULT_PLAYER_ID, {
+  await updateAppSettings(input.playerId ?? getActivePlayerId(), {
     parentPinConfigured: true,
     parentPinHash: hash,
     parentPinSalt: salt,
@@ -61,7 +61,7 @@ export async function configureParentPin(input: {
 
 export async function verifyParentPin(
   pin: string,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   await initializeAppData();
   const settings = await getAppSettings(playerId);
@@ -129,7 +129,7 @@ export async function clearParentPin(currentPin: string) {
   if (!verified.ok) {
     return verified;
   }
-  await updateAppSettings(DEFAULT_PLAYER_ID, {
+  await updateAppSettings(getActivePlayerId(), {
     parentPinConfigured: false,
     parentPinHash: null,
     parentPinSalt: null,

@@ -7,6 +7,7 @@ import type {
   LearningLog,
   LetterProgress,
   Player,
+  SaveSlot,
   ReviewSchedule,
   WorldProgress,
 } from '../types';
@@ -79,5 +80,9 @@ export type MojiBoukenDbSchema = DBSchema & {
       'by-area': string;
       'by-unlocked-at': string;
     };
+  };
+  saveSlots: {
+    key: string;
+    value: SaveSlot;
   };
 };

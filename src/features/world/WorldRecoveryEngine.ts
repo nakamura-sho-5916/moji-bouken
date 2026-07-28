@@ -1,5 +1,5 @@
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { initializeAppData } from '../../db/initializeAppData';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import {
   createWorldProgressId,
   getWorldProgress,
@@ -31,20 +31,27 @@ import type {
 type RecoveryPointStore = Record<string, number>;
 
 function readRecoveryPointStore(): RecoveryPointStore {
-  const raw = localStorage.getItem(WORLD_RECOVERY_STORAGE_KEY);
+  const raw = localStorage.getItem(
+    `${WORLD_RECOVERY_STORAGE_KEY}:${getActivePlayerId()}`,
+  );
   if (!raw) {
     return {};
   }
   try {
     return JSON.parse(raw) as RecoveryPointStore;
   } catch {
-    localStorage.removeItem(WORLD_RECOVERY_STORAGE_KEY);
+    localStorage.removeItem(
+      `${WORLD_RECOVERY_STORAGE_KEY}:${getActivePlayerId()}`,
+    );
     return {};
   }
 }
 
 function writeRecoveryPointStore(store: RecoveryPointStore) {
-  localStorage.setItem(WORLD_RECOVERY_STORAGE_KEY, JSON.stringify(store));
+  localStorage.setItem(
+    `${WORLD_RECOVERY_STORAGE_KEY}:${getActivePlayerId()}`,
+    JSON.stringify(store),
+  );
 }
 
 function createProgress(input: {
@@ -248,7 +255,7 @@ async function unlockEligibleAreas(
 }
 
 export const WorldRecoveryEngine = {
-  async getWorldState(playerId = DEFAULT_PLAYER_ID) {
+  async getWorldState(playerId = getActivePlayerId()) {
     const progressList = await ensureAreaProgress(playerId);
     await unlockEligibleAreas(playerId, progressList);
     const refreshed = await getWorldProgressList(playerId);
@@ -259,7 +266,7 @@ export const WorldRecoveryEngine = {
 
   async applyRecovery(
     input: WorldRecoveryInput,
-    playerId = DEFAULT_PLAYER_ID,
+    playerId = getActivePlayerId(),
   ): Promise<WorldRecoveryResult | null> {
     const area = worldAreas.find((item) => item.id === input.areaId);
     if (!area) {
@@ -341,7 +348,7 @@ export const WorldRecoveryEngine = {
   async setDebugTownReconstructionStage(
     areaId: string,
     stage: number,
-    playerId = DEFAULT_PLAYER_ID,
+    playerId = getActivePlayerId(),
   ) {
     const area = worldAreas.find((item) => item.id === areaId);
     const step = TOWN_RECONSTRUCTION_STEPS[stage];

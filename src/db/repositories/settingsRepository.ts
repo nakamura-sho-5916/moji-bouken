@@ -4,15 +4,16 @@ import type { AppSettings } from '../../types';
 
 export function createInitialAppSettings(
   now = new Date().toISOString(),
+  playerId = DEFAULT_PLAYER_ID,
 ): AppSettings {
   return {
-    playerId: DEFAULT_PLAYER_ID,
+    playerId,
     bgmEnabled: true,
     soundEffectsEnabled: true,
     volume: 70,
     masterVolume: 70,
-    bgmVolume: 45,
-    soundEffectVolume: 70,
+    bgmVolume: 62,
+    soundEffectVolume: 68,
     muteAll: false,
     lastAudioEnabledAt: null,
     reducedMotion: false,

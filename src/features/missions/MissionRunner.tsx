@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from '../../router';
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { getInventory } from '../../db/repositories/inventoryRepository';
 import { getPlayerById } from '../../db/repositories/playerRepository';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import { createCorrectAnswerFeedbackController } from '../audio';
 import {
   BattleEngine,
@@ -91,12 +91,13 @@ export function MissionRunner() {
 
   useEffect(() => {
     let active = true;
+    const playerId = getActivePlayerId();
     void getSelectedCompanion().then((companion) => {
       if (active) {
         setSelectedCompanion(companion);
       }
     });
-    void getInventory(DEFAULT_PLAYER_ID).then((inventory) => {
+    void getInventory(playerId).then((inventory) => {
       if (!active) {
         return;
       }
@@ -142,7 +143,8 @@ export function MissionRunner() {
   }, [audio, battle, bossIntroBattleId]);
 
   const createMissionBattle = async (sessionId: string) => {
-    const player = await getPlayerById(DEFAULT_PLAYER_ID);
+    const playerId = getActivePlayerId();
+    const player = await getPlayerById(playerId);
     const companion = await getSelectedCompanion();
     const nextBattle = createBattleSession({
       sessionId,

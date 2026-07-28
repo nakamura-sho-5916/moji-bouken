@@ -1,3 +1,6 @@
+import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
+
 export const AREA_UNLOCK_STATS_STORAGE_KEY = 'moji-bouken:area-unlock-stats';
 
 export type AreaUnlockStat = {
@@ -13,8 +16,15 @@ function emptyState(): AreaUnlockStatsState {
   return { stats: [] };
 }
 
+function storageKey() {
+  const playerId = getActivePlayerId();
+  return playerId === DEFAULT_PLAYER_ID
+    ? AREA_UNLOCK_STATS_STORAGE_KEY
+    : `${AREA_UNLOCK_STATS_STORAGE_KEY}:${playerId}`;
+}
+
 export function loadAreaUnlockStats(): AreaUnlockStatsState {
-  const raw = localStorage.getItem(AREA_UNLOCK_STATS_STORAGE_KEY);
+  const raw = localStorage.getItem(storageKey());
   if (!raw) {
     return emptyState();
   }
@@ -25,7 +35,7 @@ export function loadAreaUnlockStats(): AreaUnlockStatsState {
       stats: Array.isArray(parsed.stats) ? parsed.stats : [],
     };
   } catch {
-    localStorage.removeItem(AREA_UNLOCK_STATS_STORAGE_KEY);
+    localStorage.removeItem(storageKey());
     return emptyState();
   }
 }
@@ -42,14 +52,12 @@ export function recordAreaUnlock(areaId: string, unlockedAt = new Date()) {
     unlockedAt: unlockedAt.toISOString(),
   };
   localStorage.setItem(
-    AREA_UNLOCK_STATS_STORAGE_KEY,
-    JSON.stringify({
-      stats: [...state.stats, nextStat],
-    }),
+    storageKey(),
+    JSON.stringify({ stats: [...state.stats, nextStat] }),
   );
   return nextStat;
 }
 
 export function resetAreaUnlockStats() {
-  localStorage.removeItem(AREA_UNLOCK_STATS_STORAGE_KEY);
+  localStorage.removeItem(storageKey());
 }

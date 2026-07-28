@@ -1,6 +1,6 @@
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { initializeAppData } from '../../db/initializeAppData';
 import { openMojiBoukenDb } from '../../db/database';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import type { LearningLog, LetterProgress, ReviewSchedule } from '../../types';
 
 export type LearningOverview = {
@@ -42,7 +42,7 @@ export type HistoryDay = {
   logs: LearningLog[];
 };
 
-async function readLearningData(playerId = DEFAULT_PLAYER_ID) {
+async function readLearningData(playerId = getActivePlayerId()) {
   await initializeAppData();
   const db = await openMojiBoukenDb();
   const [logs, progress, reviews] = await Promise.all([
@@ -63,7 +63,7 @@ function isWithinDays(iso: string, days: number) {
 }
 
 export async function calculateLearningOverview(
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ): Promise<LearningOverview> {
   const { logs, progress, reviews } = await readLearningData(playerId);
   const days = new Set(logs.map((log) => log.answeredAt.slice(0, 10)));
@@ -99,7 +99,7 @@ export async function getWeakLetterRows(input?: {
   playerId?: string;
 }) {
   const { progress, reviews } = await readLearningData(
-    input?.playerId ?? DEFAULT_PLAYER_ID,
+    input?.playerId ?? getActivePlayerId(),
   );
   const rows: WeakLetterRow[] = progress.map((item) => ({
     ...item,
@@ -147,7 +147,7 @@ export async function getWeakLetterRows(input?: {
 
 export async function getSpeedTrend(
   letterId: string,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   const db = await openMojiBoukenDb();
   const logs = (await db.getAllFromIndex('learningLogs', 'by-letter', letterId))
@@ -171,7 +171,9 @@ export async function getHistoryPage(input?: {
   limit?: number;
   playerId?: string;
 }) {
-  const { logs } = await readLearningData(input?.playerId ?? DEFAULT_PLAYER_ID);
+  const { logs } = await readLearningData(
+    input?.playerId ?? getActivePlayerId(),
+  );
   const offset = input?.offset ?? 0;
   const limit = input?.limit ?? 50;
   const page = logs

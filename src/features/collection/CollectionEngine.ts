@@ -1,4 +1,3 @@
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { initializeAppData } from '../../db/initializeAppData';
 import {
   addCompanion,
@@ -18,6 +17,7 @@ import {
   saveAlbumEntry,
   saveCollectionProgress,
 } from '../../db/repositories/collectionRepository';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import type { AlbumEntry, CollectionProgress } from '../../types';
 import { enemies } from '../battle/enemies';
 import { resetStoryProgress } from '../story';
@@ -53,7 +53,7 @@ async function hasCompanion(playerId: string, companionId: string) {
 
 export async function isCompanionUnlocked(
   companion: CompanionData,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   const condition = companion.unlockCondition;
   if (condition.type === 'area-stage') {
@@ -81,7 +81,7 @@ export async function isCompanionUnlocked(
 
 export async function joinCompanion(
   companionId: string,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   await initializeAppData();
   const companion = companionData.find((item) => item.id === companionId);
@@ -104,7 +104,7 @@ export async function joinCompanion(
   };
 }
 
-export async function joinEligibleCompanions(playerId = DEFAULT_PLAYER_ID) {
+export async function joinEligibleCompanions(playerId = getActivePlayerId()) {
   const results = [];
   for (const companion of companionData) {
     if (await isCompanionUnlocked(companion, playerId)) {
@@ -116,7 +116,7 @@ export async function joinEligibleCompanions(playerId = DEFAULT_PLAYER_ID) {
 
 export async function selectCompanion(
   companionId: string,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   const inventory = await getInventory(playerId);
   const joined = inventory?.companions.some(
@@ -142,7 +142,7 @@ export async function selectCompanion(
   return true;
 }
 
-export async function getSelectedCompanion(playerId = DEFAULT_PLAYER_ID) {
+export async function getSelectedCompanion(playerId = getActivePlayerId()) {
   const progress = await getCollectionProgress(
     playerId,
     'selected-companion',
@@ -155,7 +155,7 @@ export async function getSelectedCompanion(playerId = DEFAULT_PLAYER_ID) {
 
 export async function isEquipmentUnlocked(
   equipment: EquipmentData,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   const condition = equipment.unlockCondition;
   if (condition.type === 'always') {
@@ -180,14 +180,14 @@ export async function isEquipmentUnlocked(
   );
 }
 
-export async function isShopOpen(playerId = DEFAULT_PLAYER_ID) {
+export async function isShopOpen(playerId = getActivePlayerId()) {
   const progress = await getWorldProgress(playerId, SHOP_AREA_ID);
   return (progress?.recoveryStage ?? 0) >= SHOP_OPEN_STAGE;
 }
 
 export async function purchaseEquipment(
   equipmentId: string,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ): Promise<ShopPurchaseResult> {
   await initializeAppData();
   if (!(await isShopOpen(playerId))) {
@@ -225,7 +225,7 @@ export async function purchaseEquipment(
 
 export async function equipItem(
   equipmentId: string,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   const equipment = equipmentData.find((item) => item.id === equipmentId);
   const inventory = await getInventory(playerId);
@@ -269,7 +269,7 @@ export async function discoverLetterOrWord(input: {
   playerId?: string;
 }) {
   return discoverCollectionTarget({
-    playerId: input.playerId ?? DEFAULT_PLAYER_ID,
+    playerId: input.playerId ?? getActivePlayerId(),
     category: input.category,
     targetId: input.targetId,
     source: input.source,
@@ -282,7 +282,7 @@ export async function recordEnemyEncounter(input: {
   playerId?: string;
 }) {
   return discoverCollectionTarget({
-    playerId: input.playerId ?? DEFAULT_PLAYER_ID,
+    playerId: input.playerId ?? getActivePlayerId(),
     category: 'enemy',
     targetId: input.enemyId,
     source: input.source,
@@ -297,13 +297,13 @@ export async function recordAlbumEvent(
 ) {
   return saveAlbumEntry({
     ...entry,
-    playerId: entry.playerId ?? DEFAULT_PLAYER_ID,
+    playerId: entry.playerId ?? getActivePlayerId(),
     unlockedAt: entry.unlockedAt ?? nowIso(),
     active: true,
   });
 }
 
-export async function getCollectionState(playerId = DEFAULT_PLAYER_ID) {
+export async function getCollectionState(playerId = getActivePlayerId()) {
   await initializeAppData();
   const [inventory, progress, albumEntries, selectedCompanion] =
     await Promise.all([
@@ -325,13 +325,13 @@ export async function getCollectionState(playerId = DEFAULT_PLAYER_ID) {
 
 export async function addDebugGold(
   amount: number,
-  playerId = DEFAULT_PLAYER_ID,
+  playerId = getActivePlayerId(),
 ) {
   await initializeAppData();
   return changeGold(playerId, amount);
 }
 
-export async function resetDebugCollectionData(playerId = DEFAULT_PLAYER_ID) {
+export async function resetDebugCollectionData(playerId = getActivePlayerId()) {
   resetAreaUnlockStats();
   resetBossBattleStats();
   resetStoryProgress();

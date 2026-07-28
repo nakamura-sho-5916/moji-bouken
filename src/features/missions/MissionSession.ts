@@ -1,4 +1,4 @@
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import { loadLearningContent } from '../../content/loaders/contentLoader';
 import type { ContentMission, LoadedContent, MissionType } from '../../types';
 import { LearningEngine } from '../../services/learningService';
@@ -23,6 +23,10 @@ export const MISSION_RESULT_STORAGE_KEY = 'moji-bouken:last-mission-result';
 export const MISSION_HISTORY_STORAGE_KEY =
   'moji-bouken:recent-question-history';
 const RECENT_HISTORY_LIMIT = 20;
+
+function scopedStorageKey(key: string) {
+  return `${key}:${getActivePlayerId()}`;
+}
 
 function makeSessionId(seed: number) {
   return `mission-session-${seed}-${Date.now()}`;
@@ -56,21 +60,23 @@ function fallbackMissionForCandidate(
 }
 
 function loadRecentQuestionHistory() {
-  const raw = localStorage.getItem(MISSION_HISTORY_STORAGE_KEY);
+  const raw = localStorage.getItem(
+    scopedStorageKey(MISSION_HISTORY_STORAGE_KEY),
+  );
   if (!raw) {
     return [];
   }
   try {
     return JSON.parse(raw) as string[];
   } catch {
-    localStorage.removeItem(MISSION_HISTORY_STORAGE_KEY);
+    localStorage.removeItem(scopedStorageKey(MISSION_HISTORY_STORAGE_KEY));
     return [];
   }
 }
 
 function saveRecentQuestionHistory(signatures: string[]) {
   localStorage.setItem(
-    MISSION_HISTORY_STORAGE_KEY,
+    scopedStorageKey(MISSION_HISTORY_STORAGE_KEY),
     JSON.stringify(signatures.slice(-RECENT_HISTORY_LIMIT)),
   );
 }
@@ -261,34 +267,42 @@ export async function createMissionSession(input?: {
 }
 
 export function saveMissionSession(session: MissionSessionState) {
-  localStorage.setItem(MISSION_SESSION_STORAGE_KEY, JSON.stringify(session));
+  localStorage.setItem(
+    scopedStorageKey(MISSION_SESSION_STORAGE_KEY),
+    JSON.stringify(session),
+  );
   if (session.status === 'completed') {
-    localStorage.setItem(MISSION_RESULT_STORAGE_KEY, JSON.stringify(session));
+    localStorage.setItem(
+      scopedStorageKey(MISSION_RESULT_STORAGE_KEY),
+      JSON.stringify(session),
+    );
   }
 }
 
 export function loadMissionSession() {
-  const raw = localStorage.getItem(MISSION_SESSION_STORAGE_KEY);
+  const key = scopedStorageKey(MISSION_SESSION_STORAGE_KEY);
+  const raw = localStorage.getItem(key);
   if (!raw) {
     return null;
   }
   try {
     return JSON.parse(raw) as MissionSessionState;
   } catch {
-    localStorage.removeItem(MISSION_SESSION_STORAGE_KEY);
+    localStorage.removeItem(key);
     return null;
   }
 }
 
 export function loadLastMissionResult() {
-  const raw = localStorage.getItem(MISSION_RESULT_STORAGE_KEY);
+  const key = scopedStorageKey(MISSION_RESULT_STORAGE_KEY);
+  const raw = localStorage.getItem(key);
   if (!raw) {
     return null;
   }
   try {
     return JSON.parse(raw) as MissionSessionState;
   } catch {
-    localStorage.removeItem(MISSION_RESULT_STORAGE_KEY);
+    localStorage.removeItem(key);
     return null;
   }
 }
@@ -325,7 +339,7 @@ export async function submitMissionAnswer(input: {
   const targetLetterIds = getTargetLetterIds(input.content, mission);
   const answerId = `${input.session.sessionId}:${mission.missionId}:${input.session.currentIndex}`;
   const learningResult = await LearningEngine.recordAnswer({
-    playerId: DEFAULT_PLAYER_ID,
+    playerId: getActivePlayerId(),
     missionId: mission.missionId,
     targetLetterIds,
     correct,

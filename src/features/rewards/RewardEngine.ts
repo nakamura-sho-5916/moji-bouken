@@ -1,4 +1,3 @@
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import { initializeAppData } from '../../db/initializeAppData';
 import {
   addEquipment,
@@ -14,6 +13,7 @@ import {
   BATTLE_RESULT_STORAGE_KEY,
   REWARDED_BATTLE_IDS_STORAGE_KEY,
 } from '../battle/constants';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import { getEnemy } from '../battle/enemies';
 import type { BattleSession } from '../battle/types';
 import { resolveItemAsset } from '../assets';
@@ -25,26 +25,29 @@ import { calculateGold } from './calculateGold';
 import { calculateLevel, experienceRequiredForLevel } from './calculateLevel';
 import type { RewardDropItem, RewardReason, RewardSummary } from './types';
 
+function scopedStorageKey(key: string) {
+  return `${key}:${getActivePlayerId()}`;
+}
+
 function loadRewardedIds() {
-  const raw = localStorage.getItem(REWARDED_BATTLE_IDS_STORAGE_KEY);
+  const key = scopedStorageKey(REWARDED_BATTLE_IDS_STORAGE_KEY);
+  const raw = localStorage.getItem(key);
   if (!raw) {
     return [];
   }
   try {
     return JSON.parse(raw) as string[];
   } catch {
-    localStorage.removeItem(REWARDED_BATTLE_IDS_STORAGE_KEY);
+    localStorage.removeItem(key);
     return [];
   }
 }
 
 function saveRewardedId(battleId: string) {
+  const key = scopedStorageKey(REWARDED_BATTLE_IDS_STORAGE_KEY);
   const ids = loadRewardedIds();
   if (!ids.includes(battleId)) {
-    localStorage.setItem(
-      REWARDED_BATTLE_IDS_STORAGE_KEY,
-      JSON.stringify([...ids, battleId]),
-    );
+    localStorage.setItem(key, JSON.stringify([...ids, battleId]));
   }
 }
 
@@ -90,10 +93,11 @@ export const RewardEngine = {
     companionSupports?: CompanionSupportEvent[];
   }): Promise<RewardSummary> {
     await initializeAppData();
+    const playerId = getActivePlayerId();
     const rewardedIds = loadRewardedIds();
-    const player = await getPlayerById(DEFAULT_PLAYER_ID);
-    const inventory = await getInventory(DEFAULT_PLAYER_ID);
-    const selectedCompanion = await getSelectedCompanion(DEFAULT_PLAYER_ID);
+    const player = await getPlayerById(playerId);
+    const inventory = await getInventory(playerId);
+    const selectedCompanion = await getSelectedCompanion(playerId);
     const reasons = createRewardReasons(input);
     const enemy = getEnemy(input.battle.enemyId);
     const companionSupports = input.companionSupports ?? [];
@@ -134,7 +138,10 @@ export const RewardEngine = {
 
     if (rewardedIds.includes(input.battle.battleId) || !player || !inventory) {
       const summary: RewardSummary = { ...baseSummary, alreadyRewarded: true };
-      localStorage.setItem(BATTLE_RESULT_STORAGE_KEY, JSON.stringify(summary));
+      localStorage.setItem(
+        scopedStorageKey(BATTLE_RESULT_STORAGE_KEY),
+        JSON.stringify(summary),
+      );
       return summary;
     }
 
@@ -169,12 +176,12 @@ export const RewardEngine = {
     const nextExperience = player.experience + experienceGained;
     const nextLevel = calculateLevel(nextExperience);
     const nextLevelExperience = experienceRequiredForLevel(nextLevel + 1);
-    const updatedPlayer = await updatePlayer(DEFAULT_PLAYER_ID, {
+    const updatedPlayer = await updatePlayer(playerId, {
       experience: nextExperience,
       level: nextLevel,
       gold: player.gold + goldGained,
     });
-    const updatedInventory = await changeGold(DEFAULT_PLAYER_ID, goldGained);
+    const updatedInventory = await changeGold(playerId, goldGained);
     const droppedItems: RewardDropItem[] = [];
     if (victory && enemy) {
       for (const drop of enemy.drops) {
@@ -189,12 +196,12 @@ export const RewardEngine = {
             inventory.equipment.some((item) => item.id === drop.itemId);
           const count = dropCount(key, drop.minCount, drop.maxCount);
           if (drop.kind === 'equipment' && equipment) {
-            await addEquipment(DEFAULT_PLAYER_ID, {
+            await addEquipment(playerId, {
               id: equipment.id,
               slot: equipment.type,
             });
           } else {
-            await addItem(DEFAULT_PLAYER_ID, {
+            await addItem(playerId, {
               id: drop.itemId,
               count,
             });
@@ -229,19 +236,23 @@ export const RewardEngine = {
       player: updatedPlayer ?? player,
       inventory: updatedInventory ?? inventory,
     };
-    localStorage.setItem(BATTLE_RESULT_STORAGE_KEY, JSON.stringify(summary));
+    localStorage.setItem(
+      scopedStorageKey(BATTLE_RESULT_STORAGE_KEY),
+      JSON.stringify(summary),
+    );
     return summary;
   },
 
   loadLastRewardSummary() {
-    const raw = localStorage.getItem(BATTLE_RESULT_STORAGE_KEY);
+    const key = scopedStorageKey(BATTLE_RESULT_STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) {
       return null;
     }
     try {
       return JSON.parse(raw) as RewardSummary;
     } catch {
-      localStorage.removeItem(BATTLE_RESULT_STORAGE_KEY);
+      localStorage.removeItem(key);
       return null;
     }
   },

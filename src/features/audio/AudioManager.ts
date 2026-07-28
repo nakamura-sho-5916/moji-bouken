@@ -25,8 +25,8 @@ const defaultSettings: AudioSettings = {
   bgmEnabled: true,
   soundEffectsEnabled: true,
   masterVolume: 0.7,
-  bgmVolume: 0.45,
-  soundEffectVolume: 0.7,
+  bgmVolume: 0.62,
+  soundEffectVolume: 0.68,
   muteAll: false,
 };
 

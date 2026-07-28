@@ -9,9 +9,10 @@ import type {
 
 export function createInitialInventory(
   now = new Date().toISOString(),
+  playerId = DEFAULT_PLAYER_ID,
 ): Inventory {
   return {
-    playerId: DEFAULT_PLAYER_ID,
+    playerId,
     gold: 0,
     items: [],
     equipment: [],

@@ -2,9 +2,12 @@ import { DEFAULT_PLAYER_ID } from '../constants';
 import { openMojiBoukenDb } from '../database';
 import type { Player } from '../../types';
 
-export function createInitialPlayer(now = new Date().toISOString()): Player {
+export function createInitialPlayer(
+  now = new Date().toISOString(),
+  playerId = DEFAULT_PLAYER_ID,
+): Player {
   return {
-    id: DEFAULT_PLAYER_ID,
+    id: playerId,
     name: 'ぼうけんしゃ',
     level: 1,
     experience: 0,

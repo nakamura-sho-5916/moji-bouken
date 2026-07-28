@@ -1,5 +1,9 @@
-import { DEFAULT_PLAYER_ID, STARTING_AREA_ID } from './constants';
+import { STARTING_AREA_ID } from './constants';
 import { openMojiBoukenDb } from './database';
+import {
+  ensureSaveSlots,
+  getActivePlayerId,
+} from './repositories/saveSlotRepository';
 import {
   createInitialPlayer,
   createPlayerIfMissing,
@@ -30,22 +34,24 @@ export type InitialAppData = {
 
 export async function initializeAppData(): Promise<InitialAppData> {
   await openMojiBoukenDb();
+  await ensureSaveSlots();
   const now = new Date().toISOString();
+  const playerId = getActivePlayerId();
   const player =
-    (await getPlayerById(DEFAULT_PLAYER_ID)) ??
-    (await createPlayerIfMissing(createInitialPlayer(now)));
+    (await getPlayerById(playerId)) ??
+    (await createPlayerIfMissing(createInitialPlayer(now, playerId)));
 
   const worldProgress =
-    (await getWorldProgress(DEFAULT_PLAYER_ID, STARTING_AREA_ID)) ??
-    (await saveWorldProgress(createInitialWorldProgress(now)));
+    (await getWorldProgress(playerId, STARTING_AREA_ID)) ??
+    (await saveWorldProgress(createInitialWorldProgress(now, playerId)));
 
   const inventory =
-    (await getInventory(DEFAULT_PLAYER_ID)) ??
-    (await saveInventory(createInitialInventory(now)));
+    (await getInventory(playerId)) ??
+    (await saveInventory(createInitialInventory(now, playerId)));
 
   const settings =
-    (await getAppSettings(DEFAULT_PLAYER_ID)) ??
-    (await saveAppSettings(createInitialAppSettings(now)));
+    (await getAppSettings(playerId)) ??
+    (await saveAppSettings(createInitialAppSettings(now, playerId)));
 
   return { player, worldProgress, inventory, settings };
 }

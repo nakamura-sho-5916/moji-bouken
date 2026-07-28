@@ -8,6 +8,12 @@ type AudioDebugEvent = {
   atMs?: number;
 };
 
+const DEFAULT_SLOT_PLAYER_ID = 'save-slot-1';
+const MISSION_SESSION_STORAGE_PREFIX = 'moji-bouken:mission-session:';
+const missionSessionStorageKey = `moji-bouken:mission-session:${DEFAULT_SLOT_PLAYER_ID}`;
+const missionResultStorageKey = `moji-bouken:last-mission-result:${DEFAULT_SLOT_PLAYER_ID}`;
+const battleResultStorageKey = `moji-bouken:last-battle-result:${DEFAULT_SLOT_PLAYER_ID}`;
+
 async function collectAudioEvents(page: Page) {
   await page.addInitScript(() => {
     const target = window as Window & { __audioEvents?: unknown[] };
@@ -36,54 +42,65 @@ async function clearAudioEvents(page: Page) {
 }
 
 async function prepareCompletedResult(page: Page) {
-  await page.evaluate(() => {
-    const completedAt = new Date().toISOString();
-    localStorage.setItem(
-      'moji-bouken:last-mission-result',
-      JSON.stringify({
-        sessionId: 'mission-session-audio-result',
-        missions: [],
-        currentIndex: 0,
-        results: [],
-        startedAt: completedAt,
-        completedAt,
-        status: 'completed',
-        seed: 1,
-      }),
-    );
-    localStorage.setItem(
-      'moji-bouken:last-battle-result',
-      JSON.stringify({
-        battleId: 'battle-audio-result-enemy-moji-slime',
-        areaId: 'starting-village',
-        bossDefeated: false,
-        bonusReasons: ['session-complete'],
-        experienceEarned: 8,
-        goldEarned: 5,
-        experienceGained: 8,
-        goldGained: 5,
-        experienceBefore: 0,
-        experienceAfter: 8,
-        goldBefore: 0,
-        goldAfter: 5,
-        levelBefore: 1,
-        levelAfter: 1,
-        levelUp: false,
-        nextLevelExperience: 30,
-        experienceToNextLevel: 22,
-        reasons: ['session-complete'],
-        droppedItems: [],
-        companionSupports: [],
-        alreadyRewarded: false,
-        player: null,
-        inventory: null,
-      }),
-    );
-  });
+  await page.evaluate(
+    ({ battleResultKey, missionResultKey }) => {
+      const completedAt = new Date().toISOString();
+      localStorage.setItem(
+        missionResultKey,
+        JSON.stringify({
+          sessionId: 'mission-session-audio-result',
+          missions: [],
+          currentIndex: 0,
+          results: [],
+          startedAt: completedAt,
+          completedAt,
+          status: 'completed',
+          seed: 1,
+        }),
+      );
+      localStorage.setItem(
+        battleResultKey,
+        JSON.stringify({
+          battleId: 'battle-audio-result-enemy-moji-slime',
+          areaId: 'starting-village',
+          bossDefeated: false,
+          bonusReasons: ['session-complete'],
+          experienceEarned: 8,
+          goldEarned: 5,
+          experienceGained: 8,
+          goldGained: 5,
+          experienceBefore: 0,
+          experienceAfter: 8,
+          goldBefore: 0,
+          goldAfter: 5,
+          levelBefore: 1,
+          levelAfter: 1,
+          levelUp: false,
+          nextLevelExperience: 30,
+          experienceToNextLevel: 22,
+          reasons: ['session-complete'],
+          droppedItems: [],
+          companionSupports: [],
+          alreadyRewarded: false,
+          player: null,
+          inventory: null,
+        }),
+      );
+    },
+    {
+      battleResultKey: battleResultStorageKey,
+      missionResultKey: missionResultStorageKey,
+    },
+  );
 }
 
 async function readStoredAudioSettings(page: Page) {
   return page.evaluate(async () => {
+    const activeSlot = localStorage.getItem('moji-bouken:active-save-slot');
+    const playerId =
+      activeSlot && activeSlot.startsWith('slot-')
+        ? activeSlot.replace('slot', 'save-slot')
+        : 'save-slot-1';
     const request = indexedDB.open('moji-bouken-db');
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
@@ -93,9 +110,7 @@ async function readStoredAudioSettings(page: Page) {
       soundEffectsEnabled: boolean;
     } | null>((resolve, reject) => {
       const transaction = db.transaction('settings', 'readonly');
-      const getRequest = transaction
-        .objectStore('settings')
-        .get('default-player');
+      const getRequest = transaction.objectStore('settings').get(playerId);
       getRequest.onsuccess = () =>
         resolve(
           (getRequest.result as { soundEffectsEnabled: boolean } | undefined) ??
@@ -109,16 +124,26 @@ async function readStoredAudioSettings(page: Page) {
 }
 
 async function answerCurrentMissionCorrectly(page: Page) {
-  const session = await page.evaluate(() => {
-    const raw = localStorage.getItem('moji-bouken:mission-session');
-    if (!raw) {
-      return null;
-    }
-    return JSON.parse(raw) as {
-      currentIndex: number;
-      missions: { missionType: string; correctAnswer: string }[];
-    };
-  });
+  const session = await page.evaluate(
+    ({ exactKey, prefix }) => {
+      const sessionKey =
+        localStorage.getItem(exactKey) !== null
+          ? exactKey
+          : Object.keys(localStorage).find((key) => key.startsWith(prefix));
+      const raw = sessionKey ? localStorage.getItem(sessionKey) : null;
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw) as {
+        currentIndex: number;
+        missions: { missionType: string; correctAnswer: string }[];
+      };
+    },
+    {
+      exactKey: missionSessionStorageKey,
+      prefix: MISSION_SESSION_STORAGE_PREFIX,
+    },
+  );
   expect(session).not.toBeNull();
   const mission = session?.missions[session.currentIndex];
   expect(mission).toBeDefined();
@@ -169,16 +194,26 @@ async function answerCurrentMissionCorrectly(page: Page) {
 }
 
 async function expectCurrentChoiceMissionHasCorrectAnswer(page: Page) {
-  const session = await page.evaluate(() => {
-    const raw = localStorage.getItem('moji-bouken:mission-session');
-    if (!raw) {
-      return null;
-    }
-    return JSON.parse(raw) as {
-      currentIndex: number;
-      missions: { missionType: string; correctAnswer: string }[];
-    };
-  });
+  const session = await page.evaluate(
+    ({ exactKey, prefix }) => {
+      const sessionKey =
+        localStorage.getItem(exactKey) !== null
+          ? exactKey
+          : Object.keys(localStorage).find((key) => key.startsWith(prefix));
+      const raw = sessionKey ? localStorage.getItem(sessionKey) : null;
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw) as {
+        currentIndex: number;
+        missions: { missionType: string; correctAnswer: string }[];
+      };
+    },
+    {
+      exactKey: missionSessionStorageKey,
+      prefix: MISSION_SESSION_STORAGE_PREFIX,
+    },
+  );
   expect(session).not.toBeNull();
   const mission = session?.missions[session.currentIndex];
   expect(mission).toBeDefined();
@@ -204,16 +239,26 @@ async function expectCurrentChoiceMissionHasCorrectAnswer(page: Page) {
 }
 
 async function getCurrentCorrectChoicePosition(page: Page) {
-  const session = await page.evaluate(() => {
-    const raw = localStorage.getItem('moji-bouken:mission-session');
-    if (!raw) {
-      return null;
-    }
-    return JSON.parse(raw) as {
-      currentIndex: number;
-      missions: { missionType: string; correctAnswer: string }[];
-    };
-  });
+  const session = await page.evaluate(
+    ({ exactKey, prefix }) => {
+      const sessionKey =
+        localStorage.getItem(exactKey) !== null
+          ? exactKey
+          : Object.keys(localStorage).find((key) => key.startsWith(prefix));
+      const raw = sessionKey ? localStorage.getItem(sessionKey) : null;
+      if (!raw) {
+        return null;
+      }
+      return JSON.parse(raw) as {
+        currentIndex: number;
+        missions: { missionType: string; correctAnswer: string }[];
+      };
+    },
+    {
+      exactKey: missionSessionStorageKey,
+      prefix: MISSION_SESSION_STORAGE_PREFIX,
+    },
+  );
   const mission = session?.missions[session.currentIndex];
   if (
     !mission ||
@@ -240,6 +285,14 @@ async function getCurrentCorrectChoicePosition(page: Page) {
 
 test('トップ画面に仮タイトルが表示される', async ({ page }) => {
   await page.goto('/');
+
+  await expect(
+    page.getByRole('heading', { name: 'セーブを えらぶ' }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'あたらしく はじめる' })
+    .first()
+    .click();
 
   await expect(
     page.getByRole('heading', { name: 'もじぼうけん！' }),
@@ -277,10 +330,16 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
     return { players, worldProgress };
   });
 
-  expect(firstSnapshot.players).toHaveLength(1);
-  expect(firstSnapshot.players[0]?.id).toBe('default-player');
-  expect(firstSnapshot.worldProgress).toHaveLength(1);
-  expect(firstSnapshot.worldProgress[0]?.areaId).toBe('starting-village');
+  expect(
+    firstSnapshot.players.some(
+      (player) => player.id === DEFAULT_SLOT_PLAYER_ID,
+    ),
+  ).toBe(true);
+  expect(
+    firstSnapshot.worldProgress.some(
+      (progress) => progress.areaId === 'starting-village',
+    ),
+  ).toBe(true);
 
   await page.reload();
 
@@ -300,7 +359,7 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
     return count;
   });
 
-  expect(playerCountAfterReload).toBe(1);
+  expect(playerCountAfterReload).toBeGreaterThanOrEqual(1);
 
   await page.goto('/debug/content');
   await expect(
@@ -372,8 +431,9 @@ test('debug story previews story events and saves progress', async ({
 test('ミッションを10問進めて結果画面へ移動できる', async ({ page }) => {
   await page.goto('/mission');
   await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
-  await page.waitForFunction(() =>
-    Boolean(localStorage.getItem('moji-bouken:mission-session')),
+  await page.waitForFunction(
+    (prefix) => Object.keys(localStorage).some((key) => key.startsWith(prefix)),
+    MISSION_SESSION_STORAGE_PREFIX,
   );
   await expect(page.getByText('てきが あらわれた')).toBeVisible();
 
@@ -416,6 +476,10 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
 }) => {
   await collectAudioEvents(page);
   await page.goto('/');
+  await page
+    .getByRole('button', { name: 'あたらしく はじめる' })
+    .first()
+    .click();
   await page.getByRole('main').getByRole('link').click();
   await expect(page.getByTestId('story-event-player')).toBeVisible();
   await page.getByTestId('story-skip').click();
@@ -430,9 +494,10 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
 
   await clearAudioEvents(page);
   await page.goto('/mission');
-  await page.getByRole('button').first().click();
-  await page.waitForFunction(() =>
-    Boolean(localStorage.getItem('moji-bouken:mission-session')),
+  await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
+  await page.waitForFunction(
+    (prefix) => Object.keys(localStorage).some((key) => key.startsWith(prefix)),
+    MISSION_SESSION_STORAGE_PREFIX,
   );
   let answeredChoice = false;
   for (let index = 0; index < 5 && !answeredChoice; index += 1) {
@@ -525,8 +590,10 @@ test('generated missions expose a visible correct answer choice 20 times', async
     const page = await context.newPage();
     await page.goto('/mission');
     await page.locator('button').first().click();
-    await page.waitForFunction(() =>
-      Boolean(localStorage.getItem('moji-bouken:mission-session')),
+    await page.waitForFunction(
+      (prefix) =>
+        Object.keys(localStorage).some((key) => key.startsWith(prefix)),
+      MISSION_SESSION_STORAGE_PREFIX,
     );
 
     let foundChoiceMission =
@@ -635,17 +702,28 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
 
   await page.goto('/mission');
   await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
-  await page.waitForFunction(() =>
-    Boolean(localStorage.getItem('moji-bouken:mission-session')),
+  await page.waitForFunction(
+    (prefix) => Object.keys(localStorage).some((key) => key.startsWith(prefix)),
+    MISSION_SESSION_STORAGE_PREFIX,
   );
-  const session = await page.evaluate(() => {
-    const raw = localStorage.getItem('moji-bouken:mission-session');
-    return raw
-      ? (JSON.parse(raw) as {
-          missions: { missionType: string; correctAnswer: string }[];
-        })
-      : null;
-  });
+  const session = await page.evaluate(
+    ({ exactKey, prefix }) => {
+      const sessionKey =
+        localStorage.getItem(exactKey) !== null
+          ? exactKey
+          : Object.keys(localStorage).find((key) => key.startsWith(prefix));
+      const raw = sessionKey ? localStorage.getItem(sessionKey) : null;
+      return raw
+        ? (JSON.parse(raw) as {
+            missions: { missionType: string; correctAnswer: string }[];
+          })
+        : null;
+    },
+    {
+      exactKey: missionSessionStorageKey,
+      prefix: MISSION_SESSION_STORAGE_PREFIX,
+    },
+  );
   const mission = session?.missions[0];
   if (
     mission?.missionType === 'letter-introduction' ||

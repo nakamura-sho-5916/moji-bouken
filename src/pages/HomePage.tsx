@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { DEFAULT_PLAYER_ID } from '../db/constants';
 import { getInventory } from '../db/repositories/inventoryRepository';
 import { getPlayerById } from '../db/repositories/playerRepository';
+import { getActivePlayerId } from '../db/repositories/saveSlotRepository';
 import { experienceRequiredForLevel } from '../features/rewards';
 import type { Inventory, Player } from '../types';
 import { PageFrame } from './PageFrame';
@@ -12,16 +12,16 @@ export function HomePage() {
 
   useEffect(() => {
     let active = true;
-    void Promise.all([
-      getPlayerById(DEFAULT_PLAYER_ID),
-      getInventory(DEFAULT_PLAYER_ID),
-    ]).then(([nextPlayer, nextInventory]) => {
-      if (!active) {
-        return;
-      }
-      setPlayer(nextPlayer ?? null);
-      setInventory(nextInventory ?? null);
-    });
+    const playerId = getActivePlayerId();
+    void Promise.all([getPlayerById(playerId), getInventory(playerId)]).then(
+      ([nextPlayer, nextInventory]) => {
+        if (!active) {
+          return;
+        }
+        setPlayer(nextPlayer ?? null);
+        setInventory(nextInventory ?? null);
+      },
+    );
     return () => {
       active = false;
     };

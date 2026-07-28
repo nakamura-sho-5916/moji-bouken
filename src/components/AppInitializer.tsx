@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { initializeAppData } from '../db/initializeAppData';
+import { touchSaveSlot } from '../db/repositories/saveSlotRepository';
 import { preloadGameAssets } from '../features/assets';
 import { LoadingScreen } from './LoadingScreen';
 
@@ -30,6 +31,31 @@ export function AppInitializer({ children }: AppInitializerProps) {
         setError(caughtError);
       });
   }, []);
+
+  useEffect(() => {
+    if (state !== 'ready') {
+      return undefined;
+    }
+
+    let lastTick = Date.now();
+    const saveElapsed = () => {
+      const now = Date.now();
+      const elapsed = now - lastTick;
+      lastTick = now;
+      if (elapsed > 0) {
+        void touchSaveSlot(undefined, elapsed);
+      }
+    };
+    const timer = window.setInterval(saveElapsed, 60_000);
+    window.addEventListener('beforeunload', saveElapsed);
+    document.addEventListener('visibilitychange', saveElapsed);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('beforeunload', saveElapsed);
+      document.removeEventListener('visibilitychange', saveElapsed);
+      saveElapsed();
+    };
+  }, [state]);
 
   if (error) {
     throw error;

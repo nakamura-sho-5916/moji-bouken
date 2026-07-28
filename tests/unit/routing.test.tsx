@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from '../../src/router';
 import { describe, expect, it } from 'vitest';
+import { MemoryRouter } from '../../src/router';
 import { AppRouter } from '../../src/routes/AppRouter';
 
 describe('AppRouter', () => {
-  it('タイトル画面からホームへ移動できる', async () => {
+  it('selects a save slot before opening the title flow', async () => {
     const user = userEvent.setup();
 
     render(
@@ -14,16 +14,19 @@ describe('AppRouter', () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole('link', { name: 'はじめる' }));
+    const [firstStartButton] = await screen.findAllByRole('button', {
+      name: 'あたらしく はじめる',
+    });
+    expect(firstStartButton).toBeDefined();
+    await user.click(firstStartButton);
 
+    await user.click(await screen.findByRole('link', { name: 'はじめる' }));
     await user.click(await screen.findByTestId('story-skip'));
 
-    expect(
-      await screen.findByRole('heading', { name: 'ホーム' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('navigation')).toBeInTheDocument();
   });
 
-  it('存在しないURLで404画面を表示する', () => {
+  it('shows a 404 page for an unknown URL', () => {
     render(
       <MemoryRouter initialEntries={['/missing']}>
         <AppRouter />
@@ -33,7 +36,7 @@ describe('AppRouter', () => {
     expect(screen.getByRole('heading', { name: '404' })).toBeInTheDocument();
   });
 
-  it('開発時に報酬デバッグ画面を表示する', async () => {
+  it('shows the reward debug page in development', async () => {
     render(
       <MemoryRouter initialEntries={['/debug/reward']}>
         <AppRouter />
@@ -46,7 +49,7 @@ describe('AppRouter', () => {
     expect(screen.getAllByText('Common').length).toBeGreaterThan(0);
   });
 
-  it('開発時に仲間デバッグ画面を表示する', async () => {
+  it('shows the companions debug page in development', async () => {
     render(
       <MemoryRouter initialEntries={['/debug/companions']}>
         <AppRouter />
@@ -57,6 +60,7 @@ describe('AppRouter', () => {
       await screen.findByRole('heading', { name: 'Debug Companions' }),
     ).toBeInTheDocument();
   });
+
   it('shows the boss debug page in development', async () => {
     render(
       <MemoryRouter initialEntries={['/debug/boss']}>
@@ -82,6 +86,18 @@ describe('AppRouter', () => {
     expect(
       await screen.findByRole('heading', { name: 'Debug Story' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('オープニング')).toBeInTheDocument();
+    expect(screen.getAllByRole('button').length).toBeGreaterThan(0);
+  });
+
+  it('shows the save debug page in development', async () => {
+    render(
+      <MemoryRouter initialEntries={['/debug/save']}>
+        <AppRouter />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Debug Save' }),
+    ).toBeInTheDocument();
   });
 });

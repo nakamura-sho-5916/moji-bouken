@@ -1,3 +1,6 @@
+import { DEFAULT_PLAYER_ID } from '../../db/constants';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
+
 export type StoryProgressStatus = 'seen' | 'skipped';
 
 export type StoryProgressEntry = {
@@ -12,8 +15,15 @@ export type StoryProgressState = {
 
 export const STORY_PROGRESS_STORAGE_KEY = 'moji-bouken:story-progress';
 
+function storageKey() {
+  const playerId = getActivePlayerId();
+  return playerId === DEFAULT_PLAYER_ID
+    ? STORY_PROGRESS_STORAGE_KEY
+    : `${STORY_PROGRESS_STORAGE_KEY}:${playerId}`;
+}
+
 function readStoryProgress(): StoryProgressState {
-  const raw = localStorage.getItem(STORY_PROGRESS_STORAGE_KEY);
+  const raw = localStorage.getItem(storageKey());
   if (!raw) {
     return { entries: [] };
   }
@@ -24,13 +34,13 @@ function readStoryProgress(): StoryProgressState {
       entries: Array.isArray(parsed.entries) ? parsed.entries : [],
     };
   } catch {
-    localStorage.removeItem(STORY_PROGRESS_STORAGE_KEY);
+    localStorage.removeItem(storageKey());
     return { entries: [] };
   }
 }
 
 function writeStoryProgress(state: StoryProgressState) {
-  localStorage.setItem(STORY_PROGRESS_STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(storageKey(), JSON.stringify(state));
 }
 
 export function loadStoryProgress() {
@@ -59,5 +69,5 @@ export function recordStoryEvent(eventId: string, status: StoryProgressStatus) {
 }
 
 export function resetStoryProgress() {
-  localStorage.removeItem(STORY_PROGRESS_STORAGE_KEY);
+  localStorage.removeItem(storageKey());
 }

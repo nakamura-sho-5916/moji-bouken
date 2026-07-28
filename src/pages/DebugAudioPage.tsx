@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { DEFAULT_PLAYER_ID } from '../db/constants';
 import {
   getAppSettings,
   updateAppSettings,
 } from '../db/repositories/settingsRepository';
+import { getActivePlayerId } from '../db/repositories/saveSlotRepository';
 import {
   audioManager,
   bgmCompositions,
@@ -28,12 +28,13 @@ export function DebugAudioPage() {
   );
 
   const reload = async () => {
-    const persistedSettings = (await getAppSettings(DEFAULT_PLAYER_ID)) ?? null;
+    const persistedSettings =
+      (await getAppSettings(getActivePlayerId())) ?? null;
     setSettings(persistedSettings);
   };
 
   useEffect(() => {
-    void getAppSettings(DEFAULT_PLAYER_ID).then((persistedSettings) => {
+    void getAppSettings(getActivePlayerId()).then((persistedSettings) => {
       setSettings(persistedSettings ?? null);
     });
     return audioManager.subscribe((event) => {
@@ -64,6 +65,11 @@ export function DebugAudioPage() {
         <p className="font-bold">nodes: {audio.state.activeNodeCount}</p>
         <p className="font-bold">ducking: {String(audio.state.ducking)}</p>
         <p className="font-bold">queued: {audio.state.queuedRequests}</p>
+        <p className="font-bold">
+          volume: master {settings?.masterVolume ?? '-'} / bgm{' '}
+          {settings?.bgmVolume ?? '-'} / sfx{' '}
+          {settings?.soundEffectVolume ?? '-'}
+        </p>
       </div>
       <button
         className="min-h-12 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-4 font-black text-white"
@@ -237,12 +243,12 @@ export function DebugAudioPage() {
         <button
           className="min-h-11 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-2 text-sm font-black"
           onClick={() => {
-            void updateAppSettings(DEFAULT_PLAYER_ID, {
+            void updateAppSettings(getActivePlayerId(), {
               bgmEnabled: true,
               soundEffectsEnabled: true,
               masterVolume: 70,
-              bgmVolume: 45,
-              soundEffectVolume: 70,
+              bgmVolume: 62,
+              soundEffectVolume: 68,
               muteAll: false,
             }).then(async () => {
               window.dispatchEvent(new Event(AUDIO_SETTINGS_EVENT));

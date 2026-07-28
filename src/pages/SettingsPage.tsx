@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
-import { DEFAULT_PLAYER_ID } from '../db/constants';
 import { getAppSettings } from '../db/repositories/settingsRepository';
+import { getActivePlayerId } from '../db/repositories/saveSlotRepository';
 import { AudioSettingsPanel } from '../features/audio';
 import type { AppSettings } from '../types';
 
@@ -10,12 +10,12 @@ export function SettingsPage() {
   const [message, setMessage] = useState('すきな かたちに しよう');
 
   const reload = async () => {
-    setSettings((await getAppSettings(DEFAULT_PLAYER_ID)) ?? null);
+    setSettings((await getAppSettings(getActivePlayerId())) ?? null);
   };
 
   useEffect(() => {
     let active = true;
-    void getAppSettings(DEFAULT_PLAYER_ID).then((nextSettings) => {
+    void getAppSettings(getActivePlayerId()).then((nextSettings) => {
       if (active) {
         setSettings(nextSettings ?? null);
       }

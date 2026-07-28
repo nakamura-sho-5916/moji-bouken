@@ -6,11 +6,11 @@ import {
   type ReactNode,
 } from 'react';
 import { useLocation } from '../../router';
-import { DEFAULT_PLAYER_ID } from '../../db/constants';
 import {
   getAppSettings,
   updateAppSettings,
 } from '../../db/repositories/settingsRepository';
+import { getActivePlayerId } from '../../db/repositories/saveSlotRepository';
 import { AudioContext, type AudioContextValue } from './AudioContext';
 import { AUDIO_SETTINGS_EVENT } from './audioConstants';
 import { audioManager } from './AudioManager';
@@ -24,7 +24,7 @@ function mapPathToBgm(pathname: string): BgmId | null {
   if (pathname.startsWith('/debug') || pathname.startsWith('/parent')) {
     return null;
   }
-  if (pathname === '/') {
+  if (pathname === '/' || pathname === '/title') {
     return 'title';
   }
   if (pathname.startsWith('/world')) {
@@ -66,7 +66,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AudioState>(() => audioManager.getState());
 
   const applyPersistedSettings = useCallback(async () => {
-    const settings = await getAppSettings(DEFAULT_PLAYER_ID);
+    const settings = await getAppSettings(getActivePlayerId());
     if (settings) {
       audioManager.updateSettings(toAudioSettings(settings));
     }
@@ -80,7 +80,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const unlock = useCallback(async () => {
     const unlocked = await audioManager.unlock();
     if (unlocked) {
-      await updateAppSettings(DEFAULT_PLAYER_ID, {
+      await updateAppSettings(getActivePlayerId(), {
         lastAudioEnabledAt: new Date().toISOString(),
       });
       await refreshSettings();

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { LoadingScreen } from '../components/LoadingScreen';
-import { DEFAULT_PLAYER_ID, DB_VERSION } from '../db/constants';
+import { DB_VERSION } from '../db/constants';
 import {
   getAppSettings,
   updateAppSettings,
 } from '../db/repositories/settingsRepository';
+import { getActivePlayerId } from '../db/repositories/saveSlotRepository';
 import { AudioSettingsPanel } from '../features/audio';
 import {
   calculateLearningOverview,
@@ -72,7 +73,7 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
 
   useEffect(() => {
     let active = true;
-    void getAppSettings(DEFAULT_PLAYER_ID).then((nextSettings) => {
+    void getAppSettings(getActivePlayerId()).then((nextSettings) => {
       if (active) {
         setSettings(nextSettings ?? null);
       }
@@ -307,7 +308,7 @@ export function ParentPage({
         calculateLearningOverview(),
         getWeakLetterRows({ filter: weakFilter, sort: weakSort }),
         getHistoryPage({ limit: 50 }),
-        getAppSettings(DEFAULT_PLAYER_ID),
+        getAppSettings(getActivePlayerId()),
       ]);
     setOverview(nextOverview);
     setWeakRows(nextWeakRows);
@@ -327,7 +328,7 @@ export function ParentPage({
       calculateLearningOverview(),
       getWeakLetterRows({ filter: weakFilter, sort: weakSort }),
       getHistoryPage({ limit: 50 }),
-      getAppSettings(DEFAULT_PLAYER_ID),
+      getAppSettings(getActivePlayerId()),
     ]).then(async ([nextOverview, nextWeakRows, nextHistory, nextSettings]) => {
       if (!active) {
         return;
@@ -451,7 +452,7 @@ export function ParentPage({
               <input
                 checked={settings.reducedMotion}
                 onChange={(event) => {
-                  void updateAppSettings(DEFAULT_PLAYER_ID, {
+                  void updateAppSettings(getActivePlayerId(), {
                     reducedMotion: event.target.checked,
                   }).then(reload);
                 }}
@@ -463,7 +464,7 @@ export function ParentPage({
               <select
                 className="min-h-12 rounded-[var(--radius-medium)] border px-3"
                 onChange={(event) => {
-                  void updateAppSettings(DEFAULT_PLAYER_ID, {
+                  void updateAppSettings(getActivePlayerId(), {
                     fontSize: event.target.value as AppSettings['fontSize'],
                   }).then(reload);
                 }}
@@ -479,7 +480,7 @@ export function ParentPage({
               <select
                 className="min-h-12 rounded-[var(--radius-medium)] border px-3"
                 onChange={(event) => {
-                  void updateAppSettings(DEFAULT_PLAYER_ID, {
+                  void updateAppSettings(getActivePlayerId(), {
                     standardQuestionCount: Number(
                       event.target.value,
                     ) as AppSettings['standardQuestionCount'],

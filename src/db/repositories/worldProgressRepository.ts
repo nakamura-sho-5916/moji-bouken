@@ -8,10 +8,11 @@ export function createWorldProgressId(playerId: string, areaId: string) {
 
 export function createInitialWorldProgress(
   now = new Date().toISOString(),
+  playerId = DEFAULT_PLAYER_ID,
 ): WorldProgress {
   return {
-    id: createWorldProgressId(DEFAULT_PLAYER_ID, STARTING_AREA_ID),
-    playerId: DEFAULT_PLAYER_ID,
+    id: createWorldProgressId(playerId, STARTING_AREA_ID),
+    playerId,
     areaId: STARTING_AREA_ID,
     unlocked: true,
     recoveryStage: 0,

@@ -3,6 +3,7 @@ import type { MojiBoukenDbSchema } from '../schema';
 import { migrateToVersion1 } from './version1';
 import { migrateToVersion2 } from './version2';
 import { migrateToVersion4 } from './version4';
+import { migrateToVersion5 } from './version5';
 
 export function runMigrations(
   db: IDBPDatabase<MojiBoukenDbSchema>,
@@ -31,6 +32,16 @@ export function runMigrations(
         ['settings'],
         'versionchange'
       >,
+    );
+  }
+  if (oldVersion < 5) {
+    if (!transaction) {
+      throw new Error(
+        'Save slot migration requires a versionchange transaction.',
+      );
+    }
+    migrateToVersion5(
+      transaction as unknown as Parameters<typeof migrateToVersion5>[0],
     );
   }
 }
