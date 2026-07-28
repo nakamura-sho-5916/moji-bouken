@@ -19,8 +19,15 @@ import type { AreaUnlockStat, BossBattleStat } from '../features/collection';
 import { RewardEngine } from '../features/rewards';
 import { getWorldArea } from '../features/world/areaData';
 import type { CollectionProgress } from '../types';
+import {
+  loadStoryProgress,
+  storyEvents,
+  StoryEventPlayer,
+  type StoryEvent,
+} from '../features/story';
 
-type CollectionTab = 'words' | 'companions' | 'enemies' | 'items' | 'album';
+type CollectionTab =
+  'words' | 'companions' | 'enemies' | 'items' | 'album' | 'story';
 
 function hasProgress(
   progress: CollectionProgress[],
@@ -88,6 +95,8 @@ export function CollectionPage({
   const [companionBattleStats] = useState(() => loadCompanionBattleStats());
   const [bossBattleStats] = useState(() => loadBossBattleStats());
   const [areaUnlockStats] = useState(() => loadAreaUnlockStats());
+  const [storyProgress, setStoryProgress] = useState(() => loadStoryProgress());
+  const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -113,6 +122,7 @@ export function CollectionPage({
     { id: 'enemies', label: 'てき' },
     { id: 'items', label: 'アイテム' },
     { id: 'album', label: 'アルバム' },
+    { id: 'story', label: 'Story' },
   ];
   const ownedItemIds = new Set([
     ...(state.inventory?.items.map((item) => item.id) ?? []),
@@ -171,6 +181,13 @@ export function CollectionPage({
 
   return (
     <section className="grid gap-4">
+      <StoryEventPlayer
+        event={activeStory}
+        onComplete={() => {
+          setActiveStory(null);
+          setStoryProgress(loadStoryProgress());
+        }}
+      />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5">
         <h1 className="text-3xl font-black text-[var(--color-primary-strong)]">
           ずかん
@@ -184,7 +201,7 @@ export function CollectionPage({
           アイテム {itemFound}/{equipmentData.length}
         </p>
       </div>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {tabs.map((item) => (
           <button
             className={[
@@ -335,6 +352,40 @@ export function CollectionPage({
               ))}
             </>
           )}
+        </div>
+      ) : null}
+      {tab === 'story' ? (
+        <div className="grid gap-3">
+          {storyEvents.map((event) => {
+            const progress = storyProgress.entries.find(
+              (entry) => entry.eventId === event.id,
+            );
+            return (
+              <CollectionCard
+                description={
+                  progress
+                    ? `${event.kind} / ${new Date(progress.viewedAt).toLocaleDateString('ja-JP')}`
+                    : 'まだ みていないよ'
+                }
+                discovered={Boolean(progress)}
+                icon="話"
+                key={event.id}
+                title={event.title}
+              />
+            );
+          })}
+          <div className="grid gap-2">
+            {storyEvents.map((event) => (
+              <button
+                className="min-h-12 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-4 font-black text-white"
+                key={`replay-${event.id}`}
+                onClick={() => setActiveStory(event)}
+                type="button"
+              >
+                {event.title} をみる
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </section>

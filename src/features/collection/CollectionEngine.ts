@@ -20,6 +20,7 @@ import {
 } from '../../db/repositories/collectionRepository';
 import type { AlbumEntry, CollectionProgress } from '../../types';
 import { enemies } from '../battle/enemies';
+import { resetStoryProgress } from '../story';
 import { resetAreaUnlockStats } from './areaUnlockStats';
 import { resetBossBattleStats } from './bossBattleStats';
 import { companionData } from './companionData';
@@ -333,6 +334,7 @@ export async function addDebugGold(
 export async function resetDebugCollectionData(playerId = DEFAULT_PLAYER_ID) {
   resetAreaUnlockStats();
   resetBossBattleStats();
+  resetStoryProgress();
   const inventory = await getInventory(playerId);
   if (inventory) {
     await saveInventory({

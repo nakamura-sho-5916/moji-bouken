@@ -106,6 +106,11 @@ const DebugRewardPage = lazy(() =>
     default: module.DebugRewardPage,
   })),
 );
+const DebugStoryPage = lazy(() =>
+  import('../pages/DebugStoryPage').then((module) => ({
+    default: module.DebugStoryPage,
+  })),
+);
 const DebugAssetsPage = lazy(() =>
   import('../pages/DebugAssetsPage').then((module) => ({
     default: module.DebugAssetsPage,
@@ -136,6 +141,8 @@ function resolveRoute(pathname: string): ReactNode {
       return <CollectionPage initialTab="enemies" />;
     case '/collection/album':
       return <CollectionPage initialTab="album" />;
+    case '/collection/story':
+      return <CollectionPage initialTab="story" />;
     case '/companions':
       return <CompanionsPage />;
     case '/equipment':
@@ -182,6 +189,8 @@ function resolveRoute(pathname: string): ReactNode {
       return import.meta.env.DEV ? <DebugAudioPage /> : <NotFoundPage />;
     case '/debug/reward':
       return import.meta.env.DEV ? <DebugRewardPage /> : <NotFoundPage />;
+    case '/debug/story':
+      return import.meta.env.DEV ? <DebugStoryPage /> : <NotFoundPage />;
     case '/debug/assets':
       return import.meta.env.DEV ? <DebugAssetsPage /> : <NotFoundPage />;
     default:

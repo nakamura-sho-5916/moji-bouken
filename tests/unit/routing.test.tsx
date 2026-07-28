@@ -16,6 +16,8 @@ describe('AppRouter', () => {
 
     await user.click(screen.getByRole('link', { name: 'はじめる' }));
 
+    await user.click(await screen.findByTestId('story-skip'));
+
     expect(
       await screen.findByRole('heading', { name: 'ホーム' }),
     ).toBeInTheDocument();
@@ -68,5 +70,18 @@ describe('AppRouter', () => {
     expect(
       screen.getByRole('heading', { name: 'VICTORY' }),
     ).toBeInTheDocument();
+  });
+
+  it('shows the story debug page in development', async () => {
+    render(
+      <MemoryRouter initialEntries={['/debug/story']}>
+        <AppRouter />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Debug Story' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('オープニング')).toBeInTheDocument();
   });
 });

@@ -22,6 +22,12 @@ import {
 } from '../features/collection';
 import { useAudio } from '../features/audio';
 import { AreaUnlockCinematic } from '../features/world/components/AreaUnlockCinematic';
+import {
+  getStoryEvent,
+  hasSeenStoryEvent,
+  StoryEventPlayer,
+  type StoryEvent,
+} from '../features/story';
 
 export function ResultPage() {
   const navigate = useNavigate();
@@ -33,6 +39,8 @@ export function ResultPage() {
     [],
   );
   const [activeAreaUnlockIds, setActiveAreaUnlockIds] = useState<string[]>([]);
+  const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
+  const [storyQueue, setStoryQueue] = useState<StoryEvent[]>([]);
   const audio = useAudio();
   const playedResultAudioRef = useRef(false);
   const defeatedEnemy = rewardSummary
@@ -62,6 +70,40 @@ export function ResultPage() {
       window.setTimeout(() => audio.playSoundEffect('level-up'), 650);
     }
   }, [audio, rewardSummary]);
+
+  useEffect(() => {
+    if (!rewardSummary?.bossDefeated) {
+      return undefined;
+    }
+
+    let active = true;
+    const completedEnemy = enemies.find((enemy) =>
+      rewardSummary.battleId.endsWith(enemy.id),
+    );
+    const eventIds =
+      completedEnemy?.id === 'boss-mojinexus'
+        ? ['boss-after-default', 'area-clear-default', 'ending']
+        : ['boss-after-default', 'area-clear-default'];
+    const nextStories = eventIds
+      .map((eventId) => getStoryEvent(eventId))
+      .filter((event): event is StoryEvent =>
+        Boolean(event && !hasSeenStoryEvent(event.id)),
+      );
+    const [firstStory, ...remainingStories] = nextStories;
+    if (firstStory) {
+      const timer = window.setTimeout(() => {
+        if (active) {
+          setActiveStory(firstStory);
+          setStoryQueue(remainingStories);
+        }
+      }, 0);
+      return () => {
+        active = false;
+        window.clearTimeout(timer);
+      };
+    }
+    return undefined;
+  }, [rewardSummary]);
 
   useEffect(() => {
     if (!rewardSummary) {
@@ -159,6 +201,14 @@ export function ResultPage() {
         onComplete={() => {
           setActiveAreaUnlockIds([]);
           navigate('/world');
+        }}
+      />
+      <StoryEventPlayer
+        event={activeStory}
+        onComplete={() => {
+          const [nextStory, ...remainingStories] = storyQueue;
+          setActiveStory(nextStory ?? null);
+          setStoryQueue(remainingStories);
         }}
       />
       <BossDefeatCinematic

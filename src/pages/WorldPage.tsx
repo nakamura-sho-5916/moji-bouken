@@ -6,6 +6,12 @@ import { TownProgressPanel } from '../features/world/components/TownProgressPane
 import { WorldMap } from '../features/world/components/WorldMap';
 import { selectAreaEnemy, WorldRecoveryEngine } from '../features/world';
 import type { AreaViewModel } from '../features/world';
+import {
+  getAreaStartStoryEvent,
+  hasSeenStoryEvent,
+  StoryEventPlayer,
+  type StoryEvent,
+} from '../features/story';
 
 export function WorldPage() {
   const navigate = useNavigate();
@@ -13,6 +19,7 @@ export function WorldPage() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -27,6 +34,16 @@ export function WorldPage() {
             state[0]?.area.id ??
             null,
         );
+        const nextStoryArea = state.find((area) => {
+          if (!area.unlocked) {
+            return false;
+          }
+          const story = getAreaStartStoryEvent(area.area.id);
+          return Boolean(story && !hasSeenStoryEvent(story.id));
+        });
+        if (nextStoryArea) {
+          setActiveStory(getAreaStartStoryEvent(nextStoryArea.area.id));
+        }
       })
       .catch(() => {
         if (active) {
@@ -79,6 +96,10 @@ export function WorldPage() {
 
   return (
     <section className="grid gap-4">
+      <StoryEventPlayer
+        event={activeStory}
+        onComplete={() => setActiveStory(null)}
+      />
       <div className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-5 shadow-sm">
         <p className="text-sm font-black text-[var(--color-text-muted)]">
           ぼうけんマップ

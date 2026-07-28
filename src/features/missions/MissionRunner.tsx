@@ -27,6 +27,12 @@ import {
 } from '../collection';
 import type { CompanionData, CompanionSupportEvent } from '../collection';
 import { RewardEngine } from '../rewards';
+import {
+  getBossBeforeStoryEvent,
+  hasSeenStoryEvent,
+  StoryEventPlayer,
+  type StoryEvent,
+} from '../story';
 import { MissionFeedback } from './components/MissionFeedback';
 import { MissionHeader } from './components/MissionHeader';
 import { MissionProgress } from './components/MissionProgress';
@@ -70,6 +76,7 @@ export function MissionRunner() {
   const [bossIntroBattleId, setBossIntroBattleId] = useState<string | null>(
     null,
   );
+  const [activeStory, setActiveStory] = useState<StoryEvent | null>(null);
   const [lastDamage, setLastDamage] = useState(0);
   const [practiceCorrect, setPracticeCorrect] = useState(false);
   const [selectedCompanion, setSelectedCompanion] =
@@ -149,6 +156,12 @@ export function MissionRunner() {
         ? nextBattle.battleId
         : null,
     );
+    const enemy = getEnemy(nextBattle.enemyId);
+    const story =
+      enemy?.type === 'boss' ? getBossBeforeStoryEvent(enemy.id) : null;
+    if (story && !hasSeenStoryEvent(story.id)) {
+      setActiveStory(story);
+    }
     setLastDamage(0);
     setLastCompanionSupport(null);
     companionSupportsRef.current = [];
@@ -451,6 +464,10 @@ export function MissionRunner() {
 
   return (
     <section className="grid gap-4">
+      <StoryEventPlayer
+        event={activeStory}
+        onComplete={() => setActiveStory(null)}
+      />
       {battle && battleEnemy?.type === 'boss' ? (
         <BossIntroCinematic
           enemy={battleEnemy}

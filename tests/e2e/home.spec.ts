@@ -247,6 +247,9 @@ test('トップ画面に仮タイトルが表示される', async ({ page }) => 
 
   await page.getByRole('link', { name: 'はじめる' }).click();
 
+  await expect(page.getByTestId('story-event-player')).toBeVisible();
+  await page.getByTestId('story-skip').click();
+
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByRole('heading', { name: 'ホーム' })).toBeVisible();
   await expect(
@@ -346,6 +349,26 @@ test('debug boss previews cinematic boss presentation', async ({ page }) => {
   await expect(page.getByTestId('debug-boss-world-unlock')).toBeVisible();
 });
 
+test('debug story previews story events and saves progress', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/debug/story');
+
+  await expect(
+    page.getByRole('heading', { name: 'Debug Story' }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: /オープニング/ })
+    .first()
+    .click();
+  await expect(page.getByTestId('story-event-player')).toBeVisible();
+  await page.keyboard.press('Space');
+  await expect(page.getByText('きみの こたえが')).toBeVisible();
+  await page.getByTestId('story-skip').click();
+  await expect(page.getByText(/opening .* saved/)).toBeVisible();
+});
+
 test('ミッションを10問進めて結果画面へ移動できる', async ({ page }) => {
   await page.goto('/mission');
   await page.getByRole('button', { name: 'ミッションを はじめる' }).click();
@@ -394,6 +417,8 @@ test('音響システムがユーザー操作でunlockされ、SFX設定を反�
   await collectAudioEvents(page);
   await page.goto('/');
   await page.getByRole('main').getByRole('link').click();
+  await expect(page.getByTestId('story-event-player')).toBeVisible();
+  await page.getByTestId('story-skip').click();
   await expect(page).toHaveURL(/\/home$/);
   await expect
     .poll(async () =>
@@ -533,6 +558,8 @@ test('本番バトル画面にデバッグ回答ボタンが表示されない',
 test('世界マップで復興とエリア解放を確認できる', async ({ page }) => {
   await page.goto('/world');
   await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
+  await expect(page.getByTestId('story-event-player')).toBeVisible();
+  await page.getByTestId('story-skip').click();
   await expect(
     page.getByRole('heading', { name: 'もじの せかい' }),
   ).toBeVisible();
@@ -698,6 +725,7 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
   await expect(page.getByText('はしが なおった！')).toBeVisible();
 
   await page.goto('/collection/album');
+  await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
   await expect(page.getByText('はしが なおった！')).toBeVisible();
 });
 
