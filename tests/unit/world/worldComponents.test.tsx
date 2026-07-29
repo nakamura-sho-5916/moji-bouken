@@ -1,14 +1,27 @@
-import { render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TownProgressPanel } from '../../../src/features/world/components/TownProgressPanel';
 import {
   AREA_UNLOCK_CINEMATIC_DURATION_MS,
   AreaUnlockCinematic,
 } from '../../../src/features/world/components/AreaUnlockCinematic';
-import { RecoveryEventModal } from '../../../src/features/world/components/RecoveryEventModal';
+import {
+  RECOVERY_EVENT_AUTO_CLOSE_MS,
+  RECOVERY_EVENT_FADE_OUT_MS,
+  RecoveryEventModal,
+} from '../../../src/features/world/components/RecoveryEventModal';
 import { RecoveryScene } from '../../../src/features/world/components/RecoveryScene';
 import { worldAreas } from '../../../src/features/world';
-import type { AreaViewModel } from '../../../src/features/world';
+import type { AreaViewModel, RecoveryEvent } from '../../../src/features/world';
+
+const recoveryEvent: RecoveryEvent = {
+  id: 'town-reconstruction-5',
+  areaId: 'starting-village',
+  title: 'まちが レベルアップ！',
+  message: '宿屋が完成！',
+  addedDetail: '宿屋完成！',
+};
 
 function createArea(stage: number): AreaViewModel {
   const area = worldAreas[0];
@@ -43,36 +56,113 @@ describe('town reconstruction presentation', () => {
 
     expect(screen.getByText('噴水完成')).toBeVisible();
     expect(screen.getByText('家')).toBeVisible();
-    expect(screen.getByText('橋')).toBeVisible();
+    expect(screen.getByText('木')).toBeVisible();
     expect(screen.getByText('市場')).toBeVisible();
     expect(screen.getByText('兵士')).toBeVisible();
   });
 
-  it('shows the level up recovery effect and closes automatically', () => {
+  it('shows the level up recovery effect and closes automatically after fade out', () => {
     vi.useFakeTimers();
     const onClose = vi.fn();
 
-    render(
-      <RecoveryEventModal
-        events={[
-          {
-            id: 'town-reconstruction-5',
-            areaId: 'starting-village',
-            title: 'まちが レベルアップ！',
-            message: '宿屋が完成！',
-            addedDetail: '宿屋完成',
-          },
-        ]}
-        onClose={onClose}
-      />,
-    );
+    render(<RecoveryEventModal events={[recoveryEvent]} onClose={onClose} />);
 
-    expect(screen.getAllByText('★★★★★★★★★★★★')).toHaveLength(2);
     expect(screen.getByText(/レベルアップ/)).toBeInTheDocument();
-    expect(screen.getByText('宿屋完成')).toBeInTheDocument();
+    expect(screen.getByText('宿屋完成！')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /つぎへ/ })).toBeInTheDocument();
 
-    vi.advanceTimersByTime(1000);
+    act(() => {
+      vi.advanceTimersByTime(RECOVERY_EVENT_AUTO_CLOSE_MS);
+    });
+    expect(onClose).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(RECOVERY_EVENT_FADE_OUT_MS);
+    });
     expect(onClose).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('closes from the next button, overlay tap, and Escape without duplicates', () => {
+    vi.useFakeTimers();
+    const onClose = vi.fn();
+
+    render(<RecoveryEventModal events={[recoveryEvent]} onClose={onClose} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /つぎへ/ }));
+    fireEvent.click(screen.getByTestId('recovery-event-overlay'));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    act(() => {
+      vi.advanceTimersByTime(RECOVERY_EVENT_FADE_OUT_MS);
+    });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('locks page scroll while visible and restores controls after closing', () => {
+    vi.useFakeTimers();
+    const onAction = vi.fn();
+
+    function Harness() {
+      const [events, setEvents] = useState<RecoveryEvent[]>([recoveryEvent]);
+      return (
+        <>
+          <RecoveryEventModal events={events} onClose={() => setEvents([])} />
+          <button onClick={onAction} type="button">
+            after modal action
+          </button>
+        </>
+      );
+    }
+
+    render(<Harness />);
+
+    expect(document.body.style.overflow).toBe('hidden');
+    fireEvent.click(screen.getByRole('button', { name: /つぎへ/ }));
+    act(() => {
+      vi.advanceTimersByTime(RECOVERY_EVENT_FADE_OUT_MS);
+    });
+
+    expect(
+      screen.queryByTestId('recovery-event-modal'),
+    ).not.toBeInTheDocument();
+    expect(document.body.style.overflow).toBe('');
+    fireEvent.click(screen.getByRole('button', { name: 'after modal action' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('keeps the fade out close timer when the parent rerenders', () => {
+    vi.useFakeTimers();
+
+    function Harness() {
+      const [events, setEvents] = useState<RecoveryEvent[]>([recoveryEvent]);
+      const [renderCount, setRenderCount] = useState(0);
+      return (
+        <>
+          <RecoveryEventModal events={events} onClose={() => setEvents([])} />
+          <button
+            onClick={() => setRenderCount((count) => count + 1)}
+            type="button"
+          >
+            rerender parent {renderCount}
+          </button>
+        </>
+      );
+    }
+
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: /つぎへ/ }));
+    fireEvent.click(screen.getByRole('button', { name: /rerender parent/ }));
+    act(() => {
+      vi.advanceTimersByTime(RECOVERY_EVENT_FADE_OUT_MS);
+    });
+
+    expect(
+      screen.queryByTestId('recovery-event-modal'),
+    ).not.toBeInTheDocument();
     vi.useRealTimers();
   });
 
@@ -90,7 +180,9 @@ describe('town reconstruction presentation', () => {
     expect(screen.getByText('橋完成！')).toBeVisible();
     expect(screen.getByText(/ありがとう/)).toBeVisible();
 
-    vi.advanceTimersByTime(AREA_UNLOCK_CINEMATIC_DURATION_MS);
+    act(() => {
+      vi.advanceTimersByTime(AREA_UNLOCK_CINEMATIC_DURATION_MS);
+    });
     expect(onComplete).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
   });

@@ -41,9 +41,22 @@ async function clearAudioEvents(page: Page) {
   });
 }
 
-async function prepareCompletedResult(page: Page) {
+async function prepareCompletedResult(
+  page: Page,
+  options: {
+    battleId?: string;
+    bonusReasons?: string[];
+  } = {},
+) {
+  const battleId = options.battleId ?? 'battle-audio-result-enemy-moji-slime';
+  const bonusReasons = options.bonusReasons ?? ['session-complete'];
   await page.evaluate(
-    ({ battleResultKey, missionResultKey }) => {
+    ({
+      battleResultKey,
+      missionResultKey,
+      preparedBattleId,
+      preparedReasons,
+    }) => {
       const completedAt = new Date().toISOString();
       localStorage.setItem(
         missionResultKey,
@@ -61,10 +74,10 @@ async function prepareCompletedResult(page: Page) {
       localStorage.setItem(
         battleResultKey,
         JSON.stringify({
-          battleId: 'battle-audio-result-enemy-moji-slime',
+          battleId: preparedBattleId,
           areaId: 'starting-village',
           bossDefeated: false,
-          bonusReasons: ['session-complete'],
+          bonusReasons: preparedReasons,
           experienceEarned: 8,
           goldEarned: 5,
           experienceGained: 8,
@@ -78,7 +91,7 @@ async function prepareCompletedResult(page: Page) {
           levelUp: false,
           nextLevelExperience: 30,
           experienceToNextLevel: 22,
-          reasons: ['session-complete'],
+          reasons: preparedReasons,
           droppedItems: [],
           companionSupports: [],
           alreadyRewarded: false,
@@ -90,6 +103,8 @@ async function prepareCompletedResult(page: Page) {
     {
       battleResultKey: battleResultStorageKey,
       missionResultKey: missionResultStorageKey,
+      preparedBattleId: battleId,
+      preparedReasons: bonusReasons,
     },
   );
 }
@@ -924,6 +939,90 @@ test('debug reward previews every rarity presentation', async ({ page }) => {
   await page.getByRole('button', { exact: true, name: 'Legendary' }).click();
   await expect(page.getByText('金箱')).toBeVisible();
   await expect(page.getByTestId('reward-legend')).toHaveText('LEGEND');
+});
+
+test('town level up modal closes and restores world controls', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  const recoveryBattleId = `battle-e2e-recovery-modal-${Date.now()}-enemy-moji-slime`;
+  await page.addInitScript(
+    ({ battleResultKey, missionResultKey, preparedBattleId }) => {
+      const completedAt = new Date().toISOString();
+      const preparedReasons = ['session-complete', 'weak-letter-progress'];
+      localStorage.setItem('moji-bouken:active-save-slot', 'slot-1');
+      localStorage.setItem(
+        'moji-bouken:world-recovery-points:save-slot-1',
+        JSON.stringify({ 'starting-village': 4 }),
+      );
+      localStorage.setItem(
+        missionResultKey,
+        JSON.stringify({
+          sessionId: 'mission-session-recovery-modal',
+          missions: [],
+          currentIndex: 0,
+          results: [],
+          startedAt: completedAt,
+          completedAt,
+          status: 'completed',
+          seed: 1,
+        }),
+      );
+      localStorage.setItem(
+        battleResultKey,
+        JSON.stringify({
+          battleId: preparedBattleId,
+          areaId: 'starting-village',
+          bossDefeated: false,
+          bonusReasons: preparedReasons,
+          experienceEarned: 8,
+          goldEarned: 5,
+          experienceGained: 8,
+          goldGained: 5,
+          experienceBefore: 0,
+          experienceAfter: 8,
+          goldBefore: 0,
+          goldAfter: 5,
+          levelBefore: 1,
+          levelAfter: 1,
+          levelUp: false,
+          nextLevelExperience: 30,
+          experienceToNextLevel: 22,
+          reasons: preparedReasons,
+          droppedItems: [],
+          companionSupports: [],
+          alreadyRewarded: false,
+          player: null,
+          inventory: null,
+        }),
+      );
+    },
+    {
+      battleResultKey: battleResultStorageKey,
+      missionResultKey: missionResultStorageKey,
+      preparedBattleId: recoveryBattleId,
+    },
+  );
+
+  await page.goto('/result');
+  await expect(page.getByTestId('recovery-event-modal')).toBeAttached({
+    timeout: 15000,
+  });
+  await expect
+    .poll(() => page.evaluate(() => document.body.style.overflow))
+    .toBe('hidden');
+
+  await page.getByTestId('recovery-event-modal').getByRole('button').click();
+
+  await expect(page.getByTestId('recovery-event-modal')).toHaveCount(0, {
+    timeout: 2000,
+  });
+  await expect(page).toHaveURL(/\/world$/);
+  await expect
+    .poll(() => page.evaluate(() => document.body.style.overflow))
+    .not.toBe('hidden');
+  await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
+  await expect(page.locator('button').first()).toBeEnabled();
 });
 
 test('debug companions previews battle support presentation', async ({
