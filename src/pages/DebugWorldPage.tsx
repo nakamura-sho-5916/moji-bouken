@@ -17,7 +17,16 @@ export function DebugWorldPage() {
   const [previewAreaUnlockId, setPreviewAreaUnlockId] = useState<string | null>(
     null,
   );
+  const [areaLockPreview, setAreaLockPreview] = useState<
+    'locked' | 'unlocked' | null
+  >(null);
   const [message, setMessage] = useState('せかいの 状態を 確認できます');
+
+  const previewAreas = areas.map((area) =>
+    area.area.id === selectedAreaId && areaLockPreview
+      ? { ...area, unlocked: areaLockPreview === 'unlocked' }
+      : area,
+  );
 
   const reload = async () => {
     const state = await WorldRecoveryEngine.getWorldState();
@@ -51,10 +60,11 @@ export function DebugWorldPage() {
       experienceEarned: bossDefeated ? 120 : 25,
       goldEarned: bossDefeated ? 60 : 10,
     });
+    setAreaLockPreview(null);
     await reload();
     setMessage(
       result
-        ? `${result.pointsAdded}こぶん せかいが げんきになりました`
+        ? `${result.pointsAdded}ポイント せかいが げんきに なりました`
         : 'エリアを みつけられませんでした',
     );
   };
@@ -64,6 +74,7 @@ export function DebugWorldPage() {
       selectedAreaId,
       stage,
     );
+    setAreaLockPreview(null);
     await reload();
     setMessage(
       result
@@ -98,7 +109,10 @@ export function DebugWorldPage() {
           エリア
           <select
             className="min-h-12 rounded-[var(--radius-medium)] border border-[var(--color-border)] px-3"
-            onChange={(event) => setSelectedAreaId(event.target.value)}
+            onChange={(event) => {
+              setSelectedAreaId(event.target.value);
+              setAreaLockPreview(null);
+            }}
             value={selectedAreaId}
           >
             {areas.map((area) => (
@@ -108,6 +122,29 @@ export function DebugWorldPage() {
             ))}
           </select>
         </label>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <button
+            className="min-h-12 rounded-[var(--radius-medium)] bg-slate-800 px-3 text-sm font-black text-white"
+            onClick={() => setAreaLockPreview('locked')}
+            type="button"
+          >
+            Preview locked
+          </button>
+          <button
+            className="min-h-12 rounded-[var(--radius-medium)] bg-emerald-700 px-3 text-sm font-black text-white"
+            onClick={() => setAreaLockPreview('unlocked')}
+            type="button"
+          >
+            Preview unlocked
+          </button>
+          <button
+            className="min-h-12 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-white px-3 text-sm font-black text-[var(--color-text)]"
+            onClick={() => setAreaLockPreview(null)}
+            type="button"
+          >
+            Preview reset
+          </button>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <button
             className="min-h-14 rounded-[var(--radius-medium)] bg-[var(--color-primary)] px-4 font-black text-white"
@@ -158,7 +195,7 @@ export function DebugWorldPage() {
         </div>
       </div>
       <WorldMap
-        areas={areas}
+        areas={previewAreas}
         onSelect={(area) => setSelectedAreaId(area.area.id)}
         selectedAreaId={selectedAreaId}
       />

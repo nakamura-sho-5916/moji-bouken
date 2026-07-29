@@ -11,6 +11,7 @@ import {
   RECOVERY_EVENT_FADE_OUT_MS,
   RecoveryEventModal,
 } from '../../../src/features/world/components/RecoveryEventModal';
+import { LockedArea } from '../../../src/features/world/components/LockedArea';
 import { RecoveryScene } from '../../../src/features/world/components/RecoveryScene';
 import { worldAreas } from '../../../src/features/world';
 import type { AreaViewModel, RecoveryEvent } from '../../../src/features/world';
@@ -41,6 +42,24 @@ function createArea(stage: number): AreaViewModel {
   };
 }
 
+function createLockedArea(): AreaViewModel {
+  const area = worldAreas.find((item) => item.id === 'word-forest');
+  if (!area) {
+    throw new Error('locked world area is missing');
+  }
+  return {
+    area,
+    unlocked: false,
+    recoveryStage: 0,
+    recoveryPoints: 0,
+    reconstructionStage: 0,
+    reconstructionPercent: 0,
+    pointsToNextReconstructionStage: 5,
+    unlockedEvents: [],
+    availableNpc: [],
+  };
+}
+
 describe('town reconstruction presentation', () => {
   it('shows recovery rate and next reconstruction target', () => {
     render(<TownProgressPanel area={createArea(4)} />);
@@ -59,6 +78,15 @@ describe('town reconstruction presentation', () => {
     expect(screen.getByText('木')).toBeVisible();
     expect(screen.getByText('市場')).toBeVisible();
     expect(screen.getByText('兵士')).toBeVisible();
+  });
+
+  it('shows a readable locked area overlay without fog or repeated clouds', () => {
+    render(<LockedArea area={createLockedArea()} />);
+
+    expect(screen.getByText('未解放')).toBeVisible();
+    expect(screen.getByText('まえの ばしょを げんきにしよう')).toBeVisible();
+    expect(screen.queryByText('霧')).not.toBeInTheDocument();
+    expect(screen.queryByText('雲')).not.toBeInTheDocument();
   });
 
   it('shows the level up recovery effect and closes automatically after fade out', () => {

@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'framer-motion';
 import type { AreaViewModel } from '../types';
 import { AreaNode } from './AreaNode';
 import { LockedArea } from './LockedArea';
@@ -13,18 +14,20 @@ export function WorldMap({
 }) {
   return (
     <div className="grid gap-3">
-      {areas.map((area) =>
-        area.unlocked ? (
-          <AreaNode
-            area={area}
-            key={area.area.id}
-            onSelect={onSelect}
-            selected={area.area.id === selectedAreaId}
-          />
-        ) : (
-          <LockedArea area={area} key={area.area.id} />
-        ),
-      )}
+      {areas.map((area) => (
+        <AnimatePresence key={area.area.id} mode="wait">
+          {area.unlocked ? (
+            <AreaNode
+              area={area}
+              key={`${area.area.id}-unlocked`}
+              onSelect={onSelect}
+              selected={area.area.id === selectedAreaId}
+            />
+          ) : (
+            <LockedArea area={area} key={`${area.area.id}-locked`} />
+          )}
+        </AnimatePresence>
+      ))}
     </div>
   );
 }

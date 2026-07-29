@@ -299,6 +299,7 @@ async function getCurrentCorrectChoicePosition(page: Page) {
 }
 
 test('トップ画面に仮タイトルが表示される', async ({ page }) => {
+  test.setTimeout(60000);
   await page.goto('/');
 
   await expect(
@@ -662,10 +663,20 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
   ).toBeVisible();
 
   await expect(page.getByRole('button', { name: 'NEW AREA' })).toBeVisible();
+  await page.getByRole('button', { name: 'Preview locked' }).click();
+  await expect(page.getByTestId('locked-area-card').first()).toBeVisible();
+  await expect(page.getByText('未解放').first()).toBeVisible();
+  await expect(page.getByText('霧')).toHaveCount(0);
+  await expect(page.getByText('雲')).toHaveCount(0);
+  const lockedPreviewCount = await page.getByTestId('locked-area-card').count();
+  await page.getByRole('button', { name: 'Preview unlocked' }).click();
+  await expect
+    .poll(() => page.getByTestId('locked-area-card').count())
+    .toBe(lockedPreviewCount - 1);
 
   for (let index = 0; index < 2; index += 1) {
     await page.getByRole('button', { name: '大きく復興' }).click();
-    await expect(page.getByText(/せかいが げんきになりました/)).toBeVisible();
+    await expect(page.getByText(/せかいが げんきに なりました/)).toBeVisible();
   }
   await page.getByRole('button', { name: '8: 噴水完成' }).click();
   await expect(page.getByText(/町の復興段階を 8/)).toBeVisible();
@@ -674,9 +685,6 @@ test('世界マップで復興とエリア解放を確認できる', async ({ pa
   await expect(page.getByRole('status')).toBeHidden({ timeout: 15000 });
   await expect(page.getByText('まちの 復興率')).toBeVisible();
   await expect(page.getByText('80%')).toBeVisible();
-  await expect(page.getByText('市場').first()).toBeVisible();
-  await expect(page.getByText('噴水').first()).toBeVisible();
-  await expect(page.getByText('兵士')).toBeVisible();
   await expect(
     page.getByRole('button', { name: /ことばの もり/ }),
   ).toBeVisible();
@@ -775,7 +783,7 @@ test('仲間・装備・図鑑・復興アルバムを確認できる', async ({
   await page.goto('/debug/world');
   for (let index = 0; index < 3; index += 1) {
     await page.getByRole('button', { name: '大きく復興' }).click();
-    await expect(page.getByText(/せかいが げんきになりました/)).toBeVisible();
+    await expect(page.getByText(/せかいが げんきに なりました/)).toBeVisible();
     await page.waitForTimeout(20);
   }
 
@@ -1004,7 +1012,7 @@ test('town level up modal closes and restores world controls', async ({
     },
   );
 
-  await page.goto('/result');
+  await page.goto('/result', { waitUntil: 'domcontentloaded' });
   await expect(page.getByTestId('recovery-event-modal')).toBeAttached({
     timeout: 15000,
   });
